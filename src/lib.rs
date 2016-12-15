@@ -68,7 +68,7 @@ mod tests {
     }
 
     #[test]
-    fn short() {
+    fn simple() {
         assert_eq!(wrap("foo bar baz", 5), vec!["foo", "bar", "baz"]);
     }
 
