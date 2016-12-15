@@ -40,7 +40,7 @@ pub fn wrap(s: &str, width: usize) -> Vec<String> {
 
     for word in s.split_whitespace() {
         let word_width = UnicodeWidthStr::width(word);
-        if line_width + 1 + word_width > width {
+        if line_width > 0 && line_width + 1 + word_width > width {
             result.push(line);
             line = String::new();
             line_width = 0;
@@ -75,6 +75,16 @@ mod tests {
     #[test]
     fn multi_word_on_line() {
         assert_eq!(wrap("foo bar baz", 10), vec!["foo bar", "baz"]);
+    }
+
+    #[test]
+    fn long_word() {
+        assert_eq!(wrap("foo", 0), vec!["foo"]);
+    }
+
+    #[test]
+    fn long_words() {
+        assert_eq!(wrap("foo bar", 0), vec!["foo", "bar"]);
     }
 
     #[test]
