@@ -2,6 +2,7 @@
 name = "textwrap"
 version = "0.1.0"
 authors = ["Martin Geisler <martin@geisler.net>"]
+license = "MIT"
 
 [dependencies]
 unicode-width = "0.1.3"
