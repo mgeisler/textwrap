@@ -2,6 +2,10 @@
 name = "textwrap"
 version = "0.1.0"
 authors = ["Martin Geisler <martin@geisler.net>"]
+description = "Library for word wrapping strings."
+repository = "https://github.com/mgeisler/textwrap"
+readme = "README.md"
+keywords = ["text", "string", "formatting", "wrap", "typesetting"]
 license = "MIT"
 
 [dependencies]
