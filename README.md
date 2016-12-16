@@ -4,7 +4,12 @@ Textwrap is a small Rust crate for word wrapping strings. You can use
 it to format strings for display in commandline applications.
 
 Strings are wrapped based on their [displayed width][unicode-width],
-not their size in bytes. This means that characters with accents and
-other non-ASCII characters are handled correctly.
+not their size in bytes. For ASCII characters such as `a` and `!`, the
+displayed with is the same as the number of bytes used to UTF-8 encode
+the character (one character takes up one byte). However, non-ASCII
+characters and symbols take up more than one byte: `é` is `0xc3 0xa9`
+and `⚙` is `0xe2 0x9a 0x99` in UTF-8, respectively. This means that
+relying solely on the string length in bytes would give incorrect
+results.
 
 [unicode-width]: https://unicode-rs.github.io/unicode-width/unicode_width/index.html
