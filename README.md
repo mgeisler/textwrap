@@ -3,6 +3,21 @@
 Textwrap is a small Rust crate for word wrapping strings. You can use
 it to format strings for display in commandline applications.
 
+## Usage
+
+Add this to your `Cargo.toml`:
+```toml
+[dependencies]
+textwrap = "0.1"
+```
+
+and this to your crate root:
+```rust
+extern crate textwrap;
+```
+
+## Documentation
+
 Strings are wrapped based on their [displayed width][unicode-width],
 not their size in bytes. For ASCII characters such as `a` and `!`, the
 displayed with is the same as the number of bytes used to UTF-8 encode
