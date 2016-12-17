@@ -1,6 +1,7 @@
 # Textwrap
 
 [![](https://img.shields.io/crates/v/textwrap.svg)][crates-io]
+[![](https://docs.rs/textwrap/badge.svg)][api-docs]
 [![](https://travis-ci.org/mgeisler/textwrap.svg?branch=master)][travis-ci]
 
 Textwrap is a small Rust crate for word wrapping strings. You can use
