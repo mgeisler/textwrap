@@ -1,5 +1,6 @@
 # Textwrap
 
+[![](https://img.shields.io/crates/v/textwrap.svg)][crates-io]
 [![](https://travis-ci.org/mgeisler/textwrap.svg?branch=master)][travis-ci]
 
 Textwrap is a small Rust crate for word wrapping strings. You can use
@@ -31,6 +32,7 @@ and `⚙` is `0xe2 0x9a 0x99` in UTF-8, respectively. This means that
 relying solely on the string length in bytes would give incorrect
 results.
 
+[crates-io]: https://crates.io/crates/textwrap
 [travis-ci]: https://travis-ci.org/mgeisler/textwrap
 [api-docs]: https://docs.rs/textwrap/
 [unicode-width]: https://unicode-rs.github.io/unicode-width/unicode_width/index.html
