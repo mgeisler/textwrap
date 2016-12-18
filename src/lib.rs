@@ -145,9 +145,53 @@ fn split_word(word: &str) -> Vec<(&str, &str)> {
         .collect();
 }
 
+/// Add prefix to each non-empty line.
+///
+/// ```
+/// use textwrap::indent;
+///
+/// assert_eq!(indent("Foo\nBar\n", "  "), "  Foo\n  Bar\n");
+/// ```
+///
+/// Empty lines (lines consisting only of whitespace) are not indented
+/// and the whitespace is replaced by a single newline (`\n`):
+///
+/// ```
+/// use textwrap::indent;
+///
+/// assert_eq!(indent("Foo\n\nBar\n  \t  \nBaz\n", "  "),
+///            "  Foo\n\n  Bar\n\n  Baz\n");
+/// ```
+///
+/// Leading and trailing whitespace on non-empty lines is kept
+/// unchanged:
+///
+/// ```
+/// use textwrap::indent;
+///
+/// assert_eq!(indent(" \t  Foo   ", "  "), "   \t  Foo   \n");
+/// ```
+pub fn indent(s: &str, prefix: &str) -> String {
+    let mut result = String::new();
+    for line in s.lines() {
+        if line.chars().any(|c| !c.is_whitespace()) {
+            result.push_str(prefix);
+            result.push_str(line);
+        }
+        result.push('\n');
+    }
+    return result;
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// Add newlines. Ensures that the final line in the vector also
+    /// has a newline.
+    fn add_nl(lines: &Vec<&str>) -> String {
+        lines.join("\n") + "\n"
+    }
 
     #[test]
     fn no_wrap() {
@@ -214,5 +258,36 @@ mod tests {
     #[test]
     fn test_fill() {
         assert_eq!(fill("foo bar baz", 10), "foo bar\nbaz");
+    }
+
+    #[test]
+    fn test_indent_empty() {
+        assert_eq!(indent("\n", "  "), "\n");
+    }
+
+    #[test]
+    #[cfg_attr(rustfmt, rustfmt_skip)]
+    fn test_indent_nonempty() {
+        let x = vec!["  foo",
+                     "bar",
+                     "  baz"];
+        let y = vec!["//  foo",
+                     "//bar",
+                     "//  baz"];
+        assert_eq!(indent(&add_nl(&x), "//"), add_nl(&y));
+    }
+
+    #[test]
+    #[cfg_attr(rustfmt, rustfmt_skip)]
+    fn test_indent_empty_line() {
+        let x = vec!["  foo",
+                     "bar",
+                     "",
+                     "  baz"];
+        let y = vec!["//  foo",
+                     "//bar",
+                     "",
+                     "//  baz"];
+        assert_eq!(indent(&add_nl(&x), "//"), add_nl(&y));
     }
 }
