@@ -183,6 +183,59 @@ pub fn indent(s: &str, prefix: &str) -> String {
     return result;
 }
 
+/// Removes common leading whitespace from each line.
+///
+/// This will look at each non-empty line and determine the maximum
+/// amount of whitespace that can be removed from the line.
+///
+/// ```
+/// use textwrap::dedent;
+///
+/// assert_eq!(dedent("  1st line\n  2nd line\n"),
+///            "1st line\n2nd line\n");
+/// ```
+pub fn dedent(s: &str) -> String {
+    let mut prefix = String::new();
+    let mut lines = s.lines();
+
+    // We first search for a non-empty line to find a prefix.
+    for line in &mut lines {
+        let whitespace = line.chars()
+            .take_while(|c| c.is_whitespace())
+            .collect::<String>();
+        // Check if the line had anything but whitespace
+        if whitespace.len() < line.len() {
+            prefix = whitespace;
+            break;
+        }
+    }
+
+    // We then continue looking through the remaining lines to
+    // possibly shorten the prefix.
+    for line in &mut lines {
+        let whitespace = line.chars()
+            .zip(prefix.chars())
+            .take_while(|&(a, b)| a == b)
+            .map(|(_, b)| b)
+            .collect::<String>();
+        // Check if we have found a shorter prefix
+        if whitespace.len() < prefix.len() {
+            prefix = whitespace;
+        }
+    }
+
+    // We now go over the lines a second time to build the result.
+    let mut result = String::new();
+    for line in s.lines() {
+        if line.starts_with(&prefix) && line.chars().any(|c| !c.is_whitespace()) {
+            let (_, tail) = line.split_at(prefix.len());
+            result.push_str(tail);
+        }
+        result.push('\n');
+    }
+    return result;
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -289,5 +342,46 @@ mod tests {
                      "",
                      "//  baz"];
         assert_eq!(indent(&add_nl(&x), "//"), add_nl(&y));
+    }
+
+    #[test]
+    fn test_dedent_empty() {
+        assert_eq!(dedent(""), "");
+    }
+
+    #[test]
+    #[cfg_attr(rustfmt, rustfmt_skip)]
+    fn test_dedent_multi_line() {
+        let x = vec!["    foo",
+                     "  bar",
+                     "    baz"];
+        let y = vec!["  foo",
+                     "bar",
+                     "  baz"];
+        assert_eq!(dedent(&add_nl(&x)), add_nl(&y));
+    }
+
+    #[test]
+    #[cfg_attr(rustfmt, rustfmt_skip)]
+    fn test_dedent_empty_line() {
+        let x = vec!["    foo",
+                     "  bar",
+                     "   ",
+                     "    baz"];
+        let y = vec!["  foo",
+                     "bar",
+                     "",
+                     "  baz"];
+        assert_eq!(dedent(&add_nl(&x)), add_nl(&y));
+    }
+
+    #[test]
+    #[cfg_attr(rustfmt, rustfmt_skip)]
+    fn test_dedent_mixed_whitespace() {
+        let x = vec!["\tfoo",
+                     "  bar"];
+        let y = vec!["\tfoo",
+                     "  bar"];
+        assert_eq!(dedent(&add_nl(&x)), add_nl(&y));
     }
 }
