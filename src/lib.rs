@@ -39,7 +39,7 @@ pub fn wrap(s: &str, width: usize) -> Vec<String> {
     let mut line_width = 0;
 
     for word in s.split_whitespace() {
-        let word_width = UnicodeWidthStr::width(word);
+        let word_width = word.width();
         if line_width > 0 && line_width + 1 + word_width > width {
             result.push(line);
             line = String::new();
