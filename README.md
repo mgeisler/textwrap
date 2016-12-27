@@ -33,6 +33,39 @@ and `⚙` is `0xe2 0x9a 0x99` in UTF-8, respectively. This means that
 relying solely on the string length in bytes would give incorrect
 results.
 
+## Examples
+
+The library comes with a small example program that shows how a fixed
+example string is wrapped at different widths:
+```shell
+$ cargo run --example layout
+.--- Width: 15 ---.
+| Memory safety   |
+| without garbage |
+| collection.     |
+| Concurrency     |
+| without data    |
+| races.          |
+| Zero-cost       |
+| abstractions.   |
+.--- Width: 16 ----.
+| Memory safety    |
+| without garbage  |
+| collection.      |
+| Concurrency      |
+| without data     |
+| races. Zero-cost |
+| abstractions.    |
+# ...
+.---------------- Width: 41 ----------------.
+| Memory safety without garbage collection. |
+| Concurrency without data races. Zero-cost |
+| abstractions.                             |
+.---------------------- Width: 53 ----------------------.
+| Memory safety without garbage collection. Concurrency |
+| without data races. Zero-cost abstractions.           |
+```
+
 [crates-io]: https://crates.io/crates/textwrap
 [travis-ci]: https://travis-ci.org/mgeisler/textwrap
 [api-docs]: https://docs.rs/textwrap/
