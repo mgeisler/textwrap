@@ -2,6 +2,7 @@
 
 extern crate unicode_width;
 
+use std::iter;
 use unicode_width::UnicodeWidthStr;
 
 /// Fill a line of text at `width` bytes.
@@ -76,10 +77,14 @@ pub fn wrap(s: &str, width: usize) -> Vec<String> {
     return result;
 }
 
-/// Split word into all possible parts (head, tail). Must return a
-/// non-empty vector.
+/// Split word into all possible parts (head, tail). Word must be
+/// non-empty. The returned vector will always be non-empty.
 fn split_word(word: &str) -> Vec<(&str, &str)> {
-    return vec![(word, "")];
+    let hyphens = word.match_indices('-');
+    let word_end = iter::once((word.len() - 1, ""));
+    return hyphens.chain(word_end)
+        .map(|(n, _)| word.split_at(n + 1))
+        .collect();
 }
 
 #[cfg(test)]
@@ -121,6 +126,31 @@ mod tests {
         assert_eq!(wrap("Hello, World!", 15), vec!["Hello, World!"]);
         assert_eq!(wrap("Ｈｅｌｌｏ, Ｗｏｒｌｄ!", 15),
                    vec!["Ｈｅｌｌｏ,", "Ｗｏｒｌｄ!"]);
+    }
+
+    #[test]
+    fn hyphens() {
+        assert_eq!(wrap("foo-bar", 5), vec!["foo-", "bar"]);
+    }
+
+    #[test]
+    fn trailing_hyphen() {
+        assert_eq!(wrap("foobar-", 5), vec!["foobar-"]);
+    }
+
+    #[test]
+    fn multiple_hyphens() {
+        assert_eq!(wrap("foo-bar-baz", 5), vec!["foo-", "bar-", "baz"]);
+    }
+
+    #[test]
+    fn multiple_splits() {
+        assert_eq!(wrap("foo-bar-baz", 9), vec!["foo-bar-", "baz"]);
+    }
+
+    #[test]
+    fn forced_split() {
+        assert_eq!(wrap("foobar-baz", 5), vec!["foobar-", "baz"]);
     }
 
     #[test]
