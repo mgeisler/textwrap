@@ -45,8 +45,8 @@ $ cargo run --example layout
 | collection.     |
 | Concurrency     |
 | without data    |
-| races.          |
-| Zero-cost       |
+| races. Zero-    |
+| cost            |
 | abstractions.   |
 .--- Width: 16 ----.
 | Memory safety    |
