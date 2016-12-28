@@ -12,7 +12,7 @@ it to format strings for display in commandline applications.
 Add this to your `Cargo.toml`:
 ```toml
 [dependencies]
-textwrap = "0.1"
+textwrap = "0.2"
 ```
 
 and this to your crate root:
