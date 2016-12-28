@@ -35,25 +35,21 @@ pub fn fill(s: &str, width: usize) -> String {
 /// ```
 pub fn wrap(s: &str, width: usize) -> Vec<String> {
     let mut result = Vec::new();
-    let mut line = String::new();
+    let mut line = Vec::new();
     let mut line_width = 0;
 
     for word in s.split_whitespace() {
         let word_width = word.width();
-        if line_width > 0 && line_width + 1 + word_width > width {
-            result.push(line);
-            line = String::new();
+        if !line.is_empty() && line_width + line.len() + word_width > width {
+            result.push(line.join(" "));
+            line = Vec::new();
             line_width = 0;
         }
-        if line_width > 0 {
-            line.push(' ');
-            line_width += 1;
-        }
-        line.push_str(word);
+        line.push(word);
         line_width += word_width;
     }
-    if line_width > 0 {
-        result.push(line);
+    if !line.is_empty() {
+        result.push(line.join(" "));
     }
     return result;
 }
