@@ -59,7 +59,7 @@ impl Wrapper {
 
         for mut word in s.split_whitespace() {
             while !word.is_empty() {
-                let splits = split_word(&word);
+                let splits = self.split_word(&word);
                 let (smallest, longest) = splits[0];
                 let min_width = smallest.width();
 
@@ -94,6 +94,16 @@ impl Wrapper {
             result.push(line.join(" "));
         }
         return result;
+    }
+
+    /// Split word into all possible parts (head, tail). Word must be
+    /// non-empty. The returned vector will always be non-empty.
+    fn split_word<'b>(&self, word: &'b str) -> Vec<(&'b str, &'b str)> {
+        let hyphens = word.match_indices('-');
+        let word_end = iter::once((word.len() - 1, ""));
+        return hyphens.chain(word_end)
+            .map(|(n, _)| word.split_at(n + 1))
+            .collect();
     }
 }
 
@@ -138,16 +148,6 @@ pub fn fill(s: &str, width: usize) -> String {
 /// and call its [`wrap` method](struct.Wrapper.html#method.wrap).
 pub fn wrap(s: &str, width: usize) -> Vec<String> {
     Wrapper::new(width).wrap(s)
-}
-
-/// Split word into all possible parts (head, tail). Word must be
-/// non-empty. The returned vector will always be non-empty.
-fn split_word(word: &str) -> Vec<(&str, &str)> {
-    let hyphens = word.match_indices('-');
-    let word_end = iter::once((word.len() - 1, ""));
-    return hyphens.chain(word_end)
-        .map(|(n, _)| word.split_at(n + 1))
-        .collect();
 }
 
 /// Add prefix to each non-empty line.
