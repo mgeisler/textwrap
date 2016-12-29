@@ -2,7 +2,6 @@
 
 extern crate unicode_width;
 
-use std::iter;
 use unicode_width::UnicodeWidthStr;
 
 /// A Wrapper holds settings for wrapping text.
@@ -99,11 +98,17 @@ impl Wrapper {
     /// Split word into all possible parts (head, tail). Word must be
     /// non-empty. The returned vector will always be non-empty.
     fn split_word<'b>(&self, word: &'b str) -> Vec<(&'b str, &'b str)> {
-        let hyphens = word.match_indices('-');
-        let word_end = iter::once((word.len() - 1, ""));
-        return hyphens.chain(word_end)
-            .map(|(n, _)| word.split_at(n + 1))
-            .collect();
+        let mut result = Vec::new();
+
+        // Split on hyphens, smallest split first.
+        for (n, _) in word.match_indices('-') {
+            result.push(word.split_at(n + 1));
+        }
+
+        // Finally option is no split at all.
+        result.push((word, ""));
+
+        return result;
     }
 }
 
