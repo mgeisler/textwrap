@@ -20,6 +20,21 @@ and this to your crate root:
 extern crate textwrap;
 ```
 
+You can now easily word wrap strings:
+```rust
+use textwrap::fill;
+
+fn main() {
+    println!("{}", fill("textwrap: a small text wrapping library.", 20));
+}
+```
+The output is
+```
+textwrap: a small
+text wrapping
+library.
+```
+
 ## Documentation
 
 **[API documentation][api-docs]**
