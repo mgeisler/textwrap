@@ -16,7 +16,9 @@ impl Wrapper {
         Wrapper { width: width }
     }
 
-    /// Fill a line of text at `self.width` bytes.
+    /// Fill a line of text at `self.width` characters. Strings are
+    /// wrapped based on their displayed width, not their size in
+    /// bytes.
     ///
     /// The result is a string with newlines between each line. Use
     /// the `wrap` method if you need access to the individual lines.
@@ -32,8 +34,9 @@ impl Wrapper {
         self.wrap(&s).join("\n")
     }
 
-    /// Wrap a line of text at `self.width` bytes and return a vector
-    /// of lines.
+    /// Wrap  a line of  text at `self.width` characters.  Strings are
+    ///  wrapped based  on their  displayed width,  not their  size in
+    /// bytes.
     ///
     /// ```
     /// use textwrap::Wrapper;
@@ -94,7 +97,8 @@ impl Wrapper {
     }
 }
 
-/// Fill a line of text at `width` bytes.
+/// Fill a line of text at `width` characters. Strings are wrapped
+/// based on their displayed width, not their size in bytes.
 ///
 /// The result is a string with newlines between each line. Use `wrap`
 /// if you need access to the individual lines.
@@ -113,7 +117,8 @@ pub fn fill(s: &str, width: usize) -> String {
     wrap(s, width).join("\n")
 }
 
-/// Wrap a line of text at `width` bytes and return a vector of lines.
+/// Wrap a line of text at `width` characters. Strings are wrapped
+/// based on their displayed width, not their size in bytes.
 ///
 /// ```
 /// use textwrap::wrap;
