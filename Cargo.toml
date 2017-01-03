@@ -2,7 +2,7 @@
 name = "textwrap"
 version = "0.2.0"
 authors = ["Martin Geisler <martin@geisler.net>"]
-description = "Library for word wrapping strings."
+description = "Library for word wrapping, indenting, and dedenting strings."
 documentation = "https://docs.rs/textwrap/"
 repository = "https://github.com/mgeisler/textwrap"
 readme = "README.md"
