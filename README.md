@@ -81,7 +81,13 @@ $ cargo run --example layout
 | without data races. Zero-cost abstractions.           |
 ```
 
+## License
+
+Textwrap can be distributed according to the [MIT license][mit].
+Contributions will be accepted under the same license.
+
 [crates-io]: https://crates.io/crates/textwrap
 [travis-ci]: https://travis-ci.org/mgeisler/textwrap
 [api-docs]: https://docs.rs/textwrap/
 [unicode-width]: https://unicode-rs.github.io/unicode-width/unicode_width/index.html
+[mit]: LICENSE
