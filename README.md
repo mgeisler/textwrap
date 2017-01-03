@@ -81,6 +81,14 @@ $ cargo run --example layout
 | without data races. Zero-cost abstractions.           |
 ```
 
+## Changelog
+
+* **Version 0.2.0, December 28 2016:** Introduced `Wrapper` struct.
+  Added support for wrapping on hyphens.
+
+* **Version 0.1.0, December 17 2016:** First public release with
+  support for wrapping strings on whitespace.
+
 ## License
 
 Textwrap can be distributed according to the [MIT license][mit].
