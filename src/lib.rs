@@ -156,8 +156,9 @@ impl<'a> Wrapper<'a> {
 ///            "Memory safety\nwithout garbage\ncollection.");
 /// ```
 ///
-/// This function creates a Wrapper on the fly. If you need to wrap
-/// many strings, it can be more efficient to create a single Wrapper
+/// This function creates a Wrapper on the fly with default settings.
+/// If you need to set a language corpus for automatic hyphenation, or
+/// need to fill many strings, then it is suggested to create Wrapper
 /// and call its [`fill` method](struct.Wrapper.html#method.fill).
 pub fn fill(s: &str, width: usize) -> String {
     wrap(s, width).join("\n")
@@ -179,8 +180,9 @@ pub fn fill(s: &str, width: usize) -> String {
 ///                 "data races."]);
 /// ```
 ///
-/// This function creates a Wrapper on the fly. If you need to wrap
-/// many strings, it can be more efficient to create a single Wrapper
+/// This function creates a Wrapper on the fly with default settings.
+/// If you need to set a language corpus for automatic hyphenation, or
+/// need to wrap many strings, then it is suggested to create Wrapper
 /// and call its [`wrap` method](struct.Wrapper.html#method.wrap).
 pub fn wrap(s: &str, width: usize) -> Vec<String> {
     Wrapper::new(width).wrap(s)
