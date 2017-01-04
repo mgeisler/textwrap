@@ -53,7 +53,7 @@ impl Wrapper {
     /// ```
     pub fn wrap(&self, s: &str) -> Vec<String> {
         let mut result = Vec::new();
-        let mut line = Vec::new();
+        let mut line = String::new();
         let mut line_width = 0;
 
         for mut word in s.split_whitespace() {
@@ -64,17 +64,23 @@ impl Wrapper {
 
                 // Add a new line if even the smallest split doesn't
                 // fit.
-                if !line.is_empty() && line_width + line.len() + min_width > self.width {
-                    result.push(line.join(" "));
-                    line = Vec::new();
+                if !line.is_empty() && line_width + 1 + min_width > self.width {
+                    result.push(line);
+                    line = String::new();
                     line_width = 0;
                 }
 
+                let space = if line_width > 0 { 1 } else { 0 };
+
                 // Find a split that fits on the current line.
                 for &(head, hyphen, tail) in splits.iter().rev() {
-                    if line_width + line.len() + head.width() + hyphen.len() <= self.width {
-                        line.push(String::from(head) + hyphen);
-                        line_width += head.width();
+                    if line_width + space + head.width() + hyphen.len() <= self.width {
+                        if line_width > 0 {
+                            line.push(' ');
+                        }
+                        line.push_str(head);
+                        line.push_str(hyphen);
+                        line_width += space + head.width() + hyphen.len();
                         word = tail;
                         break;
                     }
@@ -90,7 +96,7 @@ impl Wrapper {
             }
         }
         if !line.is_empty() {
-            result.push(line.join(" "));
+            result.push(line);
         }
         return result;
     }
