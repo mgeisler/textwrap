@@ -1,18 +1,25 @@
 //! `textwrap` provides functions for word wrapping and filling text.
 
 extern crate unicode_width;
+extern crate hyphenation;
 
 use unicode_width::UnicodeWidthStr;
+use hyphenation::Hyphenation;
+use hyphenation::Corpus;
 
 /// A Wrapper holds settings for wrapping text.
-pub struct Wrapper {
+pub struct Wrapper<'a> {
     pub width: usize,
+    pub corpus: Option<&'a Corpus>,
 }
 
-impl Wrapper {
+impl<'a> Wrapper<'a> {
     /// Create a new Wrapper for wrapping at the specified width.
-    pub fn new(width: usize) -> Wrapper {
-        Wrapper { width: width }
+    pub fn new(width: usize) -> Wrapper<'a> {
+        Wrapper::<'a> {
+            width: width,
+            corpus: None,
+        }
     }
 
     /// Fill a line of text at `self.width` characters. Strings are
@@ -106,10 +113,27 @@ impl Wrapper {
     fn split_word<'b>(&self, word: &'b str) -> Vec<(&'b str, &'b str, &'b str)> {
         let mut result = Vec::new();
 
-        // Split on hyphens, smallest split first.
-        for (n, _) in word.match_indices('-') {
-            let (head, tail) = word.split_at(n + 1);
-            result.push((head, "", tail));
+        // Split on hyphens or use the language corpus.
+        match self.corpus {
+            None => {
+                // Split on hyphens, smallest split first.
+                for (n, _) in word.match_indices('-') {
+                    let (head, tail) = word.split_at(n + 1);
+                    result.push((head, "", tail));
+                }
+            }
+            Some(corpus) => {
+                // Find splits based on language corpus. This includes
+                // the splits that would have been found above.
+                for n in word.opportunities(corpus) {
+                    let (head, tail) = word.split_at(n);
+                    let mut hyphen = "-";
+                    if head.as_bytes()[head.len() - 1] == b'-' {
+                        hyphen = "";
+                    }
+                    result.push((head, hyphen, tail));
+                }
+            }
         }
 
         // Finally option is no split at all.
@@ -255,6 +279,9 @@ pub fn dedent(s: &str) -> String {
 
 #[cfg(test)]
 mod tests {
+    extern crate hyphenation;
+
+    use hyphenation::Language;
     use super::*;
 
     /// Add newlines. Ensures that the final line in the vector also
@@ -323,6 +350,29 @@ mod tests {
     #[test]
     fn forced_split() {
         assert_eq!(wrap("foobar-baz", 5), vec!["foobar-", "baz"]);
+    }
+
+    #[test]
+    fn auto_hyphenation() {
+        let corpus = hyphenation::load(Language::English_US).unwrap();
+        let mut wrapper = Wrapper::new(10);
+        assert_eq!(wrapper.wrap("Internationalization"),
+                   vec!["Internationalization"]);
+
+        wrapper.corpus = Some(&corpus);
+        assert_eq!(wrapper.wrap("Internationalization"),
+                   vec!["Interna-", "tionaliza-", "tion"]);
+    }
+
+    #[test]
+    fn auto_hyphenation_with_hyphen() {
+        let corpus = hyphenation::load(Language::English_US).unwrap();
+        let mut wrapper = Wrapper::new(8);
+        assert_eq!(wrapper.wrap("over-caffinated"), vec!["over-", "caffinated"]);
+
+        wrapper.corpus = Some(&corpus);
+        assert_eq!(wrapper.wrap("over-caffinated"),
+                   vec!["over-", "caffi-", "nated"]);
     }
 
     #[test]
