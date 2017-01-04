@@ -6,7 +6,7 @@ use unicode_width::UnicodeWidthStr;
 
 /// A Wrapper holds settings for wrapping text.
 pub struct Wrapper {
-    width: usize,
+    pub width: usize,
 }
 
 impl Wrapper {

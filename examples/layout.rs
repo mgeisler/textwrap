@@ -9,8 +9,10 @@ Concurrency without data races.
 Zero-cost abstractions.
 ";
     let mut prev_lines = vec![];
+    let mut wrapper = Wrapper::new(0);
     for width in 15..60 {
-        let lines = wrap(example, width);
+        wrapper.width = width;
+        let lines = wrapper.wrap(example);
         if lines != prev_lines {
             let title = format!(" Width: {} ", width);
             println!(".{:-^1$}.", title, width + 2);
