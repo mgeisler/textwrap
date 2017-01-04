@@ -59,8 +59,8 @@ impl Wrapper {
         for mut word in s.split_whitespace() {
             while !word.is_empty() {
                 let splits = self.split_word(&word);
-                let (smallest, longest) = splits[0];
-                let min_width = smallest.width();
+                let (smallest, hyphen, longest) = splits[0];
+                let min_width = smallest.width() + hyphen.len();
 
                 // Add a new line if even the smallest split doesn't
                 // fit.
@@ -71,9 +71,9 @@ impl Wrapper {
                 }
 
                 // Find a split that fits on the current line.
-                for &(head, tail) in splits.iter().rev() {
-                    if line_width + line.len() + head.width() <= self.width {
-                        line.push(head);
+                for &(head, hyphen, tail) in splits.iter().rev() {
+                    if line_width + line.len() + head.width() + hyphen.len() <= self.width {
+                        line.push(String::from(head) + hyphen);
                         line_width += head.width();
                         word = tail;
                         break;
@@ -83,7 +83,7 @@ impl Wrapper {
                 // If nothing got added, we forcibly add the smallest
                 // split and continue with the longest tail.
                 if line_width == 0 {
-                    result.push(String::from(smallest));
+                    result.push(String::from(smallest) + hyphen);
                     line_width = 0;
                     word = longest;
                 }
@@ -97,16 +97,17 @@ impl Wrapper {
 
     /// Split word into all possible parts (head, tail). Word must be
     /// non-empty. The returned vector will always be non-empty.
-    fn split_word<'b>(&self, word: &'b str) -> Vec<(&'b str, &'b str)> {
+    fn split_word<'b>(&self, word: &'b str) -> Vec<(&'b str, &'b str, &'b str)> {
         let mut result = Vec::new();
 
         // Split on hyphens, smallest split first.
         for (n, _) in word.match_indices('-') {
-            result.push(word.split_at(n + 1));
+            let (head, tail) = word.split_at(n + 1);
+            result.push((head, "", tail));
         }
 
         // Finally option is no split at all.
-        result.push((word, ""));
+        result.push((word, "", ""));
 
         return result;
     }
