@@ -61,25 +61,30 @@ $ cargo run --example layout
 | Concurrency     |
 | without data    |
 | races. Zero-    |
-| cost            |
-| abstractions.   |
+| cost abstrac-   |
+| tions.          |
 .--- Width: 16 ----.
 | Memory safety    |
 | without garbage  |
-| collection.      |
-| Concurrency      |
-| without data     |
-| races. Zero-cost |
-| abstractions.    |
+| collection. Con- |
+| currency without |
+| data races. Ze-  |
+| ro-cost abstrac- |
+| tions.           |
 # ...
-.---------------- Width: 41 ----------------.
-| Memory safety without garbage collection. |
-| Concurrency without data races. Zero-cost |
-| abstractions.                             |
+.-------------------- Width: 49 --------------------.
+| Memory safety without garbage collection. Concur- |
+| rency without data races. Zero-cost abstractions. |
 .---------------------- Width: 53 ----------------------.
 | Memory safety without garbage collection. Concurrency |
 | without data races. Zero-cost abstractions.           |
+.------------------------- Width: 59 -------------------------.
+| Memory safety without garbage collection. Concurrency with- |
+| out data races. Zero-cost abstractions.                     |
 ```
+
+Notice how words are split at hyphens (such a s "zero-cost") but also
+how words are hyphenated using automatic/machine hyphenation.
 
 ## Changelog
 
