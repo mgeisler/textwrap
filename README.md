@@ -51,7 +51,14 @@ results.
 ## Examples
 
 The library comes with a small example program that shows how a fixed
-example string is wrapped at different widths:
+example string is wrapped at different widths. The string is
+
+> Memory safety without garbage collection. Concurrency without data
+> races. Zero-cost abstractions.
+
+When run, the string is wrapped at all widths between 15 and 60
+columns:
+
 ```shell
 $ cargo run --example layout
 .--- Width: 15 ---.
@@ -61,25 +68,30 @@ $ cargo run --example layout
 | Concurrency     |
 | without data    |
 | races. Zero-    |
-| cost            |
-| abstractions.   |
+| cost abstrac-   |
+| tions.          |
 .--- Width: 16 ----.
 | Memory safety    |
 | without garbage  |
-| collection.      |
-| Concurrency      |
-| without data     |
-| races. Zero-cost |
-| abstractions.    |
+| collection. Con- |
+| currency without |
+| data races. Ze-  |
+| ro-cost abstrac- |
+| tions.           |
 # ...
-.---------------- Width: 41 ----------------.
-| Memory safety without garbage collection. |
-| Concurrency without data races. Zero-cost |
-| abstractions.                             |
+.-------------------- Width: 49 --------------------.
+| Memory safety without garbage collection. Concur- |
+| rency without data races. Zero-cost abstractions. |
 .---------------------- Width: 53 ----------------------.
 | Memory safety without garbage collection. Concurrency |
 | without data races. Zero-cost abstractions.           |
+.------------------------- Width: 59 -------------------------.
+| Memory safety without garbage collection. Concurrency with- |
+| out data races. Zero-cost abstractions.                     |
 ```
+
+Notice how words are split at hyphens (such a s "zero-cost") but also
+how words are hyphenated using automatic/machine hyphenation.
 
 ## Changelog
 
