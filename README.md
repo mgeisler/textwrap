@@ -51,7 +51,14 @@ results.
 ## Examples
 
 The library comes with a small example program that shows how a fixed
-example string is wrapped at different widths:
+example string is wrapped at different widths. The string is
+
+> Memory safety without garbage collection. Concurrency without data
+> races. Zero-cost abstractions.
+
+When run, the string is wrapped at all widths between 15 and 60
+columns:
+
 ```shell
 $ cargo run --example layout
 .--- Width: 15 ---.
