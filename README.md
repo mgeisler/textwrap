@@ -20,19 +20,48 @@ and this to your crate root:
 extern crate textwrap;
 ```
 
-You can now easily word wrap strings:
+## Examples
+
+Word wrapping single strings is easy using the `fill` function:
 ```rust
+extern crate textwrap;
 use textwrap::fill;
 
 fn main() {
-    println!("{}", fill("textwrap: a small text wrapping library.", 20));
+    let output = "textwrap: a small library for wrapping output.";
+    println!("{}", fill(output, 18));
 }
 ```
 The output is
 ```
 textwrap: a small
-text wrapping
-library.
+library for
+wrapping output.
+```
+
+You can use automatic hyphenation using TeX hyphenation patterns (with
+support for [about 70 languages][patterns]) and get:
+```rust
+extern crate hyphenation;
+extern crate textwrap;
+
+use hyphenation::Language;
+use textwrap::Wrapper;
+
+fn main() {
+    let corpus = hyphenation::load(Language::English_US).unwrap();
+    let mut wrapper = Wrapper::new(18);
+    wrapper.corpus = Some(&corpus);
+    let output = "textwrap: a small library for wrapping output.";
+    println!("{}", wrapper.fill(output))
+}
+```
+
+The output now looks like this:
+```
+textwrap: a small
+library for wrap-
+ping output.
 ```
 
 ## Documentation
@@ -108,6 +137,7 @@ Contributions will be accepted under the same license.
 
 [crates-io]: https://crates.io/crates/textwrap
 [travis-ci]: https://travis-ci.org/mgeisler/textwrap
+[patterns]: https://github.com/tapeinosyne/hyphenation/tree/master/patterns-tex
 [api-docs]: https://docs.rs/textwrap/
 [unicode-width]: https://unicode-rs.github.io/unicode-width/unicode_width/index.html
 [mit]: LICENSE
