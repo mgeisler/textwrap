@@ -4,8 +4,8 @@
 [![](https://docs.rs/textwrap/badge.svg)][api-docs]
 [![](https://travis-ci.org/mgeisler/textwrap.svg?branch=master)][travis-ci]
 
-Textwrap is a small Rust crate for word wrapping strings. You can use
-it to format strings for display in commandline applications.
+Textwrap is a small Rust crate for word wrapping text. You can use it
+to format strings for display in commandline applications.
 
 ## Usage
 
