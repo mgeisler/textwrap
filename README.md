@@ -24,15 +24,6 @@ extern crate textwrap;
 
 **[API documentation][api-docs]**
 
-Strings are wrapped based on their [displayed width][unicode-width],
-not their size in bytes. For ASCII characters such as `a` and `!`, the
-displayed with is the same as the number of bytes used to UTF-8 encode
-the character (one character takes up one byte). However, non-ASCII
-characters and symbols take up more than one byte: `é` is `0xc3 0xa9`
-and `⚙` is `0xe2 0x9a 0x99` in UTF-8, respectively. This means that
-relying solely on the string length in bytes would give incorrect
-results.
-
 ## Examples
 
 Word wrapping single strings is easy using the `fill` function:
@@ -147,5 +138,4 @@ Contributions will be accepted under the same license.
 [travis-ci]: https://travis-ci.org/mgeisler/textwrap
 [patterns]: https://github.com/tapeinosyne/hyphenation/tree/master/patterns-tex
 [api-docs]: https://docs.rs/textwrap/
-[unicode-width]: https://unicode-rs.github.io/unicode-width/unicode_width/index.html
 [mit]: LICENSE
