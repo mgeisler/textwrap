@@ -71,16 +71,21 @@ ping output.
 ## Examples
 
 The library comes with a small example program that shows how a fixed
-example string is wrapped at different widths. The string is
+example string is wrapped at different widths. Run the example with:
+
+```shell
+$ cargo run --example layout
+```
+
+The program will use the following string:
 
 > Memory safety without garbage collection. Concurrency without data
 > races. Zero-cost abstractions.
 
-When run, the string is wrapped at all widths between 15 and 60
-columns:
+The string is wrapped at all widths between 15 and 60 columns. With
+narrow columns the output looks like this:
 
-```shell
-$ cargo run --example layout
+```
 .--- Width: 15 ---.
 | Memory safety   |
 | without garbage |
@@ -98,7 +103,11 @@ $ cargo run --example layout
 | data races. Ze-  |
 | ro-cost abstrac- |
 | tions.           |
-# ...
+```
+
+Later, longer lines are used and the output now looks like this:
+
+```
 .-------------------- Width: 49 --------------------.
 | Memory safety without garbage collection. Concur- |
 | rency without data races. Zero-cost abstractions. |
