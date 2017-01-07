@@ -122,7 +122,9 @@ $ cargo run --example layout
 Notice how words are split at hyphens (such a s "zero-cost") but also
 how words are hyphenated using automatic/machine hyphenation.
 
-## Changelog
+## Release History
+
+This section lists the largest changes per release.
 
 * **Version 0.3.0, January 7 2017:** Added support for automatic
   hyphenation.
