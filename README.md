@@ -24,7 +24,7 @@ extern crate textwrap;
 
 **[API documentation][api-docs]**
 
-## Examples
+## Getting Started
 
 Word wrapping single strings is easy using the `fill` function:
 ```rust
