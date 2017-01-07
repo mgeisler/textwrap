@@ -124,6 +124,9 @@ how words are hyphenated using automatic/machine hyphenation.
 
 ## Changelog
 
+* **Version 0.3.0, January 7 2017:** Added support for automatic
+  hyphenation.
+
 * **Version 0.2.0, December 28 2016:** Introduced `Wrapper` struct.
   Added support for wrapping on hyphens.
 
