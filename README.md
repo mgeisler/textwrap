@@ -122,13 +122,21 @@ $ cargo run --example layout
 Notice how words are split at hyphens (such a s "zero-cost") but also
 how words are hyphenated using automatic/machine hyphenation.
 
-## Changelog
+## Release History
 
-* **Version 0.2.0, December 28 2016:** Introduced `Wrapper` struct.
-  Added support for wrapping on hyphens.
+This section lists the largest changes per release.
 
-* **Version 0.1.0, December 17 2016:** First public release with
-  support for wrapping strings on whitespace.
+### Version 0.3.0 — January 7th, 2017
+
+Added support for automatic hyphenation.
+
+### Version 0.2.0 — December 28th, 2016
+
+Introduced `Wrapper` struct. Added support for wrapping on hyphens.
+
+### Version 0.1.0 — December 17th, 2016
+
+First public release with support for wrapping strings on whitespace.
 
 ## License
 
