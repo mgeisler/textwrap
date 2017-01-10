@@ -28,7 +28,12 @@ use unicode_width::UnicodeWidthStr;
 use hyphenation::Hyphenation;
 use hyphenation::Corpus;
 
-/// A Wrapper holds settings for wrapping text.
+/// A Wrapper holds settings for wrapping and filling text.
+///
+/// The algorithm used by the `wrap` method works by doing a single
+/// scan over words in the input string and splitting them into one or
+/// more lines. The time and memory complexity is O(*n*) where *n* is
+/// the length of the input string.
 pub struct Wrapper<'a> {
     pub width: usize,
     pub corpus: Option<&'a Corpus>,
