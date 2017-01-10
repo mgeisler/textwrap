@@ -62,6 +62,10 @@ impl<'a> Wrapper<'a> {
     /// assert_eq!(wrapper.fill("Memory safety without garbage collection."),
     ///            "Memory safety\nwithout garbage\ncollection.");
     /// ```
+    ///
+    /// This method simply joins the lines produced by `wrap`. As
+    /// such, it inherits the O(*n*) time and memory complexity where
+    /// *n* is the input string length.
     pub fn fill(&self, s: &str) -> String {
         self.wrap(&s).join("\n")
     }
@@ -84,6 +88,10 @@ impl<'a> Wrapper<'a> {
     ///            vec!["Concurrency without",
     ///                 "data races."]);
     /// ```
+    ///
+    /// This method does a single scan over the input string, it has
+    /// an O(*n*) time and memory complexity where *n* is the input
+    /// string length.
     pub fn wrap(&self, s: &str) -> Vec<String> {
         let mut result = Vec::new();
         let mut line = String::new();
