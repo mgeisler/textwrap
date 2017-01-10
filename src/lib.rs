@@ -35,7 +35,10 @@ use hyphenation::Corpus;
 /// more lines. The time and memory complexity is O(*n*) where *n* is
 /// the length of the input string.
 pub struct Wrapper<'a> {
+    /// The width in columns at which the text will be wrapped.
     pub width: usize,
+    /// The hyphenation corpus (if any) used for automatic
+    /// hyphenation.
     pub corpus: Option<&'a Corpus>,
 }
 
