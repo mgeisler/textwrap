@@ -98,7 +98,7 @@ impl<'a> Wrapper<'a> {
     pub fn wrap(&self, s: &str) -> Vec<String> {
         let mut result = Vec::new();
         let mut line = String::new();
-        let mut line_width = 0;
+        let mut remaining = self.width;
 
         for mut word in s.split_whitespace() {
             while !word.is_empty() {
@@ -108,23 +108,23 @@ impl<'a> Wrapper<'a> {
 
                 // Add a new line if even the smallest split doesn't
                 // fit.
-                if !line.is_empty() && line_width + 1 + min_width > self.width {
+                if !line.is_empty() && 1 + min_width > remaining {
                     result.push(line);
                     line = String::new();
-                    line_width = 0;
+                    remaining = self.width;
                 }
 
-                let space = if line_width > 0 { 1 } else { 0 };
+                let space = if remaining < self.width { 1 } else { 0 };
 
                 // Find a split that fits on the current line.
                 for &(head, hyphen, tail) in splits.iter().rev() {
-                    if line_width + space + head.width() + hyphen.len() <= self.width {
-                        if line_width > 0 {
+                    if space + head.width() + hyphen.len() <= remaining {
+                        if remaining < self.width {
                             line.push(' ');
                         }
                         line.push_str(head);
                         line.push_str(hyphen);
-                        line_width += space + head.width() + hyphen.len();
+                        remaining -= space + head.width() + hyphen.len();
                         word = tail;
                         break;
                     }
@@ -132,9 +132,9 @@ impl<'a> Wrapper<'a> {
 
                 // If nothing got added, we forcibly add the smallest
                 // split and continue with the longest tail.
-                if line_width == 0 {
+                if remaining == self.width {
                     result.push(String::from(smallest) + hyphen);
-                    line_width = 0;
+                    remaining = self.width;
                     word = longest;
                 }
             }
