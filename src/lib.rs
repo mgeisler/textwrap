@@ -28,9 +28,17 @@ use unicode_width::UnicodeWidthStr;
 use hyphenation::Hyphenation;
 use hyphenation::Corpus;
 
-/// A Wrapper holds settings for wrapping text.
+/// A Wrapper holds settings for wrapping and filling text.
+///
+/// The algorithm used by the `wrap` method works by doing a single
+/// scan over words in the input string and splitting them into one or
+/// more lines. The time and memory complexity is O(*n*) where *n* is
+/// the length of the input string.
 pub struct Wrapper<'a> {
+    /// The width in columns at which the text will be wrapped.
     pub width: usize,
+    /// The hyphenation corpus (if any) used for automatic
+    /// hyphenation.
     pub corpus: Option<&'a Corpus>,
 }
 
@@ -57,6 +65,10 @@ impl<'a> Wrapper<'a> {
     /// assert_eq!(wrapper.fill("Memory safety without garbage collection."),
     ///            "Memory safety\nwithout garbage\ncollection.");
     /// ```
+    ///
+    /// This method simply joins the lines produced by `wrap`. As
+    /// such, it inherits the O(*n*) time and memory complexity where
+    /// *n* is the input string length.
     pub fn fill(&self, s: &str) -> String {
         self.wrap(&s).join("\n")
     }
@@ -79,6 +91,10 @@ impl<'a> Wrapper<'a> {
     ///            vec!["Concurrency without",
     ///                 "data races."]);
     /// ```
+    ///
+    /// This method does a single scan over the input string, it has
+    /// an O(*n*) time and memory complexity where *n* is the input
+    /// string length.
     pub fn wrap(&self, s: &str) -> Vec<String> {
         let mut result = Vec::new();
         let mut line = String::new();
