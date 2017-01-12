@@ -114,12 +114,12 @@ impl<'a> Wrapper<'a> {
                     remaining = self.width;
                 }
 
-                let space = if remaining < self.width { 1 } else { 0 };
+                let space = if line.is_empty() { 0 } else { 1 };
 
                 // Find a split that fits on the current line.
                 for &(head, hyphen, tail) in splits.iter().rev() {
                     if space + head.width() + hyphen.len() <= remaining {
-                        if remaining < self.width {
+                        if !line.is_empty() {
                             line.push(' ');
                         }
                         line.push_str(head);
@@ -132,7 +132,7 @@ impl<'a> Wrapper<'a> {
 
                 // If nothing got added, we forcibly add the smallest
                 // split and continue with the longest tail.
-                if remaining == self.width {
+                if line.is_empty() {
                     result.push(String::from(smallest) + hyphen);
                     remaining = self.width;
                     word = longest;
