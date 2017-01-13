@@ -153,8 +153,14 @@ impl<'a> Wrapper<'a> {
         // Split on hyphens or use the language corpus.
         match self.corpus {
             None => {
-                // Split on hyphens, smallest split first.
-                for (n, _) in word.match_indices('-') {
+                // Split on hyphens, smallest split first. We skip
+                // initial hyphens to avoid spliting --foo-bar at the
+                // first two hyphens.
+                let skipped_initial_hyphens = word.char_indices()
+                    .skip_while(|&(_, c)| c == '-')
+                    .filter(|&(_, c)| c == '-');
+
+                for (n, _) in skipped_initial_hyphens {
                     let (head, tail) = word.split_at(n + 1);
                     result.push((head, "", tail));
                 }
@@ -379,6 +385,12 @@ mod tests {
     #[test]
     fn multiple_hyphens() {
         assert_eq!(wrap("foo-bar-baz", 5), vec!["foo-", "bar-", "baz"]);
+    }
+
+    #[test]
+    fn hyphens_flag() {
+        assert_eq!(wrap("The --foo-bar flag.", 5),
+                   vec!["The", "--foo-", "bar", "flag."]);
     }
 
     #[test]
