@@ -153,10 +153,17 @@ impl<'a> Wrapper<'a> {
         // Split on hyphens or use the language corpus.
         match self.corpus {
             None => {
-                // Split on hyphens, smallest split first.
-                for (n, _) in word.match_indices('-') {
-                    let (head, tail) = word.split_at(n + 1);
-                    result.push((head, "", tail));
+                // Split on hyphens, smallest split first. We only use
+                // hyphens that are surrounded by alphanumeric
+                // characters. This is to avoid splitting on repeated
+                // hyphens, such as those found in --foo-bar.
+                let char_indices = word.char_indices().collect::<Vec<_>>();
+                for w in char_indices.windows(3) {
+                    let ((_, prev), (n, c), (_, next)) = (w[0], w[1], w[2]);
+                    if prev.is_alphanumeric() && c == '-' && next.is_alphanumeric() {
+                        let (head, tail) = word.split_at(n + 1);
+                        result.push((head, "", tail));
+                    }
                 }
             }
             Some(corpus) => {
@@ -379,6 +386,27 @@ mod tests {
     #[test]
     fn multiple_hyphens() {
         assert_eq!(wrap("foo-bar-baz", 5), vec!["foo-", "bar-", "baz"]);
+    }
+
+    #[test]
+    fn hyphens_flag() {
+        assert_eq!(wrap("The --foo-bar flag.", 5),
+                   vec!["The", "--foo-", "bar", "flag."]);
+    }
+
+    #[test]
+    fn repeated_hyphens() {
+        assert_eq!(wrap("foo--bar", 4), vec!["foo--bar"]);
+    }
+
+    #[test]
+    fn hyphens_alphanumeric() {
+        assert_eq!(wrap("Na2-CH4", 5), vec!["Na2-", "CH4"]);
+    }
+
+    #[test]
+    fn hyphens_non_alphanumeric() {
+        assert_eq!(wrap("foo(-)bar", 5), vec!["foo(-)bar"]);
     }
 
     #[test]
