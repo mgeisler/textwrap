@@ -4,9 +4,12 @@
 // where *n* is the size of the text to be wrapped.
 
 extern crate test;
+extern crate hyphenation;
 extern crate textwrap;
 
 use test::Bencher;
+use hyphenation::Language;
+use textwrap::Wrapper;
 
 fn lorem_ipsum(length: usize) -> &'static str {
     let text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas feugiat non mi \
@@ -45,4 +48,44 @@ fn lorem_400(b: &mut Bencher) {
 fn lorem_800(b: &mut Bencher) {
     let text = lorem_ipsum(800);
     b.iter(|| textwrap::fill(text, 60))
+}
+
+#[bench]
+fn hyphenation_lorem_100(b: &mut Bencher) {
+    let text = lorem_ipsum(100);
+    let corpus = hyphenation::load(Language::Latin).unwrap();
+    let mut wrapper = Wrapper::new(60);
+    wrapper.corpus = Some(&corpus);
+
+    b.iter(|| wrapper.fill(text))
+}
+
+#[bench]
+fn hyphenation_lorem_200(b: &mut Bencher) {
+    let text = lorem_ipsum(200);
+    let corpus = hyphenation::load(Language::Latin).unwrap();
+    let mut wrapper = Wrapper::new(60);
+    wrapper.corpus = Some(&corpus);
+
+    b.iter(|| wrapper.fill(text))
+}
+
+#[bench]
+fn hyphenation_lorem_400(b: &mut Bencher) {
+    let text = lorem_ipsum(400);
+    let corpus = hyphenation::load(Language::Latin).unwrap();
+    let mut wrapper = Wrapper::new(60);
+    wrapper.corpus = Some(&corpus);
+
+    b.iter(|| wrapper.fill(text))
+}
+
+#[bench]
+fn hyphenation_lorem_800(b: &mut Bencher) {
+    let text = lorem_ipsum(800);
+    let corpus = hyphenation::load(Language::Latin).unwrap();
+    let mut wrapper = Wrapper::new(60);
+    wrapper.corpus = Some(&corpus);
+
+    b.iter(|| wrapper.fill(text))
 }
