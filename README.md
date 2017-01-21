@@ -32,15 +32,15 @@ extern crate textwrap;
 use textwrap::fill;
 
 fn main() {
-    let output = "textwrap: a small library for wrapping output.";
-    println!("{}", fill(output, 18));
+    let text = "textwrap: a small library for wrapping text.";
+    println!("{}", fill(text, 18));
 }
 ```
 The output is
 ```
 textwrap: a small
 library for
-wrapping output.
+wrapping text.
 ```
 
 You can use automatic hyphenation using TeX hyphenation patterns (with
@@ -56,8 +56,8 @@ fn main() {
     let corpus = hyphenation::load(Language::English_US).unwrap();
     let mut wrapper = Wrapper::new(18);
     wrapper.corpus = Some(&corpus);
-    let output = "textwrap: a small library for wrapping output.";
-    println!("{}", wrapper.fill(output))
+    let text = "textwrap: a small library for wrapping text.";
+    println!("{}", wrapper.fill(text))
 }
 ```
 
@@ -65,7 +65,7 @@ The output now looks like this:
 ```
 textwrap: a small
 library for wrap-
-ping output.
+ping text.
 ```
 
 ## Examples
