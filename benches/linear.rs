@@ -11,6 +11,8 @@ use test::Bencher;
 use hyphenation::Language;
 use textwrap::Wrapper;
 
+const LINE_LENGTH: usize = 60;
+
 fn lorem_ipsum(length: usize) -> &'static str {
     let text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas feugiat non mi \
                 rutrum consectetur. Nulla iaculis luctus ex suscipit posuere. Sed et tellus quis \
@@ -29,32 +31,32 @@ fn lorem_ipsum(length: usize) -> &'static str {
 #[bench]
 fn lorem_100(b: &mut Bencher) {
     let text = lorem_ipsum(100);
-    b.iter(|| textwrap::fill(text, 60))
+    b.iter(|| textwrap::fill(text, LINE_LENGTH))
 }
 
 #[bench]
 fn lorem_200(b: &mut Bencher) {
     let text = lorem_ipsum(200);
-    b.iter(|| textwrap::fill(text, 60))
+    b.iter(|| textwrap::fill(text, LINE_LENGTH))
 }
 
 #[bench]
 fn lorem_400(b: &mut Bencher) {
     let text = lorem_ipsum(400);
-    b.iter(|| textwrap::fill(text, 60))
+    b.iter(|| textwrap::fill(text, LINE_LENGTH))
 }
 
 #[bench]
 fn lorem_800(b: &mut Bencher) {
     let text = lorem_ipsum(800);
-    b.iter(|| textwrap::fill(text, 60))
+    b.iter(|| textwrap::fill(text, LINE_LENGTH))
 }
 
 #[bench]
 fn hyphenation_lorem_100(b: &mut Bencher) {
     let text = lorem_ipsum(100);
     let corpus = hyphenation::load(Language::Latin).unwrap();
-    let mut wrapper = Wrapper::new(60);
+    let mut wrapper = Wrapper::new(LINE_LENGTH);
     wrapper.corpus = Some(&corpus);
 
     b.iter(|| wrapper.fill(text))
@@ -64,7 +66,7 @@ fn hyphenation_lorem_100(b: &mut Bencher) {
 fn hyphenation_lorem_200(b: &mut Bencher) {
     let text = lorem_ipsum(200);
     let corpus = hyphenation::load(Language::Latin).unwrap();
-    let mut wrapper = Wrapper::new(60);
+    let mut wrapper = Wrapper::new(LINE_LENGTH);
     wrapper.corpus = Some(&corpus);
 
     b.iter(|| wrapper.fill(text))
@@ -74,7 +76,7 @@ fn hyphenation_lorem_200(b: &mut Bencher) {
 fn hyphenation_lorem_400(b: &mut Bencher) {
     let text = lorem_ipsum(400);
     let corpus = hyphenation::load(Language::Latin).unwrap();
-    let mut wrapper = Wrapper::new(60);
+    let mut wrapper = Wrapper::new(LINE_LENGTH);
     wrapper.corpus = Some(&corpus);
 
     b.iter(|| wrapper.fill(text))
@@ -84,7 +86,7 @@ fn hyphenation_lorem_400(b: &mut Bencher) {
 fn hyphenation_lorem_800(b: &mut Bencher) {
     let text = lorem_ipsum(800);
     let corpus = hyphenation::load(Language::Latin).unwrap();
-    let mut wrapper = Wrapper::new(60);
+    let mut wrapper = Wrapper::new(LINE_LENGTH);
     wrapper.corpus = Some(&corpus);
 
     b.iter(|| wrapper.fill(text))
