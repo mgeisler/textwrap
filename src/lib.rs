@@ -96,7 +96,7 @@ impl<'a> Wrapper<'a> {
     /// an O(*n*) time and memory complexity where *n* is the input
     /// string length.
     pub fn wrap(&self, s: &str) -> Vec<String> {
-        let mut result = Vec::new();
+        let mut result = Vec::with_capacity(s.len() / (self.width + 1));
         let mut line = String::with_capacity(self.width);
         let mut remaining = self.width;
 
