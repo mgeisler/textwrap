@@ -97,7 +97,7 @@ impl<'a> Wrapper<'a> {
     /// string length.
     pub fn wrap(&self, s: &str) -> Vec<String> {
         let mut result = Vec::new();
-        let mut line = String::new();
+        let mut line = String::with_capacity(self.width);
         let mut remaining = self.width;
 
         for mut word in s.split_whitespace() {
@@ -110,7 +110,7 @@ impl<'a> Wrapper<'a> {
                 // fit.
                 if !line.is_empty() && 1 + min_width > remaining {
                     result.push(line);
-                    line = String::new();
+                    line = String::with_capacity(self.width);
                     remaining = self.width;
                 }
 
