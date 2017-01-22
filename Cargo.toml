@@ -7,6 +7,7 @@ documentation = "https://docs.rs/textwrap/"
 repository = "https://github.com/mgeisler/textwrap"
 readme = "README.md"
 keywords = ["text", "formatting", "wrap", "typesetting", "hyphenation"]
+categories = ["text-processing", "command-line-interface"]
 license = "MIT"
 
 [dependencies]
