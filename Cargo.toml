@@ -7,7 +7,11 @@ documentation = "https://docs.rs/textwrap/"
 repository = "https://github.com/mgeisler/textwrap"
 readme = "README.md"
 keywords = ["text", "formatting", "wrap", "typesetting", "hyphenation"]
+categories = ["text-processing", "command-line-interface"]
 license = "MIT"
+
+[badges]
+travis-ci = { repository = "mgeisler/textwrap" }
 
 [dependencies]
 unicode-width = "0.1.3"
