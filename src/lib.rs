@@ -114,17 +114,9 @@ impl<'a> Wrapper<'a> {
                     remaining = self.width;
                 }
 
-                let space = if line.is_empty() { 0 } else { 1 };
-
                 // Find a split that fits on the current line.
                 for &(head, hyphen, tail) in splits.iter().rev() {
-                    if space + head.width() + hyphen.len() <= remaining {
-                        if !line.is_empty() {
-                            line.push(' ');
-                        }
-                        line.push_str(head);
-                        line.push_str(hyphen);
-                        remaining -= space + head.width() + hyphen.len();
+                    if self.fit_part(head, hyphen, &mut remaining, &mut line) {
                         word = tail;
                         break;
                     }
@@ -184,6 +176,28 @@ impl<'a> Wrapper<'a> {
         result.push((word, "", ""));
 
         return result;
+    }
+
+    /// Try to fit a word (or part of a word) onto a line. The line
+    /// and the remaining width is updated as appropriate if the word
+    /// or part fits.
+    fn fit_part<'b>(&self,
+                    part: &'b str,
+                    hyphen: &'b str,
+                    remaining: &mut usize,
+                    line: &mut String)
+                    -> bool {
+        let space = if line.is_empty() { 0 } else { 1 };
+        if space + part.width() + hyphen.len() <= *remaining {
+            if !line.is_empty() {
+                line.push(' ');
+            }
+            line.push_str(part);
+            line.push_str(hyphen);
+            *remaining -= space + part.width() + hyphen.len();
+            return true;
+        }
+        return false;
     }
 }
 
