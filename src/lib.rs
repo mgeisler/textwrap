@@ -101,6 +101,12 @@ impl<'a> Wrapper<'a> {
         let mut remaining = self.width;
 
         for mut word in s.split_whitespace() {
+            // Attempt to fit the word without any splitting.
+            if self.fit_part(word, "", &mut remaining, &mut line) {
+                continue;
+            }
+
+            // If that failed, loop until nothing remains to be added.
             while !word.is_empty() {
                 let splits = self.split_word(&word);
                 let (smallest, hyphen, longest) = splits[0];
