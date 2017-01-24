@@ -126,6 +126,13 @@ how words are hyphenated using automatic/machine hyphenation.
 
 This section lists the largest changes per release.
 
+### Version 0.4.0 — January 24th, 2017
+
+Documented complexities and tested these via `cargo bench`.
+
+* Fixed [#13][issue-13]: Immediatedly add word if it fits
+* Fixed [#14][issue-14]: Avoid splitting on initial hyphens in `--foo-bar`
+
 ### Version 0.3.0 — January 7th, 2017
 
 Added support for automatic hyphenation.
@@ -147,4 +154,6 @@ Contributions will be accepted under the same license.
 [travis-ci]: https://travis-ci.org/mgeisler/textwrap
 [patterns]: https://github.com/tapeinosyne/hyphenation/tree/master/patterns-tex
 [api-docs]: https://docs.rs/textwrap/
+[issue-13]: ../../issues/13
+[issue-14]: ../../issues/14
 [mit]: LICENSE
