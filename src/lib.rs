@@ -25,6 +25,7 @@ extern crate unicode_width;
 extern crate hyphenation;
 
 use unicode_width::UnicodeWidthStr;
+use unicode_width::UnicodeWidthChar;
 use hyphenation::Hyphenation;
 use hyphenation::Corpus;
 
@@ -37,6 +38,9 @@ use hyphenation::Corpus;
 pub struct Wrapper<'a> {
     /// The width in columns at which the text will be wrapped.
     pub width: usize,
+    /// Allow long words to be broken if they cannot fit on a line.
+    /// When set to false, some lines be being longer than self.width.
+    pub break_words: bool,
     /// The hyphenation corpus (if any) used for automatic
     /// hyphenation.
     pub corpus: Option<&'a Corpus>,
@@ -47,6 +51,7 @@ impl<'a> Wrapper<'a> {
     pub fn new(width: usize) -> Wrapper<'a> {
         Wrapper::<'a> {
             width: width,
+            break_words: true,
             corpus: None,
         }
     }
@@ -128,12 +133,32 @@ impl<'a> Wrapper<'a> {
                     }
                 }
 
-                // If nothing got added, we forcibly add the smallest
-                // split and continue with the longest tail.
+                // If even the smallest split doesn't fit on the line,
+                // we might have to break the word.
                 if line.is_empty() {
-                    result.push(String::from(smallest) + hyphen);
-                    remaining = self.width;
-                    word = longest;
+                    if self.break_words && self.width > 1 {
+                        // Break word on a character boundary as close
+                        // to self.width as possible. Characters are
+                        // at most 2 columns wide, so we will chop off
+                        // at least one character.
+                        let mut head_width = 0;
+                        for (idx, c) in word.char_indices() {
+                            head_width += c.width().unwrap_or(0);
+                            if head_width > self.width {
+                                let (head, tail) = word.split_at(idx);
+                                result.push(String::from(head));
+                                word = tail;
+                                break;
+                            }
+                        }
+                    } else {
+                        // We forcibly add the smallest split and
+                        // continue with the longest tail. This will
+                        // result in a line longer than self.width.
+                        result.push(String::from(smallest) + hyphen);
+                        remaining = self.width;
+                        word = longest;
+                    }
                 }
             }
         }
@@ -400,7 +425,9 @@ mod tests {
 
     #[test]
     fn trailing_hyphen() {
-        assert_eq!(wrap("foobar-", 5), vec!["foobar-"]);
+        let mut wrapper = Wrapper::new(5);
+        wrapper.break_words = false;
+        assert_eq!(wrapper.wrap("foobar-"), vec!["foobar-"]);
     }
 
     #[test]
@@ -410,13 +437,17 @@ mod tests {
 
     #[test]
     fn hyphens_flag() {
-        assert_eq!(wrap("The --foo-bar flag.", 5),
+        let mut wrapper = Wrapper::new(5);
+        wrapper.break_words = false;
+        assert_eq!(wrapper.wrap("The --foo-bar flag."),
                    vec!["The", "--foo-", "bar", "flag."]);
     }
 
     #[test]
     fn repeated_hyphens() {
-        assert_eq!(wrap("foo--bar", 4), vec!["foo--bar"]);
+        let mut wrapper = Wrapper::new(4);
+        wrapper.break_words = false;
+        assert_eq!(wrapper.wrap("foo--bar"), vec!["foo--bar"]);
     }
 
     #[test]
@@ -426,7 +457,9 @@ mod tests {
 
     #[test]
     fn hyphens_non_alphanumeric() {
-        assert_eq!(wrap("foo(-)bar", 5), vec!["foo(-)bar"]);
+        let mut wrapper = Wrapper::new(5);
+        wrapper.break_words = false;
+        assert_eq!(wrapper.wrap("foo(-)bar"), vec!["foo(-)bar"]);
     }
 
     #[test]
@@ -436,7 +469,9 @@ mod tests {
 
     #[test]
     fn forced_split() {
-        assert_eq!(wrap("foobar-baz", 5), vec!["foobar-", "baz"]);
+        let mut wrapper = Wrapper::new(5);
+        wrapper.break_words = false;
+        assert_eq!(wrapper.wrap("foobar-baz"), vec!["foobar-", "baz"]);
     }
 
     #[test]
@@ -444,7 +479,7 @@ mod tests {
         let corpus = hyphenation::load(Language::English_US).unwrap();
         let mut wrapper = Wrapper::new(10);
         assert_eq!(wrapper.wrap("Internationalization"),
-                   vec!["Internationalization"]);
+                   vec!["Internatio", "nalization"]);
 
         wrapper.corpus = Some(&corpus);
         assert_eq!(wrapper.wrap("Internationalization"),
@@ -455,11 +490,27 @@ mod tests {
     fn auto_hyphenation_with_hyphen() {
         let corpus = hyphenation::load(Language::English_US).unwrap();
         let mut wrapper = Wrapper::new(8);
+        wrapper.break_words = false;
         assert_eq!(wrapper.wrap("over-caffinated"), vec!["over-", "caffinated"]);
 
         wrapper.corpus = Some(&corpus);
         assert_eq!(wrapper.wrap("over-caffinated"),
                    vec!["over-", "caffi-", "nated"]);
+    }
+
+    #[test]
+    fn break_words() {
+        assert_eq!(wrap("foobarbaz", 3), vec!["foo", "bar", "baz"]);
+    }
+
+    #[test]
+    fn break_words_wide_characters() {
+        assert_eq!(wrap("Ｈｅｌｌｏ", 5), vec!["Ｈｅ", "ｌｌ", "ｏ"]);
+    }
+
+    #[test]
+    fn break_words_zero_width() {
+        assert_eq!(wrap("foobar", 0), vec!["foobar"]);
     }
 
     #[test]
