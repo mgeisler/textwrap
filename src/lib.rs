@@ -47,7 +47,9 @@ pub struct Wrapper<'a> {
 }
 
 impl<'a> Wrapper<'a> {
-    /// Create a new Wrapper for wrapping at the specified width.
+    /// Create a new Wrapper for wrapping at the specified width. By
+    /// default, we allow words longer than `width` to be broken. No
+    /// hyphenation corpus is loaded by default.
     pub fn new(width: usize) -> Wrapper<'a> {
         Wrapper::<'a> {
             width: width,
