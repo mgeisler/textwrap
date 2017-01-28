@@ -80,8 +80,8 @@ impl<'a> Wrapper<'a> {
         self.wrap(&s).join("\n")
     }
 
-    /// Wrap  a line of  text at `self.width` characters.  Strings are
-    ///  wrapped based  on their  displayed width,  not their  size in
+    /// Wrap a line of text at `self.width` characters. Strings are
+    /// wrapped based on their displayed width, not their size in
     /// bytes.
     ///
     /// ```
