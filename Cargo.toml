@@ -12,6 +12,7 @@ license = "MIT"
 
 [badges]
 travis-ci = { repository = "mgeisler/textwrap" }
+appveyor = { repository = "mgeisler/textwrap" }
 
 [dependencies]
 unicode-width = "0.1.3"
