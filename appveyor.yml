@@ -8,3 +8,7 @@ build_script:
 
 test_script:
   - cargo test
+
+cache:
+  - C:\Users\appveyor\.cargo
+  - target
