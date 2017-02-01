@@ -10,10 +10,10 @@ install:
   - set PATH=%PATH%;%USERPROFILE%\.cargo\bin
 
 build_script:
-  - cargo build
+  - cargo build --verbose
 
 test_script:
-  - cargo test
+  - cargo test --verbose
 
 cache:
   - '%USERPROFILE%\.cargo'
