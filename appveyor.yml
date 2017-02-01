@@ -1,6 +1,12 @@
+environment:
+  matrix:
+  - TOOLCHAIN: stable
+  - TOOLCHAIN: beta
+  - TOOLCHAIN: nightly
+
 install:
   - ps: Start-FileDownload 'https://static.rust-lang.org/rustup/dist/i686-pc-windows-gnu/rustup-init.exe'
-  - rustup-init.exe -y --default-toolchain stable
+  - rustup-init.exe -y --default-toolchain %TOOLCHAIN%
   - set PATH=%PATH%;%USERPROFILE%\.cargo\bin
 
 build_script:
