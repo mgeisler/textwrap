@@ -115,7 +115,7 @@ impl<'a> Wrapper<'a> {
 
             // If that failed, loop until nothing remains to be added.
             while !word.is_empty() {
-                let splits = self.split_word(&word);
+                let splits = self.split_word(word);
                 let (smallest, hyphen, longest) = splits[0];
                 let min_width = smallest.width() + hyphen.len();
 
