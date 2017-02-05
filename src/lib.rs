@@ -77,7 +77,7 @@ impl<'a> Wrapper<'a> {
     /// such, it inherits the O(*n*) time and memory complexity where
     /// *n* is the input string length.
     pub fn fill(&self, s: &str) -> String {
-        self.wrap(&s).join("\n")
+        self.wrap(s).join("\n")
     }
 
     /// Wrap a line of text at `self.width` characters. Strings are
