@@ -103,7 +103,7 @@ impl<'a> Wrapper<'a> {
     /// an O(*n*) time and memory complexity where *n* is the input
     /// string length.
     pub fn wrap(&self, s: &str) -> Vec<String> {
-        let mut result = Vec::with_capacity(s.len() / (self.width + 1));
+        let mut lines = Vec::with_capacity(s.len() / (self.width + 1));
         let mut line = String::with_capacity(self.width);
         let mut remaining = self.width;
 
@@ -122,7 +122,7 @@ impl<'a> Wrapper<'a> {
                 // Add a new line if even the smallest split doesn't
                 // fit.
                 if !line.is_empty() && 1 + min_width > remaining {
-                    result.push(line);
+                    lines.push(line);
                     line = String::with_capacity(self.width);
                     remaining = self.width;
                 }
@@ -148,7 +148,7 @@ impl<'a> Wrapper<'a> {
                             head_width += c.width().unwrap_or(0);
                             if head_width > self.width {
                                 let (head, tail) = word.split_at(idx);
-                                result.push(String::from(head));
+                                lines.push(String::from(head));
                                 word = tail;
                                 break;
                             }
@@ -157,7 +157,7 @@ impl<'a> Wrapper<'a> {
                         // We forcibly add the smallest split and
                         // continue with the longest tail. This will
                         // result in a line longer than self.width.
-                        result.push(String::from(smallest) + hyphen);
+                        lines.push(String::from(smallest) + hyphen);
                         remaining = self.width;
                         word = longest;
                     }
@@ -165,9 +165,9 @@ impl<'a> Wrapper<'a> {
             }
         }
         if !line.is_empty() {
-            result.push(line);
+            lines.push(line);
         }
-        return result;
+        lines
     }
 
     /// Split word into all possible parts (head, tail). Word must be
