@@ -196,10 +196,11 @@ impl<'a> Wrapper<'a> {
                 // the splits that would have been found above.
                 for n in word.opportunities(corpus) {
                     let (head, tail) = word.split_at(n);
-                    let mut hyphen = "-";
-                    if head.as_bytes()[head.len() - 1] == b'-' {
-                        hyphen = "";
-                    }
+                    let hyphen = if head.as_bytes()[head.len() - 1] == b'-' {
+                        ""
+                    } else {
+                        "-"
+                    };
                     result.push((head, hyphen, tail));
                 }
             }
