@@ -170,10 +170,11 @@ impl<'a> Wrapper<'a> {
         lines
     }
 
-    /// Split word into all possible parts (head, tail). Word must be
-    /// non-empty. The returned vector will always be non-empty.
+    /// Split word into all possible (head, hyphen, tail) triples.
+    /// Word must be non-empty. The returned vector will always be
+    /// non-empty.
     fn split_word<'b>(&self, word: &'b str) -> Vec<(&'b str, &'b str, &'b str)> {
-        let mut result = Vec::new();
+        let mut triples = Vec::new();
 
         // Split on hyphens or use the language corpus.
         match self.corpus {
@@ -187,7 +188,7 @@ impl<'a> Wrapper<'a> {
                     let ((_, prev), (n, c), (_, next)) = (w[0], w[1], w[2]);
                     if prev.is_alphanumeric() && c == '-' && next.is_alphanumeric() {
                         let (head, tail) = word.split_at(n + 1);
-                        result.push((head, "", tail));
+                        triples.push((head, "", tail));
                     }
                 }
             }
@@ -201,15 +202,15 @@ impl<'a> Wrapper<'a> {
                     } else {
                         "-"
                     };
-                    result.push((head, hyphen, tail));
+                    triples.push((head, hyphen, tail));
                 }
             }
         }
 
         // Finally option is no split at all.
-        result.push((word, "", ""));
+        triples.push((word, "", ""));
 
-        return result;
+        triples
     }
 
     /// Try to fit a word (or part of a word) onto a line. The line
