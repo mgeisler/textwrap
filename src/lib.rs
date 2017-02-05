@@ -222,16 +222,17 @@ impl<'a> Wrapper<'a> {
                     line: &mut String)
                     -> bool {
         let space = if line.is_empty() { 0 } else { 1 };
-        if space + part.width() + hyphen.len() <= *remaining {
+        let fits_in_line = space + part.width() + hyphen.len() <= *remaining;
+        if fits_in_line {
             if !line.is_empty() {
                 line.push(' ');
             }
             line.push_str(part);
             line.push_str(hyphen);
             *remaining -= space + part.width() + hyphen.len();
-            return true;
         }
-        return false;
+
+        fits_in_line
     }
 }
 
