@@ -370,7 +370,7 @@ pub fn dedent(s: &str) -> String {
         }
         result.push('\n');
     }
-    return result;
+    result
 }
 
 #[cfg(test)]
