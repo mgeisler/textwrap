@@ -317,7 +317,7 @@ pub fn indent(s: &str, prefix: &str) -> String {
         }
         result.push('\n');
     }
-    return result;
+    result
 }
 
 /// Removes common leading whitespace from each line.
