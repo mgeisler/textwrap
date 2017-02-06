@@ -77,7 +77,7 @@ impl<'a> Wrapper<'a> {
     /// such, it inherits the O(*n*) time and memory complexity where
     /// *n* is the input string length.
     pub fn fill(&self, s: &str) -> String {
-        self.wrap(&s).join("\n")
+        self.wrap(s).join("\n")
     }
 
     /// Wrap a line of text at `self.width` characters. Strings are
@@ -103,7 +103,7 @@ impl<'a> Wrapper<'a> {
     /// an O(*n*) time and memory complexity where *n* is the input
     /// string length.
     pub fn wrap(&self, s: &str) -> Vec<String> {
-        let mut result = Vec::with_capacity(s.len() / (self.width + 1));
+        let mut lines = Vec::with_capacity(s.len() / (self.width + 1));
         let mut line = String::with_capacity(self.width);
         let mut remaining = self.width;
 
@@ -115,14 +115,14 @@ impl<'a> Wrapper<'a> {
 
             // If that failed, loop until nothing remains to be added.
             while !word.is_empty() {
-                let splits = self.split_word(&word);
+                let splits = self.split_word(word);
                 let (smallest, hyphen, longest) = splits[0];
                 let min_width = smallest.width() + hyphen.len();
 
                 // Add a new line if even the smallest split doesn't
                 // fit.
                 if !line.is_empty() && 1 + min_width > remaining {
-                    result.push(line);
+                    lines.push(line);
                     line = String::with_capacity(self.width);
                     remaining = self.width;
                 }
@@ -148,7 +148,7 @@ impl<'a> Wrapper<'a> {
                             head_width += c.width().unwrap_or(0);
                             if head_width > self.width {
                                 let (head, tail) = word.split_at(idx);
-                                result.push(String::from(head));
+                                lines.push(String::from(head));
                                 word = tail;
                                 break;
                             }
@@ -157,7 +157,7 @@ impl<'a> Wrapper<'a> {
                         // We forcibly add the smallest split and
                         // continue with the longest tail. This will
                         // result in a line longer than self.width.
-                        result.push(String::from(smallest) + hyphen);
+                        lines.push(String::from(smallest) + hyphen);
                         remaining = self.width;
                         word = longest;
                     }
@@ -165,15 +165,16 @@ impl<'a> Wrapper<'a> {
             }
         }
         if !line.is_empty() {
-            result.push(line);
+            lines.push(line);
         }
-        return result;
+        lines
     }
 
-    /// Split word into all possible parts (head, tail). Word must be
-    /// non-empty. The returned vector will always be non-empty.
+    /// Split word into all possible (head, hyphen, tail) triples.
+    /// Word must be non-empty. The returned vector will always be
+    /// non-empty.
     fn split_word<'b>(&self, word: &'b str) -> Vec<(&'b str, &'b str, &'b str)> {
-        let mut result = Vec::new();
+        let mut triples = Vec::new();
 
         // Split on hyphens or use the language corpus.
         match self.corpus {
@@ -187,7 +188,7 @@ impl<'a> Wrapper<'a> {
                     let ((_, prev), (n, c), (_, next)) = (w[0], w[1], w[2]);
                     if prev.is_alphanumeric() && c == '-' && next.is_alphanumeric() {
                         let (head, tail) = word.split_at(n + 1);
-                        result.push((head, "", tail));
+                        triples.push((head, "", tail));
                     }
                 }
             }
@@ -196,19 +197,20 @@ impl<'a> Wrapper<'a> {
                 // the splits that would have been found above.
                 for n in word.opportunities(corpus) {
                     let (head, tail) = word.split_at(n);
-                    let mut hyphen = "-";
-                    if head.as_bytes()[head.len() - 1] == b'-' {
-                        hyphen = "";
-                    }
-                    result.push((head, hyphen, tail));
+                    let hyphen = if head.as_bytes()[head.len() - 1] == b'-' {
+                        ""
+                    } else {
+                        "-"
+                    };
+                    triples.push((head, hyphen, tail));
                 }
             }
         }
 
         // Finally option is no split at all.
-        result.push((word, "", ""));
+        triples.push((word, "", ""));
 
-        return result;
+        triples
     }
 
     /// Try to fit a word (or part of a word) onto a line. The line
@@ -221,16 +223,17 @@ impl<'a> Wrapper<'a> {
                     line: &mut String)
                     -> bool {
         let space = if line.is_empty() { 0 } else { 1 };
-        if space + part.width() + hyphen.len() <= *remaining {
+        let fits_in_line = space + part.width() + hyphen.len() <= *remaining;
+        if fits_in_line {
             if !line.is_empty() {
                 line.push(' ');
             }
             line.push_str(part);
             line.push_str(hyphen);
             *remaining -= space + part.width() + hyphen.len();
-            return true;
         }
-        return false;
+
+        fits_in_line
     }
 }
 
@@ -314,7 +317,7 @@ pub fn indent(s: &str, prefix: &str) -> String {
         }
         result.push('\n');
     }
-    return result;
+    result
 }
 
 /// Removes common leading whitespace from each line.
@@ -367,7 +370,7 @@ pub fn dedent(s: &str) -> String {
         }
         result.push('\n');
     }
-    return result;
+    result
 }
 
 #[cfg(test)]
