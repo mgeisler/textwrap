@@ -173,7 +173,7 @@ impl Wrapper {
     /// Split word into all possible (head, hyphen, tail) triples.
     /// Word must be non-empty. The returned vector will always be
     /// non-empty.
-    fn split_word<'b>(&self, word: &'b str) -> Vec<(&'b str, &'b str, &'b str)> {
+    fn split_word<'w>(&self, word: &'w str) -> Vec<(&'w str, &'w str, &'w str)> {
         let mut triples = Vec::new();
 
         // Split on hyphens or use the language corpus.
