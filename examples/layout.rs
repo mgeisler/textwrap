@@ -5,7 +5,6 @@ use hyphenation::Language;
 use textwrap::Wrapper;
 
 fn main() {
-    let corpus = hyphenation::load(Language::English_US).unwrap();
     let example = "
 Memory safety without garbage collection.
 Concurrency without data races.
@@ -13,7 +12,7 @@ Zero-cost abstractions.
 ";
     let mut prev_lines = vec![];
     let mut wrapper = Wrapper::new(0);
-    wrapper.corpus = Some(&corpus);
+    wrapper.corpus = Some(hyphenation::load(Language::English_US).unwrap());
     for width in 15..60 {
         wrapper.width = width;
         let lines = wrapper.wrap(example);

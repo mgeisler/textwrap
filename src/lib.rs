@@ -35,7 +35,7 @@ use hyphenation::Corpus;
 /// scan over words in the input string and splitting them into one or
 /// more lines. The time and memory complexity is O(*n*) where *n* is
 /// the length of the input string.
-pub struct Wrapper<'a> {
+pub struct Wrapper {
     /// The width in columns at which the text will be wrapped.
     pub width: usize,
     /// Allow long words to be broken if they cannot fit on a line.
@@ -43,15 +43,15 @@ pub struct Wrapper<'a> {
     pub break_words: bool,
     /// The hyphenation corpus (if any) used for automatic
     /// hyphenation.
-    pub corpus: Option<&'a Corpus>,
+    pub corpus: Option<Corpus>,
 }
 
-impl<'a> Wrapper<'a> {
+impl Wrapper {
     /// Create a new Wrapper for wrapping at the specified width. By
     /// default, we allow words longer than `width` to be broken. No
     /// hyphenation corpus is loaded by default.
-    pub fn new(width: usize) -> Wrapper<'a> {
-        Wrapper::<'a> {
+    pub fn new(width: usize) -> Wrapper {
+        Wrapper {
             width: width,
             break_words: true,
             corpus: None,
@@ -192,7 +192,7 @@ impl<'a> Wrapper<'a> {
                     }
                 }
             }
-            Some(corpus) => {
+            Some(ref corpus) => {
                 // Find splits based on language corpus. This includes
                 // the splits that would have been found above.
                 for n in word.opportunities(corpus) {
@@ -482,7 +482,7 @@ mod tests {
         assert_eq!(wrapper.wrap("Internationalization"),
                    vec!["Internatio", "nalization"]);
 
-        wrapper.corpus = Some(&corpus);
+        wrapper.corpus = Some(corpus);
         assert_eq!(wrapper.wrap("Internationalization"),
                    vec!["Interna-", "tionaliza-", "tion"]);
     }
@@ -494,7 +494,7 @@ mod tests {
         wrapper.break_words = false;
         assert_eq!(wrapper.wrap("over-caffinated"), vec!["over-", "caffinated"]);
 
-        wrapper.corpus = Some(&corpus);
+        wrapper.corpus = Some(corpus);
         assert_eq!(wrapper.wrap("over-caffinated"),
                    vec!["over-", "caffi-", "nated"]);
     }

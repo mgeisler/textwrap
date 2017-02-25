@@ -57,7 +57,7 @@ fn hyphenation_lorem_100(b: &mut Bencher) {
     let text = lorem_ipsum(100);
     let corpus = hyphenation::load(Language::Latin).unwrap();
     let mut wrapper = Wrapper::new(LINE_LENGTH);
-    wrapper.corpus = Some(&corpus);
+    wrapper.corpus = Some(corpus);
 
     b.iter(|| wrapper.fill(text))
 }
@@ -67,7 +67,7 @@ fn hyphenation_lorem_200(b: &mut Bencher) {
     let text = lorem_ipsum(200);
     let corpus = hyphenation::load(Language::Latin).unwrap();
     let mut wrapper = Wrapper::new(LINE_LENGTH);
-    wrapper.corpus = Some(&corpus);
+    wrapper.corpus = Some(corpus);
 
     b.iter(|| wrapper.fill(text))
 }
@@ -77,7 +77,7 @@ fn hyphenation_lorem_400(b: &mut Bencher) {
     let text = lorem_ipsum(400);
     let corpus = hyphenation::load(Language::Latin).unwrap();
     let mut wrapper = Wrapper::new(LINE_LENGTH);
-    wrapper.corpus = Some(&corpus);
+    wrapper.corpus = Some(corpus);
 
     b.iter(|| wrapper.fill(text))
 }
@@ -87,7 +87,7 @@ fn hyphenation_lorem_800(b: &mut Bencher) {
     let text = lorem_ipsum(800);
     let corpus = hyphenation::load(Language::Latin).unwrap();
     let mut wrapper = Wrapper::new(LINE_LENGTH);
-    wrapper.corpus = Some(&corpus);
+    wrapper.corpus = Some(corpus);
 
     b.iter(|| wrapper.fill(text))
 }
