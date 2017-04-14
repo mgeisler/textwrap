@@ -58,7 +58,7 @@ use textwrap::Wrapper;
 fn main() {
     let corpus = hyphenation::load(Language::English_US).unwrap();
     let mut wrapper = Wrapper::new(18);
-    wrapper.corpus = Some(&corpus);
+    wrapper.splitter = Box::new(corpus);
     let text = "textwrap: a small library for wrapping text.";
     println!("{}", wrapper.fill(text))
 }

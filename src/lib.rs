@@ -29,6 +29,74 @@ use unicode_width::UnicodeWidthChar;
 use hyphenation::Hyphenation;
 use hyphenation::Corpus;
 
+pub trait WordSplitter {
+    /// Return all possible splits of word. Each split is a triple
+    /// with a head, a hyphen, and a tail where `head + &hyphen +
+    /// &tail == word`. The hyphen can be empty if there is already a
+    /// hyphen in the head.
+    ///
+    /// The splits should go from smallest to longest and should
+    /// include no split at all. So the word "technology" could be
+    /// split into
+    ///
+    /// ```
+    /// vec![("tech", "-", "nology"),
+    ///      ("technol", "-", "ogy"),
+    ///      ("technolo", "-", "gy"),
+    ///      ("technology", "", "")];
+    /// ```
+    fn split<'w>(&self, word: &'w str) -> Vec<(&'w str, &'w str, &'w str)>;
+}
+
+pub struct HyphenSplitter;
+
+/// HyphenSplitter is the default WordSplitter. As the name says, it
+/// will split words on any existing hyphens in the word.
+///
+/// It will only use hyphens that are surrounded by alphanumeric
+/// characters, which prevents a word like "--foo-bar" from being
+/// split on the first or second hyphen.
+impl WordSplitter for HyphenSplitter {
+    fn split<'w>(&self, word: &'w str) -> Vec<(&'w str, &'w str, &'w str)> {
+        let mut triples = Vec::new();
+        // Split on hyphens, smallest split first. We only use hyphens
+        // that are surrounded by alphanumeric characters. This is to
+        // avoid splitting on repeated hyphens, such as those found in
+        // --foo-bar.
+        let char_indices = word.char_indices().collect::<Vec<_>>();
+        for w in char_indices.windows(3) {
+            let ((_, prev), (n, c), (_, next)) = (w[0], w[1], w[2]);
+            if prev.is_alphanumeric() && c == '-' && next.is_alphanumeric() {
+                let (head, tail) = word.split_at(n + 1);
+                triples.push((head, "", tail));
+            }
+        }
+
+        // Finally option is no split at all.
+        triples.push((word, "", ""));
+
+        triples
+    }
+}
+
+/// A hyphenation Corpus can be used to do language-specific
+/// hyphenation using patterns from the hyphenation crate.
+impl WordSplitter for Corpus {
+    fn split<'w>(&self, word: &'w str) -> Vec<(&'w str, &'w str, &'w str)> {
+        // Find splits based on language corpus.
+        let mut triples = Vec::new();
+        for n in word.opportunities(&self) {
+            let (head, tail) = word.split_at(n);
+            let hyphen = if head.ends_with('-') { "" } else { "-" };
+            triples.push((head, hyphen, tail));
+        }
+        // Finally option is no split at all.
+        triples.push((word, "", ""));
+
+        triples
+    }
+}
+
 /// A Wrapper holds settings for wrapping and filling text.
 ///
 /// The algorithm used by the `wrap` method works by doing a single
@@ -41,9 +109,8 @@ pub struct Wrapper {
     /// Allow long words to be broken if they cannot fit on a line.
     /// When set to false, some lines be being longer than self.width.
     pub break_words: bool,
-    /// The hyphenation corpus (if any) used for automatic
-    /// hyphenation.
-    pub corpus: Option<Corpus>,
+    /// The method for splitting words, if any.
+    pub splitter: Box<WordSplitter>,
 }
 
 impl Wrapper {
@@ -54,7 +121,7 @@ impl Wrapper {
         Wrapper {
             width: width,
             break_words: true,
-            corpus: None,
+            splitter: Box::new(HyphenSplitter {}),
         }
     }
 
@@ -115,7 +182,7 @@ impl Wrapper {
 
             // If that failed, loop until nothing remains to be added.
             while !word.is_empty() {
-                let splits = self.split_word(word);
+                let splits = self.splitter.split(word);
                 let (smallest, hyphen, longest) = splits[0];
                 let min_width = smallest.width() + hyphen.len();
 
@@ -168,45 +235,6 @@ impl Wrapper {
             lines.push(line);
         }
         lines
-    }
-
-    /// Split word into all possible (head, hyphen, tail) triples.
-    /// Word must be non-empty. The returned vector will always be
-    /// non-empty.
-    fn split_word<'w>(&self, word: &'w str) -> Vec<(&'w str, &'w str, &'w str)> {
-        let mut triples = Vec::new();
-
-        // Split on hyphens or use the language corpus.
-        match self.corpus {
-            None => {
-                // Split on hyphens, smallest split first. We only use
-                // hyphens that are surrounded by alphanumeric
-                // characters. This is to avoid splitting on repeated
-                // hyphens, such as those found in --foo-bar.
-                let char_indices = word.char_indices().collect::<Vec<_>>();
-                for w in char_indices.windows(3) {
-                    let ((_, prev), (n, c), (_, next)) = (w[0], w[1], w[2]);
-                    if prev.is_alphanumeric() && c == '-' && next.is_alphanumeric() {
-                        let (head, tail) = word.split_at(n + 1);
-                        triples.push((head, "", tail));
-                    }
-                }
-            }
-            Some(ref corpus) => {
-                // Find splits based on language corpus. This includes
-                // the splits that would have been found above.
-                for n in word.opportunities(corpus) {
-                    let (head, tail) = word.split_at(n);
-                    let hyphen = if head.ends_with('-') { "" } else { "-" };
-                    triples.push((head, hyphen, tail));
-                }
-            }
-        }
-
-        // Finally option is no split at all.
-        triples.push((word, "", ""));
-
-        triples
     }
 
     /// Try to fit a word (or part of a word) onto a line. The line
@@ -482,7 +510,7 @@ mod tests {
         assert_eq!(wrapper.wrap("Internationalization"),
                    vec!["Internatio", "nalization"]);
 
-        wrapper.corpus = Some(corpus);
+        wrapper.splitter = Box::new(corpus);
         assert_eq!(wrapper.wrap("Internationalization"),
                    vec!["Interna-", "tionaliza-", "tion"]);
     }
@@ -494,7 +522,7 @@ mod tests {
         wrapper.break_words = false;
         assert_eq!(wrapper.wrap("over-caffinated"), vec!["over-", "caffinated"]);
 
-        wrapper.corpus = Some(corpus);
+        wrapper.splitter = Box::new(corpus);
         assert_eq!(wrapper.wrap("over-caffinated"),
                    vec!["over-", "caffi-", "nated"]);
     }
