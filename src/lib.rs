@@ -22,12 +22,13 @@
 
 
 extern crate unicode_width;
+#[cfg(feature = "hyphenation")]
 extern crate hyphenation;
 
 use unicode_width::UnicodeWidthStr;
 use unicode_width::UnicodeWidthChar;
-use hyphenation::Hyphenation;
-use hyphenation::Corpus;
+#[cfg(feature = "hyphenation")]
+use hyphenation::{Hyphenation, Corpus};
 
 pub trait WordSplitter {
     /// Return all possible splits of word. Each split is a triple
@@ -81,6 +82,7 @@ impl WordSplitter for HyphenSplitter {
 
 /// A hyphenation Corpus can be used to do language-specific
 /// hyphenation using patterns from the hyphenation crate.
+#[cfg(feature = "hyphenation")]
 impl WordSplitter for Corpus {
     fn split<'w>(&self, word: &'w str) -> Vec<(&'w str, &'w str, &'w str)> {
         // Find splits based on language corpus.
@@ -399,8 +401,10 @@ pub fn dedent(s: &str) -> String {
 
 #[cfg(test)]
 mod tests {
+    #[cfg(feature = "hyphenation")]
     extern crate hyphenation;
 
+    #[cfg(feature = "hyphenation")]
     use hyphenation::Language;
     use super::*;
 
@@ -504,6 +508,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "hyphenation")]
     fn auto_hyphenation() {
         let corpus = hyphenation::load(Language::English_US).unwrap();
         let mut wrapper = Wrapper::new(10);
@@ -516,6 +521,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "hyphenation")]
     fn auto_hyphenation_with_hyphen() {
         let corpus = hyphenation::load(Language::English_US).unwrap();
         let mut wrapper = Wrapper::new(8);

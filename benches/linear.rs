@@ -4,11 +4,14 @@
 // where *n* is the size of the text to be wrapped.
 
 extern crate test;
+#[cfg(feature = "hyphenation")]
 extern crate hyphenation;
 extern crate textwrap;
 
 use test::Bencher;
+#[cfg(feature = "hyphenation")]
 use hyphenation::Language;
+#[cfg(feature = "hyphenation")]
 use textwrap::Wrapper;
 
 const LINE_LENGTH: usize = 60;
@@ -53,6 +56,7 @@ fn lorem_800(b: &mut Bencher) {
 }
 
 #[bench]
+#[cfg(feature = "hyphenation")]
 fn hyphenation_lorem_100(b: &mut Bencher) {
     let text = lorem_ipsum(100);
     let corpus = hyphenation::load(Language::Latin).unwrap();
@@ -63,6 +67,7 @@ fn hyphenation_lorem_100(b: &mut Bencher) {
 }
 
 #[bench]
+#[cfg(feature = "hyphenation")]
 fn hyphenation_lorem_200(b: &mut Bencher) {
     let text = lorem_ipsum(200);
     let corpus = hyphenation::load(Language::Latin).unwrap();
@@ -73,6 +78,7 @@ fn hyphenation_lorem_200(b: &mut Bencher) {
 }
 
 #[bench]
+#[cfg(feature = "hyphenation")]
 fn hyphenation_lorem_400(b: &mut Bencher) {
     let text = lorem_ipsum(400);
     let corpus = hyphenation::load(Language::Latin).unwrap();
@@ -83,6 +89,7 @@ fn hyphenation_lorem_400(b: &mut Bencher) {
 }
 
 #[bench]
+#[cfg(feature = "hyphenation")]
 fn hyphenation_lorem_800(b: &mut Bencher) {
     let text = lorem_ipsum(800);
     let corpus = hyphenation::load(Language::Latin).unwrap();
