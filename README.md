@@ -23,6 +23,13 @@ and this to your crate root:
 extern crate textwrap;
 ```
 
+If you would like to have automatic hyphenation, specify the
+dependency as:
+```toml
+[dependencies]
+textwrap = { version: "0.4", features: ["hyphenation"] }
+```
+
 ## Documentation
 
 **[API documentation][api-docs]**
@@ -46,8 +53,9 @@ library for
 wrapping text.
 ```
 
-You can use automatic hyphenation using TeX hyphenation patterns (with
-support for [about 70 languages][patterns]) and get:
+With the `hyphenation` feature, you can get automatic hyphenation
+for [about 70 languages][patterns]. Your program must load and
+configure the hyphenation patterns to use:
 ```rust
 extern crate hyphenation;
 extern crate textwrap;
@@ -58,7 +66,7 @@ use textwrap::Wrapper;
 fn main() {
     let corpus = hyphenation::load(Language::English_US).unwrap();
     let mut wrapper = Wrapper::new(18);
-    wrapper.corpus = Some(&corpus);
+    wrapper.splitter = Box::new(corpus);
     let text = "textwrap: a small library for wrapping text.";
     println!("{}", wrapper.fill(text))
 }
@@ -71,13 +79,15 @@ library for wrap-
 ping text.
 ```
 
+The hyphenation uses high-quality TeX hyphenation patterns.
+
 ## Examples
 
 The library comes with a small example program that shows how a fixed
 example string is wrapped at different widths. Run the example with:
 
 ```shell
-$ cargo run --example layout
+$ cargo run --features hyphenation --example layout
 ```
 
 The program will use the following string:
