@@ -175,8 +175,14 @@ impl Wrapper {
         let mut lines = Vec::with_capacity(s.len() / (self.width + 1));
         let mut line = String::with_capacity(self.width);
         let mut remaining = self.width;
+        const NBSP: char = '\u{a0}'; // non-breaking space
 
-        for mut word in s.split_whitespace() {
+        for mut word in s.split(|c: char| c.is_whitespace() && c != NBSP) {
+            // Skip over adjacent whitespace characters.
+            if word.is_empty() {
+                continue;
+            }
+
             // Attempt to fit the word without any splitting.
             if self.fit_part(word, "", &mut remaining, &mut line) {
                 continue;
@@ -546,6 +552,13 @@ mod tests {
     #[test]
     fn break_words_zero_width() {
         assert_eq!(wrap("foobar", 0), vec!["foobar"]);
+    }
+
+    #[test]
+    fn test_non_breaking_space() {
+        let mut wrapper = Wrapper::new(5);
+        wrapper.break_words = false;
+        assert_eq!(wrapper.fill("foo bar baz"), "foo bar baz");
     }
 
     #[test]
