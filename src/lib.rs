@@ -562,6 +562,13 @@ mod tests {
     }
 
     #[test]
+    fn test_non_breaking_hyphen() {
+        let mut wrapper = Wrapper::new(5);
+        wrapper.break_words = false;
+        assert_eq!(wrapper.fill("foo‑bar‑baz"), "foo‑bar‑baz");
+    }
+
+    #[test]
     fn test_fill() {
         assert_eq!(fill("foo bar baz", 10), "foo bar\nbaz");
     }
