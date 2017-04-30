@@ -22,6 +22,7 @@
 
 
 extern crate unicode_width;
+extern crate term_size;
 #[cfg(feature = "hyphenation")]
 extern crate hyphenation;
 
@@ -125,6 +126,15 @@ impl Wrapper {
             break_words: true,
             splitter: Box::new(HyphenSplitter {}),
         }
+    }
+
+    /// Crate a new Wrapper for wrapping text at the current terminal
+    /// width. If the terminal width cannot be determined (typically
+    /// because the standard input and output is not connected to a
+    /// terminal), a width of 80 characters will be used. Other
+    /// settings use the same defaults as `Wrapper::new`.
+    pub fn with_termwidth() -> Wrapper {
+        Wrapper::new(term_size::dimensions_stdout().map_or(80, |(w, _)| w))
     }
 
     /// Fill a line of text at `self.width` characters. Strings are
