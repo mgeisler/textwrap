@@ -156,7 +156,8 @@ pub struct Wrapper<'a> {
     /// Indentation used for subsequent lines of output.
     pub subsequent_indent: &'a str,
     /// Allow long words to be broken if they cannot fit on a line.
-    /// When set to false, some lines be being longer than self.width.
+    /// When set to `false`, some lines be being longer than
+    /// `self.width`.
     pub break_words: bool,
     /// The method for splitting words, if any.
     pub splitter: Box<WordSplitter>,
