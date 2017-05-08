@@ -99,15 +99,62 @@ impl WordSplitter for Corpus {
     }
 }
 
+struct IndentedString {
+    value: String,
+    empty_len: usize,
+}
+
+impl IndentedString {
+    /// Create a new indented string. The string will initially have
+    /// the content `indent` and the given capacity.
+    #[inline]
+    fn new(indent: &str, capacity: usize) -> IndentedString {
+        let mut value = String::with_capacity(capacity);
+        value.push_str(indent);
+        IndentedString {
+            value: value,
+            empty_len: indent.len(),
+        }
+    }
+
+    /// Returns `true` if the string has no other content apart from
+    /// the indentation.
+    #[inline]
+    fn is_empty(&self) -> bool {
+        self.value.len() == self.empty_len
+    }
+
+    /// Appends the given `char` to the end of this string.
+    #[inline]
+    fn push(&mut self, ch: char) {
+        self.value.push(ch);
+    }
+
+    /// Appends the given string slice to the end of this string.
+    #[inline]
+    fn push_str(&mut self, s: &str) {
+        self.value.push_str(s);
+    }
+
+    /// Return the inner `String`.
+    fn into_string(self) -> String {
+        self.value
+    }
+}
+
 /// A Wrapper holds settings for wrapping and filling text.
 ///
 /// The algorithm used by the `wrap` method works by doing a single
 /// scan over words in the input string and splitting them into one or
 /// more lines. The time and memory complexity is O(*n*) where *n* is
 /// the length of the input string.
-pub struct Wrapper {
+pub struct Wrapper<'a> {
     /// The width in columns at which the text will be wrapped.
     pub width: usize,
+    /// Indentation used for the first line of output.
+    pub initial_indent: &'a str,
+    /// Indentation used for subsequent lines of output.
+    pub subsequent_indent: &'a str,
     /// Allow long words to be broken if they cannot fit on a line.
     /// When set to false, some lines be being longer than self.width.
     pub break_words: bool,
@@ -115,13 +162,15 @@ pub struct Wrapper {
     pub splitter: Box<WordSplitter>,
 }
 
-impl Wrapper {
+impl<'a> Wrapper<'a> {
     /// Create a new Wrapper for wrapping at the specified width. By
     /// default, we allow words longer than `width` to be broken. No
     /// hyphenation corpus is loaded by default.
-    pub fn new(width: usize) -> Wrapper {
+    pub fn new(width: usize) -> Wrapper<'a> {
         Wrapper {
             width: width,
+            initial_indent: "",
+            subsequent_indent: "",
             break_words: true,
             splitter: Box::new(HyphenSplitter {}),
         }
@@ -173,8 +222,8 @@ impl Wrapper {
     /// string length.
     pub fn wrap(&self, s: &str) -> Vec<String> {
         let mut lines = Vec::with_capacity(s.len() / (self.width + 1));
-        let mut line = String::with_capacity(self.width);
-        let mut remaining = self.width;
+        let mut line = IndentedString::new(self.initial_indent, self.width);
+        let mut remaining = self.width - self.initial_indent.width();
         const NBSP: char = '\u{a0}'; // non-breaking space
 
         for mut word in s.split(|c: char| c.is_whitespace() && c != NBSP) {
@@ -197,9 +246,9 @@ impl Wrapper {
                 // Add a new line if even the smallest split doesn't
                 // fit.
                 if !line.is_empty() && 1 + min_width > remaining {
-                    lines.push(line);
-                    line = String::with_capacity(self.width);
-                    remaining = self.width;
+                    lines.push(line.into_string());
+                    line = IndentedString::new(self.subsequent_indent, self.width);
+                    remaining = self.width - self.subsequent_indent.width();
                 }
 
                 // Find a split that fits on the current line.
@@ -221,9 +270,11 @@ impl Wrapper {
                         let mut head_width = 0;
                         for (idx, c) in word.char_indices() {
                             head_width += c.width().unwrap_or(0);
-                            if head_width > self.width {
+                            if head_width > remaining {
                                 let (head, tail) = word.split_at(idx);
-                                lines.push(String::from(head));
+                                line.push_str(head);
+                                lines.push(line.into_string());
+                                line = IndentedString::new(self.subsequent_indent, self.width);
                                 word = tail;
                                 break;
                             }
@@ -240,7 +291,7 @@ impl Wrapper {
             }
         }
         if !line.is_empty() {
-            lines.push(line);
+            lines.push(line.into_string());
         }
         lines
     }
@@ -252,7 +303,7 @@ impl Wrapper {
                     part: &'b str,
                     hyphen: &'b str,
                     remaining: &mut usize,
-                    line: &mut String)
+                    line: &mut IndentedString)
                     -> bool {
         let space = if line.is_empty() { 0 } else { 1 };
         let fits_in_line = space + part.width() + hyphen.len() <= *remaining;
@@ -455,6 +506,36 @@ mod tests {
         assert_eq!(wrap("Hello, World!", 15), vec!["Hello, World!"]);
         assert_eq!(wrap("Ｈｅｌｌｏ, Ｗｏｒｌｄ!", 15),
                    vec!["Ｈｅｌｌｏ,", "Ｗｏｒｌｄ!"]);
+    }
+
+    #[test]
+    fn indent_empty() {
+        let mut wrapper = Wrapper::new(10);
+        wrapper.initial_indent = "!!!";
+        assert_eq!(wrapper.fill(""), "");
+    }
+
+    #[test]
+    fn indent_single_line() {
+        let mut wrapper = Wrapper::new(10);
+        wrapper.initial_indent = ">>>"; // No trailing space
+        assert_eq!(wrapper.fill("foo"), ">>>foo");
+    }
+
+    #[test]
+    fn indent_multiple_lines() {
+        let mut wrapper = Wrapper::new(6);
+        wrapper.initial_indent = "* ";
+        wrapper.subsequent_indent = "  ";
+        assert_eq!(wrapper.wrap("foo bar baz"), vec!["* foo", "  bar", "  baz"]);
+    }
+
+    #[test]
+    fn indent_break_words() {
+        let mut wrapper = Wrapper::new(5);
+        wrapper.initial_indent = "* ";
+        wrapper.subsequent_indent = "  ";
+        assert_eq!(wrapper.wrap("foobarbaz"), vec!["* foo", "  bar", "  baz"]);
     }
 
     #[test]
