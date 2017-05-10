@@ -83,8 +83,13 @@ The hyphenation uses high-quality TeX hyphenation patterns.
 
 ## Examples
 
-The library comes with a small example program that shows how a fixed
-example string is wrapped at different widths. Run the example with:
+The library comes with a small example programs that shows various
+features.
+
+### Layout Example
+
+The `layout` example shows how a fixed example string is wrapped at
+different widths. Run the example with:
 
 ```shell
 $ cargo run --features hyphenation --example layout
@@ -134,6 +139,36 @@ Later, longer lines are used and the output now looks like this:
 
 Notice how words are split at hyphens (such a s "zero-cost") but also
 how words are hyphenated using automatic/machine hyphenation.
+
+### Terminal Width Example
+
+The `termwidth` example simply shows how the width can be set
+automatically to the current terminal width. Run it with this command:
+
+```
+$ cargo run --example termwidth
+```
+
+If you run it in a narrow terminal, you'll see output like this:
+```
+Formatted in within 60 columns:
+----
+Memory safety without garbage collection. Concurrency
+without data races. Zero-cost abstractions.
+----
+```
+
+If `stdout` is not connected to the terminal, the program will use a
+default of 80 columns for the width:
+
+```
+$ cargo run --example termwidth | cat
+Formatted in within 80 columns:
+----
+Memory safety without garbage collection. Concurrency without data races. Zero-
+cost abstractions.
+----
+```
 
 ## Release History
 
