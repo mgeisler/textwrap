@@ -8,12 +8,12 @@ use textwrap::Wrapper;
 
 
 #[cfg(not(feature = "hyphenation"))]
-fn new_wrapper() -> Wrapper {
+fn new_wrapper<'a>() -> Wrapper<'a> {
     Wrapper::new(0)
 }
 
 #[cfg(feature = "hyphenation")]
-fn new_wrapper() -> Wrapper {
+fn new_wrapper<'a>() -> Wrapper<'a> {
     let mut wrapper = Wrapper::new(0);
     wrapper.splitter = Box::new(hyphenation::load(Language::English_US).unwrap());
     wrapper
