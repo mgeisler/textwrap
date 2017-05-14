@@ -50,10 +50,15 @@ pub trait WordSplitter {
     fn split<'w>(&self, word: &'w str) -> Vec<(&'w str, &'w str, &'w str)>;
 }
 
+/// Simple and default way to split words: splitting on existing
+/// hyphens only.
+///
+/// You probably don't need to use this type since it's already used
+/// by default by `Wrapper::new`.
 pub struct HyphenSplitter;
 
-/// HyphenSplitter is the default WordSplitter. As the name says, it
-/// will split words on any existing hyphens in the word.
+/// HyphenSplitter is the default WordSplitter used by `Wrapper::new`.
+/// It will split words on any existing hyphens in the word.
 ///
 /// It will only use hyphens that are surrounded by alphanumeric
 /// characters, which prevents a word like "--foo-bar" from being
