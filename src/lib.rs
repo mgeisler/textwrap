@@ -195,8 +195,12 @@ pub struct Wrapper<'a> {
 
 impl<'a> Wrapper<'a> {
     /// Create a new Wrapper for wrapping at the specified width. By
-    /// default, we allow words longer than `width` to be broken. No
-    /// hyphenation corpus is loaded by default.
+    /// default, we allow words longer than `width` to be broken. A
+    /// [`HyphenSplitter`] will be used by default for splitting
+    /// words. See the [`WordSplitter`] trait for other options.
+    ///
+    /// [`HyphenSplitter`]: struct.HyphenSplitter.html
+    /// [`WordSplitter`]: trait.WordSplitter.html
     pub fn new(width: usize) -> Wrapper<'a> {
         Wrapper {
             width: width,
