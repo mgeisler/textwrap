@@ -148,7 +148,12 @@ impl IndentedString {
     }
 }
 
-/// A Wrapper holds settings for wrapping and filling text.
+/// A Wrapper holds settings for wrapping and filling text. Use it
+/// when the convenience [`wrap`] and [`fill`] functions are not
+/// flexible enough.
+///
+/// [`wrap`]: fn.wrap.html
+/// [`fill`]: fn.fill.html
 ///
 /// The algorithm used by the `wrap` method works by doing a single
 /// scan over words in the input string and splitting them into one or
