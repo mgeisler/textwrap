@@ -261,9 +261,18 @@ impl<'a> Wrapper<'a> {
     ///                 "data races."]);
     /// ```
     ///
+    /// The [`WordSplitter`] stored in [`self.splitter`] is used
+    /// whenever when a word is too large to fit on the current line.
+    /// By changing the field, different hyphenation strategies can be
+    /// implemented.
+    ///
     /// This method does a single scan over the input string, it has
     /// an O(*n*) time and memory complexity where *n* is the input
     /// string length.
+    ///
+    /// [`self.splitter`]: #structfield.splitter
+    /// [`WordSplitter`]: trait.WordSplitter.html
+    ///
     pub fn wrap(&self, s: &str) -> Vec<String> {
         let mut lines = Vec::with_capacity(s.len() / (self.width + 1));
         let mut line = IndentedString::new(self.initial_indent, self.width);
