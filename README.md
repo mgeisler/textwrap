@@ -137,7 +137,7 @@ Later, longer lines are used and the output now looks like this:
 | out data races. Zero-cost abstractions.                     |
 ```
 
-Notice how words are split at hyphens (such a s "zero-cost") but also
+Notice how words are split at hyphens (such as "zero-cost") but also
 how words are hyphenated using automatic/machine hyphenation.
 
 ### Terminal Width Example

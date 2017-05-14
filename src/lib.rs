@@ -1,24 +1,44 @@
 //! `textwrap` provides functions for word wrapping and filling text.
 //!
-//! This can be very useful in commandline programs where you want to
-//! format dynamic output nicely so it looks good in a terminal.
+//! Wrapping text can be very useful in commandline programs where you
+//! want to format dynamic output nicely so it looks good in a
+//! terminal. A quick example:
 //!
-//! To wrap text, one must know the width of each word so can know
-//! when to break lines. This library measures the width of text using
-//! the [displayed width][unicode-width], not the size in bytes.
+//! ```
+//! extern crate textwrap;
+//! use textwrap::fill;
+//!
+//! fn main() {
+//!    let text = "textwrap: a small library for wrapping text.";
+//!    println!("{}", fill(text, 18));
+//! }
+//! ```
+//!
+//! This will display the following output:
+//! ```text
+//! textwrap: a small
+//! library for
+//! wrapping text.
+//! ```
+//!
+//! # Displayed Width vs Byte Size
+//!
+//! To word wrap text, one must know the width of each word so one can
+//! know when to break lines. This library measures the width of text
+//! using the [displayed width][unicode-width], not the size in bytes.
 //!
 //! This is important for non-ASCII text. ASCII characters such as `a`
-//! and `!` are simple: the displayed with is the same as the number
-//! of bytes used in their UTF-8 encoding (one ASCII character takes
-//! up one byte in UTF-8). However, non-ASCII characters and symbols
-//! take up more than one byte: `é` is `0xc3 0xa9` and `⚙` is `0xe2
-//! 0x9a 0x99` in UTF-8, respectively.
+//! and `!` are simple and take up one column each. This means that
+//! the displayed width is equal to the string length in bytes.
+//! However, non-ASCII characters and symbols take up more than one
+//! byte when UTF-8 encoded: `é` is `0xc3 0xa9` (two bytes) and `⚙` is
+//! `0xe2 0x9a 0x99` (three bytes) in UTF-8, respectively.
 //!
 //! This is why we take care to use the displayed width instead of the
 //! byte count when computing line lengths. All functions in this
 //! library handle Unicode characters like this.
 //!
-//! [unicode-width]: https://unicode-rs.github.io/unicode-width/unicode_width/index.html
+//! [unicode-width]: https://docs.rs/unicode-width/
 
 
 extern crate unicode_width;
@@ -31,6 +51,23 @@ use unicode_width::UnicodeWidthChar;
 #[cfg(feature = "hyphenation")]
 use hyphenation::{Hyphenation, Corpus};
 
+/// An interface for splitting words.
+///
+/// When the [`wrap`] method will try to fit text into a line, it will
+/// eventually find a word that it too large the current text width.
+/// It will then call the currently configured `WordSplitter` to have
+/// it attempt to split the word into smaller parts. This trait
+/// describes that functionality via the [`split`] method.
+///
+/// If the `textwrap` crate has been compiled with the `hyphenation`
+/// feature enabled, you will find an implementation of `WordSplitter`
+/// by the `hyphenation::language::Corpus` struct. Use this struct for
+/// language-aware hyphenation. See the [`hyphenation` documentation]
+/// for details.
+///
+/// [`wrap`]: struct.Wrapper.html#method.wrap
+/// [`split`]: #tymethod.split
+/// [`hyphenation` documentation]: https://docs.rs/hyphenation/
 pub trait WordSplitter {
     /// Return all possible splits of word. Each split is a triple
     /// with a head, a hyphen, and a tail where `head + &hyphen +
@@ -50,10 +87,15 @@ pub trait WordSplitter {
     fn split<'w>(&self, word: &'w str) -> Vec<(&'w str, &'w str, &'w str)>;
 }
 
+/// Simple and default way to split words: splitting on existing
+/// hyphens only.
+///
+/// You probably don't need to use this type since it's already used
+/// by default by `Wrapper::new`.
 pub struct HyphenSplitter;
 
-/// HyphenSplitter is the default WordSplitter. As the name says, it
-/// will split words on any existing hyphens in the word.
+/// HyphenSplitter is the default WordSplitter used by `Wrapper::new`.
+/// It will split words on any existing hyphens in the word.
 ///
 /// It will only use hyphens that are surrounded by alphanumeric
 /// characters, which prevents a word like "--foo-bar" from being
@@ -143,7 +185,12 @@ impl IndentedString {
     }
 }
 
-/// A Wrapper holds settings for wrapping and filling text.
+/// A Wrapper holds settings for wrapping and filling text. Use it
+/// when the convenience [`wrap`] and [`fill`] functions are not
+/// flexible enough.
+///
+/// [`wrap`]: fn.wrap.html
+/// [`fill`]: fn.fill.html
 ///
 /// The algorithm used by the `wrap` method works by doing a single
 /// scan over words in the input string and splitting them into one or
@@ -160,14 +207,20 @@ pub struct Wrapper<'a> {
     /// When set to `false`, some lines be being longer than
     /// `self.width`.
     pub break_words: bool,
-    /// The method for splitting words, if any.
+    /// The method for splitting words. If the `hyphenation` feature
+    /// is enabled, you can use a `hyphenation::language::Corpus` here
+    /// to get language-aware hyphenation.
     pub splitter: Box<WordSplitter>,
 }
 
 impl<'a> Wrapper<'a> {
     /// Create a new Wrapper for wrapping at the specified width. By
-    /// default, we allow words longer than `width` to be broken. No
-    /// hyphenation corpus is loaded by default.
+    /// default, we allow words longer than `width` to be broken. A
+    /// [`HyphenSplitter`] will be used by default for splitting
+    /// words. See the [`WordSplitter`] trait for other options.
+    ///
+    /// [`HyphenSplitter`]: struct.HyphenSplitter.html
+    /// [`WordSplitter`]: trait.WordSplitter.html
     pub fn new(width: usize) -> Wrapper<'a> {
         Wrapper {
             width: width,
@@ -228,9 +281,18 @@ impl<'a> Wrapper<'a> {
     ///                 "data races."]);
     /// ```
     ///
+    /// The [`WordSplitter`] stored in [`self.splitter`] is used
+    /// whenever when a word is too large to fit on the current line.
+    /// By changing the field, different hyphenation strategies can be
+    /// implemented.
+    ///
     /// This method does a single scan over the input string, it has
     /// an O(*n*) time and memory complexity where *n* is the input
     /// string length.
+    ///
+    /// [`self.splitter`]: #structfield.splitter
+    /// [`WordSplitter`]: trait.WordSplitter.html
+    ///
     pub fn wrap(&self, s: &str) -> Vec<String> {
         let mut lines = Vec::with_capacity(s.len() / (self.width + 1));
         let mut line = IndentedString::new(self.initial_indent, self.width);
