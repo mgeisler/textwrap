@@ -183,7 +183,7 @@ impl<'a> Wrapper<'a> {
     /// because the standard input and output is not connected to a
     /// terminal), a width of 80 characters will be used. Other
     /// settings use the same defaults as `Wrapper::new`.
-    pub fn with_termwidth() -> Wrapper {
+    pub fn with_termwidth() -> Wrapper<'a> {
         Wrapper::new(term_size::dimensions_stdout().map_or(80, |(w, _)| w))
     }
 
