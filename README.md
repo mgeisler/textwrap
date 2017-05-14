@@ -27,6 +27,7 @@ If you would like to have automatic hyphenation, specify the
 dependency as:
 ```toml
 [dependencies]
+hyphenation = "0.6"
 textwrap = { version: "0.4", features: ["hyphenation"] }
 ```
 
@@ -66,7 +67,7 @@ use textwrap::Wrapper;
 fn main() {
     let corpus = hyphenation::load(Language::English_US).unwrap();
     let mut wrapper = Wrapper::new(18);
-    wrapper.splitter = Box::new(corpus);
+    wrapper.corpus = Some(&corpus);
     let text = "textwrap: a small library for wrapping text.";
     println!("{}", wrapper.fill(text))
 }
