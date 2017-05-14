@@ -31,6 +31,23 @@ use unicode_width::UnicodeWidthChar;
 #[cfg(feature = "hyphenation")]
 use hyphenation::{Hyphenation, Corpus};
 
+/// An interface for splitting words.
+///
+/// When the [`wrap`] method will try to fit text into a line, it will
+/// eventually find a word that it too large the current text width.
+/// It will then call the currently configured `WordSplitter` to have
+/// it attempt to split the word into smaller parts. This trait
+/// describes that functionality via the [`split`] method.
+///
+/// If the `textwrap` crate has been compiled with the `hyphenation`
+/// feature enabled, you will find an implementation of `WordSplitter`
+/// by the `hyphenation::language::Corpus` struct. Use this struct for
+/// language-aware hyphenation. See the [`hyphenation` documentation]
+/// for details.
+///
+/// [`wrap`]: struct.Wrapper.html#method.wrap
+/// [`split`]: #tymethod.split
+/// [`hyphenation` documentation]: https://docs.rs/hyphenation/
 pub trait WordSplitter {
     /// Return all possible splits of word. Each split is a triple
     /// with a head, a hyphen, and a tail where `head + &hyphen +
