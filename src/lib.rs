@@ -1,7 +1,25 @@
 //! `textwrap` provides functions for word wrapping and filling text.
 //!
-//! This can be very useful in commandline programs where you want to
-//! format dynamic output nicely so it looks good in a terminal.
+//! Wrapping text can be very useful in commandline programs where you
+//! want to format dynamic output nicely so it looks good in a
+//! terminal. A quick example:
+//!
+//! ```
+//! extern crate textwrap;
+//! use textwrap::fill;
+//!
+//! fn main() {
+//!    let text = "textwrap: a small library for wrapping text.";
+//!    println!("{}", fill(text, 18));
+//! }
+//! ```
+//!
+//! This will display the following output:
+//! ```text
+//! textwrap: a small
+//! library for
+//! wrapping text.
+//! ```
 //!
 //! To wrap text, one must know the width of each word so can know
 //! when to break lines. This library measures the width of text using
