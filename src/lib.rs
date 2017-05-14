@@ -38,7 +38,7 @@
 //! byte count when computing line lengths. All functions in this
 //! library handle Unicode characters like this.
 //!
-//! [unicode-width]: https://unicode-rs.github.io/unicode-width/unicode_width/index.html
+//! [unicode-width]: https://docs.rs/unicode-width/
 
 
 extern crate unicode_width;
