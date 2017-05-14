@@ -21,16 +21,18 @@
 //! wrapping text.
 //! ```
 //!
-//! To wrap text, one must know the width of each word so can know
-//! when to break lines. This library measures the width of text using
-//! the [displayed width][unicode-width], not the size in bytes.
+//! # Displayed Width vs Byte Size
+//!
+//! To word wrap text, one must know the width of each word so one can
+//! know when to break lines. This library measures the width of text
+//! using the [displayed width][unicode-width], not the size in bytes.
 //!
 //! This is important for non-ASCII text. ASCII characters such as `a`
-//! and `!` are simple: the displayed with is the same as the number
-//! of bytes used in their UTF-8 encoding (one ASCII character takes
-//! up one byte in UTF-8). However, non-ASCII characters and symbols
-//! take up more than one byte: `é` is `0xc3 0xa9` and `⚙` is `0xe2
-//! 0x9a 0x99` in UTF-8, respectively.
+//! and `!` are simple and take up one column each. This means that
+//! the displayed width is equal to the string length in bytes.
+//! However, non-ASCII characters and symbols take up more than one
+//! byte when UTF-8 encoded: `é` is `0xc3 0xa9` (two bytes) and `⚙` is
+//! `0xe2 0x9a 0x99` (three bytes) in UTF-8, respectively.
 //!
 //! This is why we take care to use the displayed width instead of the
 //! byte count when computing line lengths. All functions in this
