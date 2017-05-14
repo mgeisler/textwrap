@@ -187,7 +187,9 @@ pub struct Wrapper<'a> {
     /// When set to `false`, some lines be being longer than
     /// `self.width`.
     pub break_words: bool,
-    /// The method for splitting words, if any.
+    /// The method for splitting words. If the `hyphenation` feature
+    /// is enabled, you can use a `hyphenation::language::Corpus` here
+    /// to get language-aware hyphenation.
     pub splitter: Box<WordSplitter>,
 }
 
