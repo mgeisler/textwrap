@@ -15,7 +15,7 @@ the [Python textwrap module][py-textwrap].
 Add this to your `Cargo.toml`:
 ```toml
 [dependencies]
-textwrap = "0.4"
+textwrap = "0.5"
 ```
 
 and this to your crate root:
@@ -27,7 +27,7 @@ If you would like to have automatic hyphenation, specify the
 dependency as:
 ```toml
 [dependencies]
-textwrap = { version: "0.4", features: ["hyphenation"] }
+textwrap = { version: "0.5", features: ["hyphenation"] }
 ```
 
 ## Documentation
@@ -174,6 +174,31 @@ cost abstractions.
 
 This section lists the largest changes per release.
 
+### Version 0.5.0 — May 15th, 2017
+
+Version 0.5.0 has *breaking API changes*. However, this only affects
+code using the hyphenation feature. The feature is now optional, so
+you will first need to enable the `hyphenation` feature as described
+above. Afterwards, please change your code from
+```rust
+wrapper.corpus = Some(&corpus);
+```
+to
+```rust
+wrapper.splitter = corpus;
+```
+
+Other changes include optimizations, so version 0.5.0 is roughly
+10-15% faster than version 0.4.0.
+
+Issues closed:
+
+* Fixed [#19][issue-19]: Add support for finding terminal size
+* Fixed [#25][issue-25]: Handle words longer than `self.width`
+* Fixed [#26][issue-26]: Support custom indentation
+* Fixed [#36][issue-36]: Support building without `hyphenation`
+* Fixed [#39][issue-39]: Respect non-breaking spaces
+
 ### Version 0.4.0 — January 24th, 2017
 
 Documented complexities and tested these via `cargo bench`.
@@ -206,4 +231,9 @@ Contributions will be accepted under the same license.
 [api-docs]: https://docs.rs/textwrap/
 [issue-13]: ../../issues/13
 [issue-14]: ../../issues/14
+[issue-19]: ../../issues/19
+[issue-25]: ../../issues/25
+[issue-26]: ../../issues/26
+[issue-36]: ../../issues/36
+[issue-39]: ../../issues/39
 [mit]: LICENSE
