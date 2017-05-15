@@ -15,7 +15,7 @@ the [Python textwrap module][py-textwrap].
 Add this to your `Cargo.toml`:
 ```toml
 [dependencies]
-textwrap = "0.4"
+textwrap = "0.5"
 ```
 
 and this to your crate root:
@@ -27,7 +27,7 @@ If you would like to have automatic hyphenation, specify the
 dependency as:
 ```toml
 [dependencies]
-textwrap = { version: "0.4", features: ["hyphenation"] }
+textwrap = { version: "0.5", features: ["hyphenation"] }
 ```
 
 ## Documentation
