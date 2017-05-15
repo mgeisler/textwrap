@@ -87,6 +87,27 @@ pub trait WordSplitter {
     fn split<'w>(&self, word: &'w str) -> Vec<(&'w str, &'w str, &'w str)>;
 }
 
+/// Use this as a [`Wrapper.splitter`] to avoid any kind of
+/// hyphenation:
+/// ```
+/// use textwrap::{Wrapper, NoHyphenation};
+///
+/// let mut wrapper = Wrapper::new(8);
+/// wrapper.splitter = Box::new(NoHyphenation {});
+/// assert_eq!(wrapper.wrap("foo bar-baz"), vec!["foo", "bar-baz"]);
+/// ```
+///
+/// [`Wrapper.splitter`]: struct.Wrapper.html#structfield.splitter
+pub struct NoHyphenation;
+
+/// `NoHyphenation` implements `WordSplitter` by not splitting the
+/// word at all.
+impl WordSplitter for NoHyphenation {
+    fn split<'w>(&self, word: &'w str) -> Vec<(&'w str, &'w str, &'w str)> {
+        vec![(word, "", "")]
+    }
+}
+
 /// Simple and default way to split words: splitting on existing
 /// hyphens only.
 ///
@@ -665,6 +686,13 @@ mod tests {
         let mut wrapper = Wrapper::new(5);
         wrapper.break_words = false;
         assert_eq!(wrapper.wrap("foobar-baz"), vec!["foobar-", "baz"]);
+    }
+
+    #[test]
+    fn no_hyphenation() {
+        let mut wrapper = Wrapper::new(8);
+        wrapper.splitter = Box::new(NoHyphenation {});
+        assert_eq!(wrapper.wrap("foo bar-baz"), vec!["foo", "bar-baz"]);
     }
 
     #[test]
