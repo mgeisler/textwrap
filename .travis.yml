@@ -1,7 +1,6 @@
 language: rust
 
 rust:
-  - 1.13.0
   - stable
   - beta
   - nightly
@@ -17,5 +16,10 @@ env:
   - FEATURES=""
 
 matrix:
+  include:
+    - rust: 1.8.0
+      env: FEATURES=""
+    - rust: 1.13.0
+      env: FEATURES="hyphenation"
   allow_failures:
     - rust: nightly
