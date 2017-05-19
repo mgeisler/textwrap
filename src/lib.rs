@@ -207,6 +207,15 @@ pub struct Wrapper<'a> {
     /// When set to `false`, some lines be being longer than
     /// `self.width`.
     pub break_words: bool,
+    /// This crate treats every whitespace character (space, newline,
+    /// TAB, ...) as a space character. When this option is set to
+    /// `true`, the whitespace between words will be squeezed into a
+    /// single space character. Otherwise, the whitespace is
+    /// significant and will be kept in the output. Whitespace
+    /// characters such as TAB will still be turned into a single
+    /// space -- consider expanding TABs manually if this is a
+    /// concern.
+    pub squeeze_whitespace: bool,
     /// The method for splitting words. If the `hyphenation` feature
     /// is enabled, you can use a `hyphenation::language::Corpus` here
     /// to get language-aware hyphenation.
@@ -227,6 +236,7 @@ impl<'a> Wrapper<'a> {
             initial_indent: "",
             subsequent_indent: "",
             break_words: true,
+            squeeze_whitespace: false,
             splitter: Box::new(HyphenSplitter {}),
         }
     }
@@ -301,7 +311,7 @@ impl<'a> Wrapper<'a> {
 
         for mut word in s.split(|c: char| c.is_whitespace() && c != NBSP) {
             // Skip over adjacent whitespace characters.
-            if word.is_empty() {
+            if self.squeeze_whitespace && word.is_empty() {
                 continue;
             }
 
@@ -570,8 +580,24 @@ mod tests {
     }
 
     #[test]
+    fn whitespace_is_significant() {
+        assert_eq!(wrap("foo:   bar baz", 10), vec!["foo:   bar", "baz"]);
+    }
+
+    #[test]
+    fn extra_whitespace_start_of_line() {
+        // Whitespace is only significant inside a line. After a line
+        // gets too long and is broken, the first word starts in
+        // column zero and is not indented. The line before might end
+        // up with trailing whitespace.
+        assert_eq!(wrap("foo               bar", 5), vec!["foo  ", "bar"]);
+    }
+
+    #[test]
     fn whitespace_is_squeezed() {
-        assert_eq!(wrap(" foo \t  bar  ", 10), vec!["foo bar"]);
+        let mut wrapper = Wrapper::new(10);
+        wrapper.squeeze_whitespace = true;
+        assert_eq!(wrapper.wrap(" foo \t  bar  "), vec!["foo bar"]);
     }
 
     #[test]
