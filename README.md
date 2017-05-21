@@ -65,8 +65,7 @@ use textwrap::Wrapper;
 
 fn main() {
     let corpus = hyphenation::load(Language::English_US).unwrap();
-    let mut wrapper = Wrapper::new(18);
-    wrapper.splitter = Box::new(corpus);
+    let wrapper = Wrapper::new(18).word_splitter(Box::new(corpus));
     let text = "textwrap: a small library for wrapping text.";
     println!("{}", wrapper.fill(text))
 }
