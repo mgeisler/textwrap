@@ -92,8 +92,7 @@ pub trait WordSplitter {
 /// ```
 /// use textwrap::{Wrapper, NoHyphenation};
 ///
-/// let mut wrapper = Wrapper::new(8);
-/// wrapper.splitter = Box::new(NoHyphenation);
+/// let wrapper = Wrapper::new(8).word_splitter(Box::new(NoHyphenation));
 /// assert_eq!(wrapper.wrap("foo bar-baz"), vec!["foo", "bar-baz"]);
 /// ```
 ///
@@ -757,8 +756,7 @@ mod tests {
 
     #[test]
     fn no_hyphenation() {
-        let mut wrapper = Wrapper::new(8);
-        wrapper.splitter = Box::new(NoHyphenation);
+        let wrapper = Wrapper::new(8).word_splitter(Box::new(NoHyphenation));
         assert_eq!(wrapper.wrap("foo bar-baz"), vec!["foo", "bar-baz"]);
     }
 
