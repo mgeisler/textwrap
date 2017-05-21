@@ -14,9 +14,8 @@ fn new_wrapper<'a>() -> Wrapper<'a> {
 
 #[cfg(feature = "hyphenation")]
 fn new_wrapper<'a>() -> Wrapper<'a> {
-    let mut wrapper = Wrapper::new(0);
-    wrapper.splitter = Box::new(hyphenation::load(Language::English_US).unwrap());
-    wrapper
+    let corpus = hyphenation::load(Language::English_US).unwrap();
+    Wrapper::new(0).word_splitter(Box::new(corpus))
 }
 
 fn main() {

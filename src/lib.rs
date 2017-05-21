@@ -250,6 +250,58 @@ impl<'a> Wrapper<'a> {
         Wrapper::new(term_size::dimensions_stdout().map_or(80, |(w, _)| w))
     }
 
+    /// Change [`self.initial_indent`]. The initial indentation is
+    /// used on the very first line of output. Setting it to something
+    /// like `"* "` can be useful if you are formatting an item in a
+    /// bulleted list. You will then probably want to set
+    /// `self.subsequent_indent` to `"  "`.
+    ///
+    /// [`self.initial_indent`]: #structfield.initial_indent
+    pub fn initial_indent(self, indent: &'a str) -> Wrapper<'a> {
+        Wrapper { initial_indent: indent, ..self }
+    }
+
+    /// Change [`self.subsequent_indent`]. The subsequent indentation
+    /// is used on lines following the first line of output. Setting
+    /// it to something like `"  "` can be useful if you are
+    /// formatting an item in a bulleted list.
+    ///
+    /// [`self.subsequent_indent`]: #structfield.subsequent_indent
+    pub fn subsequent_indent(self, indent: &'a str) -> Wrapper<'a> {
+        Wrapper { subsequent_indent: indent, ..self }
+    }
+
+    /// Change [`self.break_words`]. This controls if words longer
+    /// than `self.width` can be broken, or if they will be left
+    /// sticking out into the right margin.
+    ///
+    /// [`self.break_words`]: #structfield.break_words
+    pub fn break_words(self, setting: bool) -> Wrapper<'a> {
+        Wrapper { break_words: setting, ..self }
+    }
+
+    /// Change [`self.squeeze_whitespace`]. This controls if
+    /// whitespace betweee words is squeezed together to a single
+    /// space. Regardless of this setting, all whitespace characters
+    /// are converted to space (`' '`) characters.
+    ///
+    /// [`self.squeeze_whitespace`]: #structfield.squeeze_whitespace
+    pub fn squeeze_whitespace(self, setting: bool) -> Wrapper<'a> {
+        Wrapper { squeeze_whitespace: setting, ..self }
+    }
+
+    /// Change [`self.splitter`]. The word splitter is consulted when
+    /// a word is too wide to fit the current line. By changing this,
+    /// you can decide if such words should be hyphenated or left
+    /// alone. Hyphenation can be done using existing hyphens (see
+    /// [`HyphenSplitter`]) or it can be based on TeX hyphenation
+    /// patterns, if the `hyphenation` feature is enabled.
+    ///
+    /// [`self.splitter`]: #structfield.splitter
+    pub fn word_splitter(self, splitter: Box<WordSplitter>) -> Wrapper<'a> {
+        Wrapper { splitter: splitter, ..self }
+    }
+
     /// Fill a line of text at `self.width` characters. Strings are
     /// wrapped based on their displayed width, not their size in
     /// bytes.
@@ -595,8 +647,7 @@ mod tests {
 
     #[test]
     fn whitespace_is_squeezed() {
-        let mut wrapper = Wrapper::new(10);
-        wrapper.squeeze_whitespace = true;
+        let wrapper = Wrapper::new(10).squeeze_whitespace(true);
         assert_eq!(wrapper.wrap(" foo \t  bar  "), vec!["foo bar"]);
     }
 
@@ -609,31 +660,25 @@ mod tests {
 
     #[test]
     fn indent_empty() {
-        let mut wrapper = Wrapper::new(10);
-        wrapper.initial_indent = "!!!";
+        let wrapper = Wrapper::new(10).initial_indent("!!!");
         assert_eq!(wrapper.fill(""), "");
     }
 
     #[test]
     fn indent_single_line() {
-        let mut wrapper = Wrapper::new(10);
-        wrapper.initial_indent = ">>>"; // No trailing space
+        let wrapper = Wrapper::new(10).initial_indent(">>>"); // No trailing space
         assert_eq!(wrapper.fill("foo"), ">>>foo");
     }
 
     #[test]
     fn indent_multiple_lines() {
-        let mut wrapper = Wrapper::new(6);
-        wrapper.initial_indent = "* ";
-        wrapper.subsequent_indent = "  ";
+        let wrapper = Wrapper::new(6).initial_indent("* ").subsequent_indent("  ");
         assert_eq!(wrapper.wrap("foo bar baz"), vec!["* foo", "  bar", "  baz"]);
     }
 
     #[test]
     fn indent_break_words() {
-        let mut wrapper = Wrapper::new(5);
-        wrapper.initial_indent = "* ";
-        wrapper.subsequent_indent = "  ";
+        let wrapper = Wrapper::new(5).initial_indent("* ").subsequent_indent("  ");
         assert_eq!(wrapper.wrap("foobarbaz"), vec!["* foo", "  bar", "  baz"]);
     }
 
@@ -644,8 +689,7 @@ mod tests {
 
     #[test]
     fn trailing_hyphen() {
-        let mut wrapper = Wrapper::new(5);
-        wrapper.break_words = false;
+        let wrapper = Wrapper::new(5).break_words(false);
         assert_eq!(wrapper.wrap("foobar-"), vec!["foobar-"]);
     }
 
@@ -656,16 +700,14 @@ mod tests {
 
     #[test]
     fn hyphens_flag() {
-        let mut wrapper = Wrapper::new(5);
-        wrapper.break_words = false;
+        let wrapper = Wrapper::new(5).break_words(false);
         assert_eq!(wrapper.wrap("The --foo-bar flag."),
                    vec!["The", "--foo-", "bar", "flag."]);
     }
 
     #[test]
     fn repeated_hyphens() {
-        let mut wrapper = Wrapper::new(4);
-        wrapper.break_words = false;
+        let wrapper = Wrapper::new(4).break_words(false);
         assert_eq!(wrapper.wrap("foo--bar"), vec!["foo--bar"]);
     }
 
@@ -676,8 +718,7 @@ mod tests {
 
     #[test]
     fn hyphens_non_alphanumeric() {
-        let mut wrapper = Wrapper::new(5);
-        wrapper.break_words = false;
+        let wrapper = Wrapper::new(5).break_words(false);
         assert_eq!(wrapper.wrap("foo(-)bar"), vec!["foo(-)bar"]);
     }
 
@@ -688,8 +729,7 @@ mod tests {
 
     #[test]
     fn forced_split() {
-        let mut wrapper = Wrapper::new(5);
-        wrapper.break_words = false;
+        let wrapper = Wrapper::new(5).break_words(false);
         assert_eq!(wrapper.wrap("foobar-baz"), vec!["foobar-", "baz"]);
     }
 
@@ -697,11 +737,11 @@ mod tests {
     #[cfg(feature = "hyphenation")]
     fn auto_hyphenation() {
         let corpus = hyphenation::load(Language::English_US).unwrap();
-        let mut wrapper = Wrapper::new(10);
+        let wrapper = Wrapper::new(10);
         assert_eq!(wrapper.wrap("Internationalization"),
                    vec!["Internatio", "nalization"]);
 
-        wrapper.splitter = Box::new(corpus);
+        let wrapper = wrapper.word_splitter(Box::new(corpus));
         assert_eq!(wrapper.wrap("Internationalization"),
                    vec!["Interna-", "tionaliza-", "tion"]);
     }
@@ -710,11 +750,10 @@ mod tests {
     #[cfg(feature = "hyphenation")]
     fn auto_hyphenation_with_hyphen() {
         let corpus = hyphenation::load(Language::English_US).unwrap();
-        let mut wrapper = Wrapper::new(8);
-        wrapper.break_words = false;
+        let wrapper = Wrapper::new(8).break_words(false);
         assert_eq!(wrapper.wrap("over-caffinated"), vec!["over-", "caffinated"]);
 
-        wrapper.splitter = Box::new(corpus);
+        let wrapper = wrapper.word_splitter(Box::new(corpus));
         assert_eq!(wrapper.wrap("over-caffinated"),
                    vec!["over-", "caffi-", "nated"]);
     }
@@ -736,15 +775,13 @@ mod tests {
 
     #[test]
     fn test_non_breaking_space() {
-        let mut wrapper = Wrapper::new(5);
-        wrapper.break_words = false;
+        let wrapper = Wrapper::new(5).break_words(false);
         assert_eq!(wrapper.fill("foo bar baz"), "foo bar baz");
     }
 
     #[test]
     fn test_non_breaking_hyphen() {
-        let mut wrapper = Wrapper::new(5);
-        wrapper.break_words = false;
+        let wrapper = Wrapper::new(5).break_words(false);
         assert_eq!(wrapper.fill("foo‑bar‑baz"), "foo‑bar‑baz");
     }
 
