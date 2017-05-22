@@ -462,14 +462,15 @@ impl<'a> Wrapper<'a> {
                     line: &mut IndentedString)
                     -> bool {
         let space = if line.is_empty() { 0 } else { 1 };
-        let fits_in_line = space + part.width() + hyphen.len() <= *remaining;
+        let space_needed = space + part.width() + hyphen.len();
+        let fits_in_line = space_needed <= *remaining;
         if fits_in_line {
             if !line.is_empty() {
                 line.push(' ');
             }
             line.push_str(part);
             line.push_str(hyphen);
-            *remaining -= space + part.width() + hyphen.len();
+            *remaining -= space_needed;
         }
 
         fits_in_line
