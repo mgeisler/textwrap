@@ -15,7 +15,7 @@ the [Python textwrap module][py-textwrap].
 Add this to your `Cargo.toml`:
 ```toml
 [dependencies]
-textwrap = "0.5"
+textwrap = "0.6"
 ```
 
 and this to your crate root:
@@ -27,7 +27,7 @@ If you would like to have automatic hyphenation, specify the
 dependency as:
 ```toml
 [dependencies]
-textwrap = { version: "0.5", features: ["hyphenation"] }
+textwrap = { version: "0.6", features: ["hyphenation"] }
 ```
 
 ## Documentation
@@ -173,6 +173,22 @@ cost abstractions.
 
 This section lists the largest changes per release.
 
+### Version 0.6.0 — May 22nd, 2017
+
+Version 0.6.0 adds builder methods to `Wrapper` for easy one-line
+initialization and configuration:
+
+```rust
+let wrapper = Wrapper::new(60).break_words(false);
+```
+
+It also add a new `NoHyphenation` word splitter that will never split
+words, not even at existing hyphens.
+
+Issues closed:
+
+* Fixed [#28][issue-28]: Support not squeezing whitespace
+
 ### Version 0.5.0 — May 15th, 2017
 
 Version 0.5.0 has *breaking API changes*. However, this only affects
@@ -233,6 +249,7 @@ Contributions will be accepted under the same license.
 [issue-19]: ../../issues/19
 [issue-25]: ../../issues/25
 [issue-26]: ../../issues/26
+[issue-28]: ../../issues/28
 [issue-36]: ../../issues/36
 [issue-39]: ../../issues/39
 [mit]: LICENSE

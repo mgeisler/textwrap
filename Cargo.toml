@@ -1,8 +1,15 @@
 [package]
 name = "textwrap"
-version = "0.5.0"
+version = "0.6.0"
 authors = ["Martin Geisler <martin@geisler.net>"]
-description = "Library for word wrapping, indenting, and dedenting strings."
+description = """
+Textwrap is a small library for word wrapping, indenting, and
+dedenting strings.
+
+You can use it to format strings (such as help and error messages) for
+display in commandline applications. It is designed to be efficient
+and handle Unicode characters correctly.
+"""
 documentation = "https://docs.rs/textwrap/"
 repository = "https://github.com/mgeisler/textwrap"
 readme = "README.md"
