@@ -40,6 +40,7 @@
 //!
 //! [unicode-width]: https://docs.rs/unicode-width/
 
+#![deny(missing_docs)]
 
 extern crate unicode_width;
 extern crate term_size;
