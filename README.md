@@ -200,7 +200,7 @@ wrapper.corpus = Some(&corpus);
 ```
 to
 ```rust
-wrapper.splitter = corpus;
+wrapper.splitter = Box::new(corpus);
 ```
 
 Other changes include optimizations, so version 0.5.0 is roughly
