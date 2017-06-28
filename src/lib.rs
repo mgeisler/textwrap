@@ -40,6 +40,7 @@
 //!
 //! [unicode-width]: https://docs.rs/unicode-width/
 
+#![deny(missing_docs)]
 
 extern crate unicode_width;
 extern crate term_size;
@@ -162,6 +163,8 @@ impl WordSplitter for Corpus {
     }
 }
 
+/// An indented string is simply a `String` with a prefix. The string
+/// is seen as being empty when it contains nothing but the prefix.
 struct IndentedString {
     value: String,
     empty_len: usize,
