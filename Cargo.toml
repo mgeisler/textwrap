@@ -17,6 +17,9 @@ keywords = ["text", "formatting", "wrap", "typesetting", "hyphenation"]
 categories = ["text-processing", "command-line-interface"]
 license = "MIT"
 
+[package.metadata.docs.rs]
+all-features = true
+
 [badges]
 travis-ci = { repository = "mgeisler/textwrap" }
 appveyor = { repository = "mgeisler/textwrap" }
