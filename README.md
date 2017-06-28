@@ -82,7 +82,7 @@ The hyphenation uses high-quality TeX hyphenation patterns.
 
 ## Examples
 
-The library comes with a small example programs that shows various
+The library comes with some small example programs that shows various
 features.
 
 ### Layout Example
