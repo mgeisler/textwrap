@@ -82,7 +82,7 @@ The hyphenation uses high-quality TeX hyphenation patterns.
 
 ## Examples
 
-The library comes with a small example programs that shows various
+The library comes with some small example programs that shows various
 features.
 
 ### Layout Example
@@ -200,7 +200,7 @@ wrapper.corpus = Some(&corpus);
 ```
 to
 ```rust
-wrapper.splitter = corpus;
+wrapper.splitter = Box::new(corpus);
 ```
 
 Other changes include optimizations, so version 0.5.0 is roughly
