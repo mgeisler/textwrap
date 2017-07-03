@@ -4,10 +4,10 @@
 // where *n* is the number of characters in the text to be wrapped.
 
 extern crate test;
-#[cfg(feature = "hyphenation")]
-extern crate hyphenation;
 extern crate lipsum;
 extern crate textwrap;
+#[cfg(feature = "hyphenation")]
+extern crate hyphenation;
 
 use test::Bencher;
 #[cfg(feature = "hyphenation")]
