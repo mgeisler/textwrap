@@ -15,6 +15,7 @@
 //! ```
 //!
 //! This will display the following output:
+//!
 //! ```text
 //! textwrap: a small
 //! library for
@@ -90,6 +91,7 @@ pub trait WordSplitter {
 
 /// Use this as a [`Wrapper.splitter`] to avoid any kind of
 /// hyphenation:
+///
 /// ```
 /// use textwrap::{Wrapper, NoHyphenation};
 ///
