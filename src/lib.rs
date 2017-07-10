@@ -179,10 +179,7 @@ impl IndentedString {
     fn new(indent: &str, capacity: usize) -> IndentedString {
         let mut value = String::with_capacity(capacity);
         value.push_str(indent);
-        IndentedString {
-            value: value,
-            empty_len: indent.len(),
-        }
+        IndentedString { value: value, empty_len: indent.len() }
     }
 
     /// Returns `true` if the string has no other content apart from
