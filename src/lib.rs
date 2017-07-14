@@ -53,6 +53,9 @@ use unicode_width::UnicodeWidthChar;
 #[cfg(feature = "hyphenation")]
 use hyphenation::{Hyphenation, Corpus};
 
+/// A non-breaking space.
+const NBSP: char = '\u{a0}';
+
 /// An interface for splitting words.
 ///
 /// When the [`wrap`] method will try to fit text into a line, it will
@@ -381,7 +384,6 @@ impl<'a> Wrapper<'a> {
         let mut lines = Vec::with_capacity(s.len() / (self.width + 1));
         let mut line = IndentedString::new(self.initial_indent, self.width);
         let mut remaining = self.width - self.initial_indent.width();
-        const NBSP: char = '\u{a0}'; // non-breaking space
 
         for mut word in s.split(|c: char| c.is_whitespace() && c != NBSP) {
             // Skip over adjacent whitespace characters.
