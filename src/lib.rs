@@ -421,23 +421,36 @@ impl<'a> Wrapper<'a> {
                 // If even the smallest split doesn't fit on the line,
                 // we might have to break the word.
                 if line.is_empty() {
-                    if self.break_words && self.width > 1 {
+                    if self.break_words {
                         // Break word on a character boundary as close
-                        // to self.width as possible. Characters are
-                        // at most 2 columns wide, so we will chop off
-                        // at least one character.
-                        let mut head_width = 0;
-                        for (idx, c) in word.char_indices() {
+                        // to self.width as possible. We add at least
+                        // one character to ensure we make progress.
+                        let mut char_indices = word.char_indices();
+                        let mut head_width = match char_indices.next() {
+                            Some((_, c)) => c.width().unwrap_or(0),
+                            None => 0,
+                        };
+
+                        // We have moved past the first character and
+                        // will now search for the best place to split
+                        // the word. Initialize the index to
+                        // word.len() to accomodate for the degenerate
+                        // case where self.width is zero and word has
+                        // a single character.
+                        let mut split_idx = word.len();
+                        for (idx, c) in char_indices {
                             head_width += c.width().unwrap_or(0);
                             if head_width > remaining {
-                                let (head, tail) = word.split_at(idx);
-                                line.push_str(head);
-                                lines.push(line.into_string());
-                                line = IndentedString::new(self.subsequent_indent, self.width);
-                                word = tail;
+                                split_idx = idx;
                                 break;
                             }
                         }
+
+                        let (head, tail) = word.split_at(split_idx);
+                        line.push_str(head);
+                        lines.push(line.into_string());
+                        line = IndentedString::new(self.subsequent_indent, self.width);
+                        word = tail;
                     } else {
                         // We forcibly add the smallest split and
                         // continue with the longest tail. This will
@@ -648,12 +661,12 @@ mod tests {
 
     #[test]
     fn long_word() {
-        assert_eq!(wrap("foo", 0), vec!["foo"]);
+        assert_eq!(wrap("foo", 0), vec!["f", "o", "o"]);
     }
 
     #[test]
     fn long_words() {
-        assert_eq!(wrap("foo bar", 0), vec!["foo", "bar"]);
+        assert_eq!(wrap("foo bar", 0), vec!["f", "o", "o", "b", "a", "r"]);
     }
 
     #[test]
@@ -801,7 +814,7 @@ mod tests {
 
     #[test]
     fn break_words_zero_width() {
-        assert_eq!(wrap("foobar", 0), vec!["foobar"]);
+        assert_eq!(wrap("foobar", 0), vec!["f", "o", "o", "b", "a", "r"]);
     }
 
     #[test]
