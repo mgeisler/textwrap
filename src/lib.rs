@@ -48,6 +48,7 @@ extern crate term_size;
 #[cfg(feature = "hyphenation")]
 extern crate hyphenation;
 
+use std::borrow::Cow;
 use unicode_width::UnicodeWidthStr;
 use unicode_width::UnicodeWidthChar;
 #[cfg(feature = "hyphenation")]
@@ -55,23 +56,6 @@ use hyphenation::{Hyphenation, Corpus};
 
 /// A non-breaking space.
 const NBSP: char = '\u{a0}';
-
-/// Remove trailing whitespace by truncating the string. The truncated
-/// string is returned back to the caller.
-fn truncate_whitespace(mut s: String) -> String {
-    let mut idx = None;
-    for (i, ch) in s.char_indices().rev() {
-        if !ch.is_whitespace() || ch == NBSP {
-            break;
-        }
-        idx = Some(i);
-    }
-    if let Some(i) = idx {
-        s.truncate(i);
-    }
-
-    s
-}
 
 /// An interface for splitting words.
 ///
@@ -185,47 +169,22 @@ impl WordSplitter for Corpus {
     }
 }
 
-/// An indented string is simply a `String` with a prefix. The string
-/// is seen as being empty when it contains nothing but the prefix.
-struct IndentedString {
-    value: String,
-    empty_len: usize,
-}
-
-impl IndentedString {
-    /// Create a new indented string. The string will initially have
-    /// the content `indent` and the given capacity.
-    #[inline]
-    fn new(indent: &str, capacity: usize) -> IndentedString {
-        let mut value = String::with_capacity(capacity);
-        value.push_str(indent);
-        IndentedString { value: value, empty_len: indent.len() }
-    }
-
-    /// Returns `true` if the string has no other content apart from
-    /// the indentation.
-    #[inline]
-    fn is_empty(&self) -> bool {
-        self.value.len() == self.empty_len
-    }
-
-    /// Appends the given `char` to the end of this string.
-    #[inline]
-    fn push(&mut self, ch: char) {
-        self.value.push(ch);
-    }
-
-    /// Appends the given string slice to the end of this string.
-    #[inline]
-    fn push_str(&mut self, s: &str) {
-        self.value.push_str(s);
-    }
-
-    /// Return the inner `String`.
-    fn into_string(self) -> String {
-        self.value
+/// Backport of the AddAssign trait implementation from Rust 1.14.
+fn cow_add_assign<'a>(lhs: &mut Cow<'a, str>, rhs: &'a str) {
+    if lhs.is_empty() {
+        *lhs = Cow::Borrowed(rhs)
+    } else if rhs.is_empty() {
+        return;
+    } else {
+        if let Cow::Borrowed(inner) = *lhs {
+            let mut s = String::with_capacity(lhs.len() + rhs.len());
+            s.push_str(inner);
+            *lhs = Cow::Owned(s);
+        }
+        lhs.to_mut().push_str(rhs);
     }
 }
+
 
 /// A Wrapper holds settings for wrapping and filling text. Use it
 /// when the convenience [`wrap`] and [`fill`] functions are not
@@ -377,111 +336,95 @@ impl<'a> Wrapper<'a> {
     /// [`self.splitter`]: #structfield.splitter
     /// [`WordSplitter`]: trait.WordSplitter.html
     ///
-    pub fn wrap(&self, s: &str) -> Vec<String> {
+    pub fn wrap(&self, s: &'a str) -> Vec<Cow<'a, str>> {
         let mut lines = Vec::with_capacity(s.len() / (self.width + 1));
-        let mut line = IndentedString::new(self.initial_indent, self.width);
-        let mut remaining = self.width - self.initial_indent.width();
+        // Byte index where the current line starts.
+        let mut start = 0;
+        // Byte index of the last place where the string can be split.
+        let mut split = 0;
+        // Size in bytes of the character at s[split].
+        let mut split_len = 0;
+        // Width of s[start..idx].
+        let mut line_width = self.initial_indent.width();
+        // Width of s[start..split].
+        let mut line_width_at_split = line_width;
+        // Tracking runs of whitespace characters.
+        let mut in_whitespace = false;
 
-        for mut word in s.split(|c: char| c.is_whitespace() && c != NBSP) {
-            // Attempt to fit the word without any splitting.
-            if self.fit_part(word, "", &mut remaining, &mut line) {
-                continue;
-            }
+        let mut line = Cow::from(self.initial_indent);
 
-            // If that failed, loop until nothing remains to be added.
-            while !word.is_empty() {
-                let splits = self.splitter.split(word);
-                let (smallest, hyphen, longest) = splits[0];
-                let min_width = smallest.width() + hyphen.len();
-
-                // Add a new line if even the smallest split doesn't
-                // fit.
-                if !line.is_empty() && 1 + min_width > remaining {
-                    lines.push(truncate_whitespace(line.into_string()));
-                    line = IndentedString::new(self.subsequent_indent, self.width);
-                    remaining = self.width - self.subsequent_indent.width();
+        for (idx, ch) in s.char_indices() {
+            let char_width = ch.width().unwrap_or(0);
+            let char_len = ch.len_utf8();
+            if ch.is_whitespace() && ch != NBSP {
+                // Extend the previous split or create a new one.
+                if in_whitespace {
+                    split_len += char_len;
+                } else {
+                    split = idx;
+                    split_len = char_len;
                 }
+                line_width_at_split = line_width + char_width;
+                in_whitespace = true;
+            } else if line_width + char_width > self.width {
+                // There is no room for this character on the current
+                // line. Try to split the final word.
+                let remaining_text = &s[split + split_len..];
+                let final_word = match remaining_text
+                          .find(|ch: char| ch.is_whitespace() && ch != NBSP) {
+                    Some(i) => &remaining_text[..i],
+                    None => remaining_text,
+                };
 
-                // Find a split that fits on the current line.
-                for &(head, hyphen, tail) in splits.iter().rev() {
-                    if self.fit_part(head, hyphen, &mut remaining, &mut line) {
-                        word = tail;
+                let mut hyphen = "";
+                let splits = self.splitter.split(final_word);
+                for &(head, hyp, _) in splits.iter().rev() {
+                    if line_width_at_split + head.width() + hyp.width() <= self.width {
+                        split += head.len();
+                        split_len = 0;
+                        hyphen = hyp;
                         break;
                     }
                 }
 
-                // If even the smallest split doesn't fit on the line,
-                // we might have to break the word.
-                if line.is_empty() {
+                if start >= split {
+                    // The word is too big to fit on a single line, so we
+                    // need to split it at the current index.
                     if self.break_words {
-                        // Break word on a character boundary as close
-                        // to self.width as possible. We add at least
-                        // one character to ensure we make progress.
-                        let mut char_indices = word.char_indices();
-                        let mut head_width = match char_indices.next() {
-                            Some((_, c)) => c.width().unwrap_or(0),
-                            None => 0,
-                        };
-
-                        // We have moved past the first character and
-                        // will now search for the best place to split
-                        // the word. Initialize the index to
-                        // word.len() to accomodate for the degenerate
-                        // case where self.width is zero and word has
-                        // a single character.
-                        let mut split_idx = word.len();
-                        for (idx, c) in char_indices {
-                            head_width += c.width().unwrap_or(0);
-                            if head_width > remaining {
-                                split_idx = idx;
-                                break;
-                            }
-                        }
-
-                        let (head, tail) = word.split_at(split_idx);
-                        line.push_str(head);
-                        lines.push(line.into_string());
-                        line = IndentedString::new(self.subsequent_indent, self.width);
-                        word = tail;
+                        // Break work at current index.
+                        split = idx;
+                        split_len = 0;
+                        line_width_at_split = line_width;
                     } else {
-                        // We forcibly add the smallest split and
-                        // continue with the longest tail. This will
-                        // result in a line longer than self.width.
-                        lines.push(String::from(smallest) + hyphen);
-                        remaining = self.width;
-                        word = longest;
+                        // Add smallest split.
+                        split = start + splits[0].0.len();
+                        split_len = 0;
+                        line_width_at_split = line_width;
                     }
                 }
+
+                if start < split {
+                    cow_add_assign(&mut line, &s[start..split]);
+                    cow_add_assign(&mut line, hyphen);
+                    lines.push(line);
+                    line = Cow::from(self.subsequent_indent);
+                    start = split + split_len;
+                    line_width += self.subsequent_indent.width();
+                    line_width -= line_width_at_split;
+                }
+            } else {
+                in_whitespace = false;
             }
+            line_width += char_width;
         }
-        if !line.is_empty() {
-            lines.push(line.into_string());
+
+        // Add final line.
+        if start < s.len() {
+            cow_add_assign(&mut line, &s[start..]);
+            lines.push(line);
         }
+
         lines
-    }
-
-    /// Try to fit a word (or part of a word) onto a line. The line
-    /// and the remaining width is updated as appropriate if the word
-    /// or part fits.
-    fn fit_part<'b>(&self,
-                    part: &'b str,
-                    hyphen: &'b str,
-                    remaining: &mut usize,
-                    line: &mut IndentedString)
-                    -> bool {
-        let space = if line.is_empty() { 0 } else { 1 };
-        let space_needed = space + part.width() + hyphen.len();
-        if space_needed > *remaining {
-            return false;
-        }
-
-        if !line.is_empty() {
-            line.push(' ');
-        }
-        line.push_str(part);
-        line.push_str(hyphen);
-        *remaining -= space_needed;
-        true
     }
 }
 
@@ -526,7 +469,7 @@ pub fn fill(s: &str, width: usize) -> String {
 /// If you need to set a language corpus for automatic hyphenation, or
 /// need to wrap many strings, then it is suggested to create Wrapper
 /// and call its [`wrap` method](struct.Wrapper.html#method.wrap).
-pub fn wrap(s: &str, width: usize) -> Vec<String> {
+pub fn wrap<'a>(s: &'a str, width: usize) -> Vec<Cow<'a, str>> {
     Wrapper::new(width).wrap(s)
 }
 
@@ -629,6 +572,7 @@ mod tests {
     #[cfg(feature = "hyphenation")]
     use hyphenation::Language;
     use super::*;
+    use std::borrow::Cow;
 
     /// Add newlines. Ensures that the final line in the vector also
     /// has a newline.
@@ -774,6 +718,25 @@ mod tests {
         let wrapper = wrapper.word_splitter(Box::new(corpus));
         assert_eq!(wrapper.wrap("Internationalization"),
                    vec!["Interna-", "tionaliza-", "tion"]);
+    }
+
+    #[test]
+    #[cfg(feature = "hyphenation")]
+    fn borrowed_lines() {
+        // Lines that end with an extra hyphen are owned, the final
+        // line is borrowed.
+        let corpus = hyphenation::load(Language::English_US).unwrap();
+        let wrapper = Wrapper::new(10).word_splitter(Box::new(corpus));
+        let lines = wrapper.wrap("Internationalization");
+        if let Cow::Borrowed(s) = lines[0] {
+            assert!(false, "should not have been borrowed: {:?}", s);
+        }
+        if let Cow::Borrowed(s) = lines[1] {
+            assert!(false, "should not have been borrowed: {:?}", s);
+        }
+        if let Cow::Owned(ref s) = lines[2] {
+            assert!(false, "should not have been owned: {:?}", s);
+        }
     }
 
     #[test]
