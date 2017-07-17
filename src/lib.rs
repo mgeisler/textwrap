@@ -56,6 +56,23 @@ use hyphenation::{Hyphenation, Corpus};
 /// A non-breaking space.
 const NBSP: char = '\u{a0}';
 
+/// Remove trailing whitespace by truncating the string. The truncated
+/// string is returned back to the caller.
+fn truncate_whitespace(mut s: String) -> String {
+    let mut idx = None;
+    for (i, ch) in s.char_indices().rev() {
+        if !ch.is_whitespace() || ch == NBSP {
+            break;
+        }
+        idx = Some(i);
+    }
+    if let Some(i) = idx {
+        s.truncate(i);
+    }
+
+    s
+}
+
 /// An interface for splitting words.
 ///
 /// When the [`wrap`] method will try to fit text into a line, it will
@@ -405,7 +422,7 @@ impl<'a> Wrapper<'a> {
                 // Add a new line if even the smallest split doesn't
                 // fit.
                 if !line.is_empty() && 1 + min_width > remaining {
-                    lines.push(line.into_string());
+                    lines.push(truncate_whitespace(line.into_string()));
                     line = IndentedString::new(self.subsequent_indent, self.width);
                     remaining = self.width - self.subsequent_indent.width();
                 }
@@ -680,7 +697,7 @@ mod tests {
         // gets too long and is broken, the first word starts in
         // column zero and is not indented. The line before might end
         // up with trailing whitespace.
-        assert_eq!(wrap("foo               bar", 5), vec!["foo  ", "bar"]);
+        assert_eq!(wrap("foo               bar", 5), vec!["foo", "bar"]);
     }
 
     #[test]
