@@ -51,6 +51,32 @@ fn fill_800(b: &mut Bencher) {
     b.iter(|| textwrap::fill(text, LINE_LENGTH))
 }
 
+
+#[bench]
+fn wrap_100(b: &mut Bencher) {
+    let text = &lorem_ipsum(100);
+    b.iter(|| textwrap::wrap(text, LINE_LENGTH))
+}
+
+#[bench]
+fn wrap_200(b: &mut Bencher) {
+    let text = &lorem_ipsum(200);
+    b.iter(|| textwrap::wrap(text, LINE_LENGTH))
+}
+
+#[bench]
+fn wrap_400(b: &mut Bencher) {
+    let text = &lorem_ipsum(400);
+    b.iter(|| textwrap::wrap(text, LINE_LENGTH))
+}
+
+#[bench]
+fn wrap_800(b: &mut Bencher) {
+    let text = &lorem_ipsum(800);
+    b.iter(|| textwrap::wrap(text, LINE_LENGTH))
+}
+
+
 #[bench]
 #[cfg(feature = "hyphenation")]
 fn hyphenation_fill_100(b: &mut Bencher) {
