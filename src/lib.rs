@@ -249,15 +249,6 @@ pub struct Wrapper<'a> {
     /// When set to `false`, some lines be being longer than
     /// `self.width`.
     pub break_words: bool,
-    /// This crate treats every whitespace character (space, newline,
-    /// TAB, ...) as a space character. When this option is set to
-    /// `true`, the whitespace between words will be squeezed into a
-    /// single space character. Otherwise, the whitespace is
-    /// significant and will be kept in the output. Whitespace
-    /// characters such as TAB will still be turned into a single
-    /// space -- consider expanding TABs manually if this is a
-    /// concern.
-    pub squeeze_whitespace: bool,
     /// The method for splitting words. If the `hyphenation` feature
     /// is enabled, you can use a `hyphenation::language::Corpus` here
     /// to get language-aware hyphenation.
@@ -278,7 +269,6 @@ impl<'a> Wrapper<'a> {
             initial_indent: "",
             subsequent_indent: "",
             break_words: true,
-            squeeze_whitespace: false,
             splitter: Box::new(HyphenSplitter),
         }
     }
@@ -320,16 +310,6 @@ impl<'a> Wrapper<'a> {
     /// [`self.break_words`]: #structfield.break_words
     pub fn break_words(self, setting: bool) -> Wrapper<'a> {
         Wrapper { break_words: setting, ..self }
-    }
-
-    /// Change [`self.squeeze_whitespace`]. This controls if
-    /// whitespace betweee words is squeezed together to a single
-    /// space. Regardless of this setting, all whitespace characters
-    /// are converted to space (`' '`) characters.
-    ///
-    /// [`self.squeeze_whitespace`]: #structfield.squeeze_whitespace
-    pub fn squeeze_whitespace(self, setting: bool) -> Wrapper<'a> {
-        Wrapper { squeeze_whitespace: setting, ..self }
     }
 
     /// Change [`self.splitter`]. The word splitter is consulted when
@@ -403,11 +383,6 @@ impl<'a> Wrapper<'a> {
         let mut remaining = self.width - self.initial_indent.width();
 
         for mut word in s.split(|c: char| c.is_whitespace() && c != NBSP) {
-            // Skip over adjacent whitespace characters.
-            if self.squeeze_whitespace && word.is_empty() {
-                continue;
-            }
-
             // Attempt to fit the word without any splitting.
             if self.fit_part(word, "", &mut remaining, &mut line) {
                 continue;
@@ -698,12 +673,6 @@ mod tests {
         // column zero and is not indented. The line before might end
         // up with trailing whitespace.
         assert_eq!(wrap("foo               bar", 5), vec!["foo", "bar"]);
-    }
-
-    #[test]
-    fn whitespace_is_squeezed() {
-        let wrapper = Wrapper::new(10).squeeze_whitespace(true);
-        assert_eq!(wrapper.wrap(" foo \t  bar  "), vec!["foo bar"]);
     }
 
     #[test]
