@@ -606,7 +606,17 @@ mod tests {
     }
 
     #[test]
-    fn whitespace_is_significant() {
+    fn leading_whitespace() {
+        assert_eq!(wrap("  foo bar", 6), vec!["  foo", "bar"]);
+    }
+
+    #[test]
+    fn trailing_whitespace() {
+        assert_eq!(wrap("foo bar  ", 6), vec!["foo", "bar  "]);
+    }
+
+    #[test]
+    fn interior_whitespace() {
         assert_eq!(wrap("foo:   bar baz", 10), vec!["foo:   bar", "baz"]);
     }
 
