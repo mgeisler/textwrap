@@ -134,13 +134,28 @@ impl WordSplitter for HyphenSplitter {
         // that are surrounded by alphanumeric characters. This is to
         // avoid splitting on repeated hyphens, such as those found in
         // --foo-bar.
-        let char_indices = word.char_indices().collect::<Vec<_>>();
-        for w in char_indices.windows(3) {
-            let ((_, prev), (n, c), (_, next)) = (w[0], w[1], w[2]);
-            if prev.is_alphanumeric() && c == '-' && next.is_alphanumeric() {
-                let (head, tail) = word.split_at(n + 1);
+        let mut char_indices = word.char_indices();
+        // Early return if the word is empty.
+        let mut prev = match char_indices.next() {
+            None => return vec![(word, "", "")],
+            Some((_, ch)) => ch,
+        };
+
+        // Find current word, or return early if the word only has a
+        // single character.
+        let (mut idx, mut cur) = match char_indices.next() {
+            None => return vec![(word, "", "")],
+            Some((idx, cur)) => (idx, cur),
+        };
+
+        while let Some((i, next)) = char_indices.next() {
+            if prev.is_alphanumeric() && cur == '-' && next.is_alphanumeric() {
+                let (head, tail) = word.split_at(idx + 1);
                 triples.push((head, "", tail));
             }
+            prev = cur;
+            idx = i;
+            cur = next;
         }
 
         // Finally option is no split at all.
