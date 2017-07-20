@@ -19,11 +19,9 @@ fn new_wrapper<'a>() -> Wrapper<'a> {
 }
 
 fn main() {
-    let example = "
-Memory safety without garbage collection.
-Concurrency without data races.
-Zero-cost abstractions.
-";
+    let example = "Memory safety without garbage collection. \
+                   Concurrency without data races. \
+                   Zero-cost abstractions.";
     let mut prev_lines = vec![];
     let mut wrapper = new_wrapper();
     for width in 15..60 {
