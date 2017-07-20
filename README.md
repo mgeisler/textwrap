@@ -173,6 +173,28 @@ cost abstractions.
 
 This section lists the largest changes per release.
 
+### Version 0.7.0 — July 20th, 2017
+
+Version 0.7.0 changes the return type of `Wrapper::wrap` from
+`Vec<String>` to `Vec<Cow<'a, str>>`. This means that the output lines
+borrow data from the input string. This is a *breaking API change* if
+you relied on the exact return type of `Wrapper::wrap`. Callers of the
+`textwrap::fill` convenience function will see no breakage.
+
+The above change and other optimizations makes version 0.7.0 roughly
+15-30% faster than version 0.6.0.
+
+The `squeeze_whitespace` option has been removed since it was
+complicating the above optimization. Let us know if this option is
+important for you so we can provide a work around.
+
+Issues closed:
+
+* Fixed [#58][issue-58]: Add a "fast_wrap" function that reuses the
+  input string
+
+* Fixed [#61][issue-61]: Documentation errors
+
 ### Version 0.6.0 — May 22nd, 2017
 
 Version 0.6.0 adds builder methods to `Wrapper` for easy one-line
@@ -252,4 +274,6 @@ Contributions will be accepted under the same license.
 [issue-28]: ../../issues/28
 [issue-36]: ../../issues/36
 [issue-39]: ../../issues/39
+[issue-58]: ../../issues/58
+[issue-61]: ../../issues/61
 [mit]: LICENSE
