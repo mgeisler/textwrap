@@ -149,7 +149,7 @@ impl WordSplitter for HyphenSplitter {
             Some((idx, cur)) => (idx, cur),
         };
 
-        while let Some((i, next)) = char_indices.next() {
+        for (i, next) in char_indices {
             if prev.is_alphanumeric() && cur == '-' && next.is_alphanumeric() {
                 let (head, tail) = word.split_at(idx + 1);
                 triples.push((head, "", tail));
