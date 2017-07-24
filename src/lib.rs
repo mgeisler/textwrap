@@ -485,7 +485,7 @@ pub fn fill(s: &str, width: usize) -> String {
 /// If you need to set a language corpus for automatic hyphenation, or
 /// need to wrap many strings, then it is suggested to create Wrapper
 /// and call its [`wrap` method](struct.Wrapper.html#method.wrap).
-pub fn wrap<'a>(s: &'a str, width: usize) -> Vec<Cow<'a, str>> {
+pub fn wrap(s: &str, width: usize) -> Vec<Cow<str>> {
     Wrapper::new(width).wrap(s)
 }
 
