@@ -121,8 +121,9 @@ impl WordSplitter for NoHyphenation {
 /// by default by `Wrapper::new`.
 pub struct HyphenSplitter;
 
-/// HyphenSplitter is the default WordSplitter used by `Wrapper::new`.
-/// It will split words on any existing hyphens in the word.
+/// `HyphenSplitter` is the default `WordSplitter` used by
+/// `Wrapper::new`. It will split words on any existing hyphens in the
+/// word.
 ///
 /// It will only use hyphens that are surrounded by alphanumeric
 /// characters, which prevents a word like "--foo-bar" from being
@@ -184,7 +185,7 @@ impl WordSplitter for Corpus {
     }
 }
 
-/// Backport of the AddAssign trait implementation from Rust 1.14.
+/// Backport of the `AddAssign` trait implementation from Rust 1.14.
 fn cow_add_assign<'a>(lhs: &mut Cow<'a, str>, rhs: &'a str) {
     if lhs.is_empty() {
         *lhs = Cow::Borrowed(rhs)
