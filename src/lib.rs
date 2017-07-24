@@ -121,8 +121,9 @@ impl WordSplitter for NoHyphenation {
 /// by default by `Wrapper::new`.
 pub struct HyphenSplitter;
 
-/// HyphenSplitter is the default WordSplitter used by `Wrapper::new`.
-/// It will split words on any existing hyphens in the word.
+/// `HyphenSplitter` is the default `WordSplitter` used by
+/// `Wrapper::new`. It will split words on any existing hyphens in the
+/// word.
 ///
 /// It will only use hyphens that are surrounded by alphanumeric
 /// characters, which prevents a word like "--foo-bar" from being
@@ -148,7 +149,7 @@ impl WordSplitter for HyphenSplitter {
             Some((idx, cur)) => (idx, cur),
         };
 
-        while let Some((i, next)) = char_indices.next() {
+        for (i, next) in char_indices {
             if prev.is_alphanumeric() && cur == '-' && next.is_alphanumeric() {
                 let (head, tail) = word.split_at(idx + 1);
                 triples.push((head, "", tail));
@@ -172,7 +173,7 @@ impl WordSplitter for Corpus {
     fn split<'w>(&self, word: &'w str) -> Vec<(&'w str, &'w str, &'w str)> {
         // Find splits based on language corpus.
         let mut triples = Vec::new();
-        for n in word.opportunities(&self) {
+        for n in word.opportunities(self) {
             let (head, tail) = word.split_at(n);
             let hyphen = if head.ends_with('-') { "" } else { "-" };
             triples.push((head, hyphen, tail));
@@ -184,7 +185,7 @@ impl WordSplitter for Corpus {
     }
 }
 
-/// Backport of the AddAssign trait implementation from Rust 1.14.
+/// Backport of the `AddAssign` trait implementation from Rust 1.14.
 fn cow_add_assign<'a>(lhs: &mut Cow<'a, str>, rhs: &'a str) {
     if lhs.is_empty() {
         *lhs = Cow::Borrowed(rhs)
@@ -484,7 +485,7 @@ pub fn fill(s: &str, width: usize) -> String {
 /// If you need to set a language corpus for automatic hyphenation, or
 /// need to wrap many strings, then it is suggested to create Wrapper
 /// and call its [`wrap` method](struct.Wrapper.html#method.wrap).
-pub fn wrap<'a>(s: &'a str, width: usize) -> Vec<Cow<'a, str>> {
+pub fn wrap(s: &str, width: usize) -> Vec<Cow<str>> {
     Wrapper::new(width).wrap(s)
 }
 
@@ -587,7 +588,6 @@ mod tests {
     #[cfg(feature = "hyphenation")]
     use hyphenation::Language;
     use super::*;
-    use std::borrow::Cow;
 
     /// Add newlines. Ensures that the final line in the vector also
     /// has a newline.
@@ -750,16 +750,17 @@ mod tests {
     fn borrowed_lines() {
         // Lines that end with an extra hyphen are owned, the final
         // line is borrowed.
+        use std::borrow::Cow::{Borrowed,Owned};
         let corpus = hyphenation::load(Language::English_US).unwrap();
         let wrapper = Wrapper::new(10).word_splitter(Box::new(corpus));
         let lines = wrapper.wrap("Internationalization");
-        if let Cow::Borrowed(s) = lines[0] {
+        if let Borrowed(s) = lines[0] {
             assert!(false, "should not have been borrowed: {:?}", s);
         }
-        if let Cow::Borrowed(s) = lines[1] {
+        if let Borrowed(s) = lines[1] {
             assert!(false, "should not have been borrowed: {:?}", s);
         }
-        if let Cow::Owned(ref s) = lines[2] {
+        if let Owned(ref s) = lines[2] {
             assert!(false, "should not have been owned: {:?}", s);
         }
     }
