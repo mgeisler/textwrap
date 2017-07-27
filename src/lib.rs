@@ -750,7 +750,7 @@ mod tests {
     fn borrowed_lines() {
         // Lines that end with an extra hyphen are owned, the final
         // line is borrowed.
-        use std::borrow::Cow::{Borrowed,Owned};
+        use std::borrow::Cow::{Borrowed, Owned};
         let corpus = hyphenation::load(Language::English_US).unwrap();
         let wrapper = Wrapper::new(10).word_splitter(Box::new(corpus));
         let lines = wrapper.wrap("Internationalization");
