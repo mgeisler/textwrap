@@ -248,7 +248,7 @@ impl<'a> Wrapper<'a> {
         }
     }
 
-    /// Crate a new Wrapper for wrapping text at the current terminal
+    /// Create a new Wrapper for wrapping text at the current terminal
     /// width. If the terminal width cannot be determined (typically
     /// because the standard input and output is not connected to a
     /// terminal), a width of 80 characters will be used. Other
