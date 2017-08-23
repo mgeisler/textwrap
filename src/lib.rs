@@ -248,7 +248,7 @@ impl<'a> Wrapper<'a, HyphenSplitter> {
     /// terminal), a width of 80 characters will be used. Other
     /// settings use the same defaults as `Wrapper::new`.
     pub fn with_termwidth() -> Wrapper<'a, HyphenSplitter> {
-        Wrapper::new(term_size::dimensions_stdout().map_or(80, |(w, _)| w))
+        Wrapper::new(termwidth())
     }
 }
 
@@ -441,6 +441,27 @@ impl<'a, S: WordSplitter> Wrapper<'a, S> {
 
         lines
     }
+}
+
+/// Return the current terminal width. If the terminal width cannot be
+/// determined (typically because the standard output is not connected
+/// to a terminal), a default width of 80 characters will be used.
+///
+/// # Examples
+///
+/// Create a `Wrapper` for the current terminal with a two column
+/// margin:
+///
+/// ```
+/// use textwrap::{Wrapper, NoHyphenation, termwidth};
+///
+/// let width = termwidth() - 4; // Two columns on each side.
+/// let wrapper = Wrapper::with_splitter(width, NoHyphenation)
+///     .initial_indent("  ")
+///     .subsequent_indent("  ");
+/// ```
+pub fn termwidth() -> usize {
+    term_size::dimensions_stdout().map_or(80, |(w, _)| w)
 }
 
 /// Fill a line of text at `width` characters. Strings are wrapped
