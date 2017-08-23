@@ -65,7 +65,7 @@ use textwrap::Wrapper;
 
 fn main() {
     let corpus = hyphenation::load(Language::English_US).unwrap();
-    let wrapper = Wrapper::new(18).word_splitter(Box::new(corpus));
+    let wrapper = Wrapper::with_splitter(18, corpus);
     let text = "textwrap: a small library for wrapping text.";
     println!("{}", wrapper.fill(text))
 }
@@ -172,6 +172,13 @@ cost abstractions.
 ## Release History
 
 This section lists the largest changes per release.
+
+### Unreleased
+
+The `Wrapper` stuct now is now generic over the type of word splitter
+being used. This means less boxing is needed, which gives a nicer API.
+This is a *breaking API change* if you used `Wrapper::word_splitter`
+to change the word splitter on the fly.
 
 ### Version 0.7.0 — July 20th, 2017
 
