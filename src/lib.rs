@@ -277,10 +277,18 @@ impl<'a, S: WordSplitter> Wrapper<'a, S> {
     }
 
     /// Change [`self.initial_indent`]. The initial indentation is
-    /// used on the very first line of output. Setting it to something
-    /// like `"* "` can be useful if you are formatting an item in a
-    /// bulleted list. You will then probably want to set
-    /// `self.subsequent_indent` to `"  "`.
+    /// used on the very first line of output.
+    ///
+    /// # Examples
+    ///
+    /// Classic paragraph indentation can be achived by specifying an
+    /// initial indentation and wrapping each paragraph by itself:
+    ///
+    /// ```no_run
+    /// use textwrap::Wrapper;
+    ///
+    /// let wrapper = Wrapper::new(15).initial_indent("    ");
+    /// ```
     ///
     /// [`self.initial_indent`]: #structfield.initial_indent
     pub fn initial_indent(self, indent: &'a str) -> Wrapper<'a, S> {
@@ -288,9 +296,20 @@ impl<'a, S: WordSplitter> Wrapper<'a, S> {
     }
 
     /// Change [`self.subsequent_indent`]. The subsequent indentation
-    /// is used on lines following the first line of output. Setting
-    /// it to something like `"  "` can be useful if you are
-    /// formatting an item in a bulleted list.
+    /// is used on lines following the first line of output.
+    ///
+    /// # Examples
+    ///
+    /// Combining initial and subsequent indentation lets you format a
+    /// single paragraph as a bullet list:
+    ///
+    /// ```no_run
+    /// use textwrap::Wrapper;
+    ///
+    /// let wrapper = Wrapper::new(15)
+    ///     .initial_indent("* ")
+    ///     .subsequent_indent("  ");
+    /// ```
     ///
     /// [`self.subsequent_indent`]: #structfield.subsequent_indent
     pub fn subsequent_indent(self, indent: &'a str) -> Wrapper<'a, S> {
