@@ -8,14 +8,14 @@ use textwrap::Wrapper;
 
 
 #[cfg(not(feature = "hyphenation"))]
-fn new_wrapper<'a>() -> Wrapper<'a> {
+fn new_wrapper<'a>() -> Wrapper<'a, textwrap::HyphenSplitter> {
     Wrapper::new(0)
 }
 
 #[cfg(feature = "hyphenation")]
-fn new_wrapper<'a>() -> Wrapper<'a> {
+fn new_wrapper<'a>() -> Wrapper<'a, hyphenation::Corpus> {
     let corpus = hyphenation::load(Language::English_US).unwrap();
-    Wrapper::new(0).word_splitter(Box::new(corpus))
+    Wrapper::with_splitter(0, corpus)
 }
 
 fn main() {

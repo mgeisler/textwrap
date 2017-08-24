@@ -90,7 +90,7 @@ fn wrap_800(b: &mut Bencher) {
 fn hyphenation_fill_100(b: &mut Bencher) {
     let text = &lorem_ipsum(100);
     let corpus = hyphenation::load(Language::Latin).unwrap();
-    let wrapper = Wrapper::new(LINE_LENGTH).word_splitter(Box::new(corpus));
+    let wrapper = Wrapper::with_splitter(LINE_LENGTH, corpus);
     b.iter(|| wrapper.fill(text))
 }
 
@@ -99,7 +99,7 @@ fn hyphenation_fill_100(b: &mut Bencher) {
 fn hyphenation_fill_200(b: &mut Bencher) {
     let text = &lorem_ipsum(200);
     let corpus = hyphenation::load(Language::Latin).unwrap();
-    let wrapper = Wrapper::new(LINE_LENGTH).word_splitter(Box::new(corpus));
+    let wrapper = Wrapper::with_splitter(LINE_LENGTH, corpus);
     b.iter(|| wrapper.fill(text))
 }
 
@@ -108,7 +108,7 @@ fn hyphenation_fill_200(b: &mut Bencher) {
 fn hyphenation_fill_400(b: &mut Bencher) {
     let text = &lorem_ipsum(400);
     let corpus = hyphenation::load(Language::Latin).unwrap();
-    let wrapper = Wrapper::new(LINE_LENGTH).word_splitter(Box::new(corpus));
+    let wrapper = Wrapper::with_splitter(LINE_LENGTH, corpus);
     b.iter(|| wrapper.fill(text))
 }
 
@@ -117,6 +117,6 @@ fn hyphenation_fill_400(b: &mut Bencher) {
 fn hyphenation_fill_800(b: &mut Bencher) {
     let text = &lorem_ipsum(800);
     let corpus = hyphenation::load(Language::Latin).unwrap();
-    let wrapper = Wrapper::new(LINE_LENGTH).word_splitter(Box::new(corpus));
+    let wrapper = Wrapper::with_splitter(LINE_LENGTH, corpus);
     b.iter(|| wrapper.fill(text))
 }
