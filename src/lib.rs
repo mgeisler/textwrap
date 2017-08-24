@@ -247,6 +247,14 @@ impl<'a> Wrapper<'a, HyphenSplitter> {
     /// because the standard input and output is not connected to a
     /// terminal), a width of 80 characters will be used. Other
     /// settings use the same defaults as `Wrapper::new`.
+    ///
+    /// Equivalent to:
+    ///
+    /// ```
+    /// use textwrap::{Wrapper, termwidth};
+    ///
+    /// let wrapper = Wrapper::new(termwidth());
+    /// ```
     pub fn with_termwidth() -> Wrapper<'a, HyphenSplitter> {
         Wrapper::new(termwidth())
     }
