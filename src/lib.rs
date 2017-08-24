@@ -49,7 +49,6 @@ extern crate term_size;
 extern crate hyphenation;
 
 use std::borrow::Cow;
-use std::iter::Fuse;
 use std::str::CharIndices;
 
 use unicode_width::UnicodeWidthStr;
@@ -429,7 +428,7 @@ impl<'a, S: WordSplitter + Clone> Wrapper<'a, S> {
             splitter: self.splitter.clone(),
 
             source: s,
-            fused_char_indices: s.char_indices().fuse(),
+            char_indices: s.char_indices(),
             lower_size_hint: s.len() / (self.width + 1),
             is_next_first: true,
             start: 0,
@@ -468,7 +467,7 @@ pub struct WrapIter<'a, S: WordSplitter> {
     // String to wrap.
     source: &'a str,
     // Fused CharIndices iterator over self.source.
-    fused_char_indices: Fuse<CharIndices<'a>>,
+    char_indices: CharIndices<'a>,
     // Lower bound of the iterator length.
     lower_size_hint: usize,
     // Is the next element the first one ever produced?
@@ -504,7 +503,11 @@ impl<'a, S: WordSplitter> Iterator for WrapIter<'a, S> {
     type Item = Cow<'a, str>;
 
     fn next(&mut self) -> Option<Cow<'a, str>> {
-        while let Some((idx, ch)) = self.fused_char_indices.next() {
+        if self.finished {
+            return None;
+        }
+
+        while let Some((idx, ch)) = self.char_indices.next() {
             let char_width = ch.width().unwrap_or(0);
             let char_len = ch.len_utf8();
             if ch.is_whitespace() && ch != NBSP {
@@ -572,15 +575,18 @@ impl<'a, S: WordSplitter> Iterator for WrapIter<'a, S> {
         }
 
         // Add final line.
-        if !self.finished && self.start < self.source.len() {
+        let final_line = if self.start < self.source.len() {
             let mut result_line = self.create_result_line();
             cow_add_assign(&mut result_line, &self.source[self.start..]);
-            self.finished = true;
 
-            return Some(result_line);
-        }
+            Some(result_line)
+        } else {
+            None
+        };
 
-        None
+        self.finished = true;
+
+        final_line
     }
 
     fn size_hint(&self) -> (usize, Option<usize>) {
