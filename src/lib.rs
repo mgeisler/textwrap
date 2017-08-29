@@ -219,6 +219,7 @@ fn cow_add_assign<'a>(lhs: &mut Cow<'a, str>, rhs: &'a str) {
 /// words in the input string (where each single scan yields a single
 /// line) so that the overall time and memory complexity is O(*n*) where
 /// *n* is the length of the input string.
+#[derive(Clone)]
 pub struct Wrapper<'a, S: WordSplitter> {
     /// The width in columns at which the text will be wrapped.
     pub width: usize,
@@ -266,7 +267,7 @@ impl<'a> Wrapper<'a, HyphenSplitter> {
     }
 }
 
-impl<'a, S: WordSplitter + Clone> Wrapper<'a, S> {
+impl<'a, S: WordSplitter> Wrapper<'a, S> {
     /// Use the given [`WordSplitter`] to create a new Wrapper for
     /// wrapping at the specified width. By default, we allow words
     /// longer than `width` to be broken.
@@ -351,13 +352,15 @@ impl<'a, S: WordSplitter + Clone> Wrapper<'a, S> {
     /// *n* is the input string length.
     pub fn fill(&self, s: &str) -> String {
         let mut result = String::new();
-        for (i, line) in self.wrap_iter(s).enumerate() {
+
+        for (i, line) in self.wrap_iter_borrow(s).enumerate() {
             if i > 0 {
                 result.push_str("\n");
             }
 
             result.push_str(&line);
         }
+
         result
     }
 
@@ -384,9 +387,47 @@ impl<'a, S: WordSplitter + Clone> Wrapper<'a, S> {
     /// As such, it inherits the O(*n*) overall time and memory
     /// complexity where *n* is the input string length.
     pub fn wrap(&self, s: &'a str) -> Vec<Cow<'a, str>> {
-        self.wrap_iter(s).collect::<Vec<_>>()
+        self.wrap_iter_borrow(s).collect::<Vec<_>>()
     }
 
+    /// Lazily wrap a line of text at `self.width` characters. Strings
+    /// are wrapped based on their displayed width, not their size in
+    /// bytes.
+    ///
+    /// ```
+    /// use std::borrow::Cow;
+    /// use textwrap::Wrapper;
+    ///
+    /// let wrap20 = Wrapper::new(20);
+    /// let mut wrap20_iter = wrap20.into_wrap_iter("Zero-cost abstractions.");
+    /// assert_eq!(wrap20_iter.next(), Some(Cow::from("Zero-cost")));
+    /// assert_eq!(wrap20_iter.next(), Some(Cow::from("abstractions.")));
+    /// assert_eq!(wrap20_iter.next(), None);
+    /// ```
+    ///
+    /// The [`WordSplitter`] stored in [`self.splitter`] is used
+    /// whenever when a word is too large to fit on the current line.
+    /// By changing the field, different hyphenation strategies can be
+    /// implemented.
+    ///
+    /// This method consumes the `Wrapper` and returns a [`WrapIter`]
+    /// iterator of lines. If processed fully, it has an O(*n*) time and
+    /// memory complexity where *n* is the input string length.
+    ///
+    /// [`self.splitter`]: #structfield.splitter
+    /// [`WordSplitter`]: trait.WordSplitter.html
+    /// [`WrapIter`]: struct.WrapIter.html
+    pub fn into_wrap_iter(self, s: &'a str) -> WrapIter<'a, S> {
+        let wrap_iter_impl = WrapIterImpl::new(&self, s);
+
+        WrapIter {
+            wrapper: self,
+            wrap_iter_impl: wrap_iter_impl,
+        }
+    }
+}
+
+impl<'a, S: WordSplitter + Clone> Wrapper<'a, S> {
     /// Lazily wrap a line of text at `self.width` characters. Strings
     /// are wrapped based on their displayed width, not their size in
     /// bytes.
@@ -412,64 +453,123 @@ impl<'a, S: WordSplitter + Clone> Wrapper<'a, S> {
     /// By changing the field, different hyphenation strategies can be
     /// implemented.
     ///
+    /// This method performs cloning of internal data which can be
+    /// expensive (particularly, when `hyphenation` feature is enabled:
+    /// this includes cloning [`hyphenation::Corpus`] which contains
+    /// `HashMap`s ) so use [`wrap_iter_borrow`] if the iterator doesn't
+    /// need to outlive the `Wrapper` or [`into_wrap_iter`] if you don't
+    /// need the `Wrapper` instance anymore afterwards.
+    ///
     /// This method returns a [`WrapIter`] iterator of lines. If
     /// processed fully, it has an O(*n*) time and memory complexity
     /// where *n* is the input string length.
     ///
     /// [`self.splitter`]: #structfield.splitter
     /// [`WordSplitter`]: trait.WordSplitter.html
-    /// [`WrapIter`]: struct.Wrapper.html
+    /// [`hyphenation::Corpus`]: https://docs.rs/hyphenation/*/hyphenation/language/struct.Corpus.html
+    /// [`wrap_iter_borrow`]: struct.Wrapper.html#method.wrap_iter_borrow
+    /// [`into_wrap_iter`]: struct.Wrapper.html#method.into_wrap_iter
+    /// [`WrapIter`]: struct.WrapIter.html
     pub fn wrap_iter(&self, s: &'a str) -> WrapIter<'a, S> {
-        WrapIter {
-            width: self.width,
-            initial_indent: self.initial_indent,
-            subsequent_indent: self.subsequent_indent,
-            break_words: self.break_words,
-            splitter: self.splitter.clone(),
+        WrapIter{
+            wrapper: (*self).clone(),
+            wrap_iter_impl: WrapIterImpl::new(self, s),
+        }
+    }
+}
 
-            source: s,
-            char_indices: s.char_indices(),
-            lower_size_hint: s.len() / (self.width + 1),
-            is_next_first: true,
-            start: 0,
-            split: 0,
-            split_len: 0,
-            line_width: self.initial_indent.width(),
-            line_width_at_split: self.initial_indent.width(),
-            in_whitespace: false,
-            finished: false,
+impl<'w, 'a: 'w, S: WordSplitter> Wrapper<'a, S> {
+    /// Lazily wrap a line of text at `self.width` characters. Strings
+    /// are wrapped based on their displayed width, not their size in
+    /// bytes.
+    ///
+    /// ```
+    /// use std::borrow::Cow;
+    /// use textwrap::Wrapper;
+    ///
+    /// let wrap20 = Wrapper::new(20);
+    /// let mut wrap20_iter_borrow = wrap20.wrap_iter_borrow("Zero-cost abstractions.");
+    /// assert_eq!(wrap20_iter_borrow.next(), Some(Cow::from("Zero-cost")));
+    /// assert_eq!(wrap20_iter_borrow.next(), Some(Cow::from("abstractions.")));
+    /// assert_eq!(wrap20_iter_borrow.next(), None);
+    ///
+    /// let wrap25 = Wrapper::new(25);
+    /// let mut wrap25_iter_borrow = wrap25.wrap_iter_borrow("Zero-cost abstractions.");
+    /// assert_eq!(wrap25_iter_borrow.next(), Some(Cow::from("Zero-cost abstractions.")));
+    /// assert_eq!(wrap25_iter_borrow.next(), None);
+    /// ```
+    ///
+    /// The [`WordSplitter`] stored in [`self.splitter`] is used
+    /// whenever when a word is too large to fit on the current line.
+    /// By changing the field, different hyphenation strategies can be
+    /// implemented.
+    ///
+    /// This method returns a [`WrapIterBorrow`] iterator of lines which
+    /// borrows this `Wrapper`. If processed fully, it has an O(*n*)
+    /// time and memory complexity where *n* is the input string length.
+    ///
+    /// [`self.splitter`]: #structfield.splitter
+    /// [`WordSplitter`]: trait.WordSplitter.html
+    /// [`WrapIterBorrow`]: struct.WrapIterBorrow.html
+    pub fn wrap_iter_borrow(&'w self, s: &'a str) -> WrapIterBorrow<'w, 'a, S> {
+        WrapIterBorrow {
+            wrapper: self,
+            wrap_iter_impl: WrapIterImpl::new(self, s),
         }
     }
 }
 
 
-/// An iterator over the lines of the input string. An instance of
-/// `WrapIter` is typically obtained through either [`wrap_iter`]
-/// function or [`Wrapper::wrap_iter`] method.
+/// An iterator over the lines of the input string which owns a
+/// `Wrapper`. An instance of `WrapIter` is typically obtained through
+/// either [`wrap_iter`] function, [`Wrapper::into_wrap_iter`] or
+/// [`Wrapper::wrap_iter`] methods.
 ///
 /// Each call of `.next()` method yields a line wrapped in `Some` if the
 /// input hasn't been fully processed yet. Otherwise it returns `None`.
 ///
 /// [`wrap_iter`]: fn.wrap_iter.html
 /// [`Wrapper::wrap_iter`]: struct.Wrapper.html#method.wrap_iter
+/// [`Wrapper::into_wrap_iter`]: struct.Wrapper.html#method.into_wrap_iter
 pub struct WrapIter<'a, S: WordSplitter> {
-    // Value of width field from Wrapper
-    width: usize,
-    // Value of initial_indent field from Wrapper
-    initial_indent: &'a str,
-    // Value of subsequent_indent field from Wrapper
-    subsequent_indent: &'a str,
-    // Value of break_words field from Wrapper
-    break_words: bool,
-    // Value of splitter field from Wrapper
-    splitter: S,
+    wrapper: Wrapper<'a, S>,
+    wrap_iter_impl: WrapIterImpl<'a>,
+}
 
+impl<'a, S: WordSplitter> Iterator for WrapIter<'a, S> {
+    type Item = Cow<'a, str>;
+
+    fn next(&mut self) -> Option<Cow<'a, str>> {
+        self.wrap_iter_impl.impl_next(&self.wrapper)
+    }
+}
+
+/// An iterator over the lines of the input string which borrows a
+/// `Wrapper`. An instance of `WrapIterBorrow` is typically obtained
+/// through the [`Wrapper::wrap_iter_borrow`] method.
+///
+/// Each call of `.next()` method yields a line wrapped in `Some` if the
+/// input hasn't been fully processed yet. Otherwise it returns `None`.
+///
+/// [`Wrapper::wrap_iter_borrow`]: struct.Wrapper.html#method.wrap_iter_borrow
+pub struct WrapIterBorrow<'w, 'a: 'w, S: WordSplitter + 'w> {
+    wrapper: &'w Wrapper<'a, S>,
+    wrap_iter_impl: WrapIterImpl<'a>,
+}
+
+impl<'w, 'a: 'w, S: WordSplitter> Iterator for WrapIterBorrow<'w, 'a, S> {
+    type Item = Cow<'a, str>;
+
+    fn next(&mut self) -> Option<Cow<'a, str>> {
+        self.wrap_iter_impl.impl_next(self.wrapper)
+    }
+}
+
+struct WrapIterImpl<'a> {
     // String to wrap.
     source: &'a str,
-    // Fused CharIndices iterator over self.source.
+    // CharIndices iterator over self.source.
     char_indices: CharIndices<'a>,
-    // Lower bound of the iterator length.
-    lower_size_hint: usize,
     // Is the next element the first one ever produced?
     is_next_first: bool,
     // Byte index where the current line starts.
@@ -488,21 +588,32 @@ pub struct WrapIter<'a, S: WordSplitter> {
     finished: bool,
 }
 
-impl<'a, S: WordSplitter> WrapIter<'a, S> {
-    fn create_result_line(&mut self) -> Cow<'a, str> {
-        if self.is_next_first {
-            self.is_next_first = false;
-            Cow::from(self.initial_indent)
-        } else {
-            Cow::from(self.subsequent_indent)
+impl<'a> WrapIterImpl<'a> {
+    fn new<S: WordSplitter>(wrapper: &Wrapper<'a, S>, s: &'a str) -> WrapIterImpl<'a> {
+        WrapIterImpl {
+            source: s,
+            char_indices: s.char_indices(),
+            is_next_first: true,
+            start: 0,
+            split: 0,
+            split_len: 0,
+            line_width: wrapper.initial_indent.width(),
+            line_width_at_split: wrapper.initial_indent.width(),
+            in_whitespace: false,
+            finished: false,
         }
     }
-}
 
-impl<'a, S: WordSplitter> Iterator for WrapIter<'a, S> {
-    type Item = Cow<'a, str>;
+    fn create_result_line<S: WordSplitter>(&mut self, wrapper: &Wrapper<'a, S>) -> Cow<'a, str> {
+        if self.is_next_first {
+            self.is_next_first = false;
+            Cow::from(wrapper.initial_indent)
+        } else {
+            Cow::from(wrapper.subsequent_indent)
+        }
+    }
 
-    fn next(&mut self) -> Option<Cow<'a, str>> {
+    fn impl_next<S: WordSplitter>(&mut self, wrapper: &Wrapper<'a, S>) -> Option<Cow<'a, str>> {
         if self.finished {
             return None;
         }
@@ -520,7 +631,7 @@ impl<'a, S: WordSplitter> Iterator for WrapIter<'a, S> {
                 }
                 self.line_width_at_split = self.line_width + char_width;
                 self.in_whitespace = true;
-            } else if self.line_width + char_width > self.width {
+            } else if self.line_width + char_width > wrapper.width {
                 // There is no room for this character on the current
                 // line. Try to split the final word.
                 let remaining_text = &self.source[self.split + self.split_len..];
@@ -531,9 +642,9 @@ impl<'a, S: WordSplitter> Iterator for WrapIter<'a, S> {
                 };
 
                 let mut hyphen = "";
-                let splits = self.splitter.split(final_word);
+                let splits = wrapper.splitter.split(final_word);
                 for &(head, hyp, _) in splits.iter().rev() {
-                    if self.line_width_at_split + head.width() + hyp.width() <= self.width {
+                    if self.line_width_at_split + head.width() + hyp.width() <= wrapper.width {
                         self.split += head.len();
                         self.split_len = 0;
                         hyphen = hyp;
@@ -544,7 +655,7 @@ impl<'a, S: WordSplitter> Iterator for WrapIter<'a, S> {
                 if self.start >= self.split {
                     // The word is too big to fit on a single line, so we
                     // need to split it at the current index.
-                    if self.break_words {
+                    if wrapper.break_words {
                         // Break work at current index.
                         self.split = idx;
                         self.split_len = 0;
@@ -558,11 +669,12 @@ impl<'a, S: WordSplitter> Iterator for WrapIter<'a, S> {
                 }
 
                 if self.start < self.split {
-                    let mut result_line = self.create_result_line();
+                    let mut result_line = self.create_result_line(wrapper);
                     cow_add_assign(&mut result_line, &self.source[self.start..self.split]);
                     cow_add_assign(&mut result_line, hyphen);
+
                     self.start = self.split + self.split_len;
-                    self.line_width += self.subsequent_indent.width();
+                    self.line_width += wrapper.subsequent_indent.width();
                     self.line_width -= self.line_width_at_split;
                     self.line_width += char_width;
 
@@ -576,7 +688,7 @@ impl<'a, S: WordSplitter> Iterator for WrapIter<'a, S> {
 
         // Add final line.
         let final_line = if self.start < self.source.len() {
-            let mut result_line = self.create_result_line();
+            let mut result_line = self.create_result_line(wrapper);
             cow_add_assign(&mut result_line, &self.source[self.start..]);
 
             Some(result_line)
@@ -588,11 +700,8 @@ impl<'a, S: WordSplitter> Iterator for WrapIter<'a, S> {
 
         final_line
     }
-
-    fn size_hint(&self) -> (usize, Option<usize>) {
-        (self.lower_size_hint, None)
-    }
 }
+
 
 /// Return the current terminal width. If the terminal width cannot be
 /// determined (typically because the standard output is not connected
@@ -688,11 +797,14 @@ pub fn wrap(s: &str, width: usize) -> Vec<Cow<str>> {
 /// This function creates a Wrapper on the fly with default settings.
 /// If you need to set a language corpus for automatic hyphenation, or
 /// need to wrap many strings, then it is suggested to create Wrapper
-/// and call its [`wrap_iter` method].
+/// and call its [`wrap_iter`], [`wrap_iter_borrow`] or
+/// [`into_wrap_iter`] methods.
 ///
-/// [`wrap_iter` method]: struct.Wrapper.html#method.wrap_iter
+/// [`wrap_iter`]: struct.Wrapper.html#method.wrap_iter
+/// [`wrap_iter_borrow`]: struct.Wrapper.html#method.wrap_iter_borrow
+/// [`into_wrap_iter`]: struct.Wrapper.html#method.into_wrap_iter
 pub fn wrap_iter<'s>(s: &'s str, width: usize) -> WrapIter<'s, HyphenSplitter> {
-    Wrapper::new(width).wrap_iter(s)
+    Wrapper::new(width).into_wrap_iter(s)
 }
 
 /// Add prefix to each non-empty line.
