@@ -471,7 +471,7 @@ impl<'a, S: WordSplitter + Clone> Wrapper<'a, S> {
     /// [`into_wrap_iter`]: struct.Wrapper.html#method.into_wrap_iter
     /// [`WrapIter`]: struct.WrapIter.html
     pub fn wrap_iter(&self, s: &'a str) -> WrapIter<'a, S> {
-        WrapIter{
+        WrapIter {
             wrapper: (*self).clone(),
             wrap_iter_impl: WrapIterImpl::new(self, s),
         }
