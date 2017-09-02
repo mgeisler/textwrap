@@ -454,15 +454,15 @@ impl<'w, 'a: 'w, S: WordSplitter> Wrapper<'a, S> {
     /// By changing the field, different hyphenation strategies can be
     /// implemented.
     ///
-    /// This method returns a [`WrapIterBorrow`] iterator of lines which
+    /// This method returns a [`WrapIter`] iterator of lines which
     /// borrows this `Wrapper`. If processed fully, it has an O(*n*)
     /// time and memory complexity where *n* is the input string length.
     ///
     /// [`self.splitter`]: #structfield.splitter
     /// [`WordSplitter`]: trait.WordSplitter.html
-    /// [`WrapIterBorrow`]: struct.WrapIterBorrow.html
-    pub fn wrap_iter(&'w self, s: &'a str) -> WrapIterBorrow<'w, 'a, S> {
-        WrapIterBorrow {
+    /// [`WrapIter`]: struct.WrapIter.html
+    pub fn wrap_iter(&'w self, s: &'a str) -> WrapIter<'w, 'a, S> {
+        WrapIter {
             wrapper: self,
             wrap_iter_impl: WrapIterImpl::new(self, s),
         }
@@ -493,19 +493,19 @@ impl<'a, S: WordSplitter> Iterator for IntoWrapIter<'a, S> {
 }
 
 /// An iterator over the lines of the input string which borrows a
-/// `Wrapper`. An instance of `WrapIterBorrow` is typically obtained
+/// `Wrapper`. An instance of `WrapIter` is typically obtained
 /// through the [`Wrapper::wrap_iter`] method.
 ///
 /// Each call of `.next()` method yields a line wrapped in `Some` if the
 /// input hasn't been fully processed yet. Otherwise it returns `None`.
 ///
 /// [`Wrapper::wrap_iter`]: struct.Wrapper.html#method.wrap_iter
-pub struct WrapIterBorrow<'w, 'a: 'w, S: WordSplitter + 'w> {
+pub struct WrapIter<'w, 'a: 'w, S: WordSplitter + 'w> {
     wrapper: &'w Wrapper<'a, S>,
     wrap_iter_impl: WrapIterImpl<'a>,
 }
 
-impl<'w, 'a: 'w, S: WordSplitter> Iterator for WrapIterBorrow<'w, 'a, S> {
+impl<'w, 'a: 'w, S: WordSplitter> Iterator for WrapIter<'w, 'a, S> {
     type Item = Cow<'a, str>;
 
     fn next(&mut self) -> Option<Cow<'a, str>> {
