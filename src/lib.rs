@@ -743,12 +743,18 @@ pub fn wrap(s: &str, width: usize) -> Vec<Cow<str>> {
 /// ```
 ///
 /// This function creates a Wrapper on the fly with default settings.
+/// It then calls the [`into_wrap_iter`] method. Hence, the return
+/// value is an [`IntoWrapIter`], not a [`WrapIter`] as the function
+/// name would otherwise suggest.
+///
 /// If you need to set a language corpus for automatic hyphenation, or
 /// need to wrap many strings, then it is suggested to create Wrapper
 /// and call its [`wrap_iter`] or [`into_wrap_iter`] methods.
 ///
 /// [`wrap_iter`]: struct.Wrapper.html#method.wrap_iter
 /// [`into_wrap_iter`]: struct.Wrapper.html#method.into_wrap_iter
+/// [`IntoWrapIter`]: struct.IntoWrapIter.html
+/// [`WrapIter`]: struct.WrapIter.html
 pub fn wrap_iter<'s>(s: &'s str, width: usize) -> IntoWrapIter<'s, HyphenSplitter> {
     Wrapper::new(width).into_wrap_iter(s)
 }
