@@ -354,7 +354,7 @@ impl<'a, S: WordSplitter> Wrapper<'a, S> {
     pub fn fill(&self, s: &str) -> String {
         let mut result = String::new();
 
-        for (i, line) in self.wrap_iter_borrow(s).enumerate() {
+        for (i, line) in self.wrap_iter(s).enumerate() {
             if i > 0 {
                 result.push_str("\n");
             }
@@ -388,7 +388,7 @@ impl<'a, S: WordSplitter> Wrapper<'a, S> {
     /// As such, it inherits the O(*n*) overall time and memory
     /// complexity where *n* is the input string length.
     pub fn wrap(&self, s: &'a str) -> Vec<Cow<'a, str>> {
-        self.wrap_iter_borrow(s).collect::<Vec<_>>()
+        self.wrap_iter(s).collect::<Vec<_>>()
     }
 
     /// Lazily wrap a line of text at `self.width` characters. Strings
@@ -428,7 +428,7 @@ impl<'a, S: WordSplitter> Wrapper<'a, S> {
     }
 }
 
-impl<'a, S: WordSplitter + Clone> Wrapper<'a, S> {
+impl<'w, 'a: 'w, S: WordSplitter> Wrapper<'a, S> {
     /// Lazily wrap a line of text at `self.width` characters. Strings
     /// are wrapped based on their displayed width, not their size in
     /// bytes.
@@ -454,57 +454,6 @@ impl<'a, S: WordSplitter + Clone> Wrapper<'a, S> {
     /// By changing the field, different hyphenation strategies can be
     /// implemented.
     ///
-    /// This method performs cloning of internal data which can be
-    /// expensive (particularly, when `hyphenation` feature is enabled:
-    /// this includes cloning [`hyphenation::Corpus`] which contains
-    /// `HashMap`s ) so use [`wrap_iter_borrow`] if the iterator doesn't
-    /// need to outlive the `Wrapper` or [`into_wrap_iter`] if you don't
-    /// need the `Wrapper` instance anymore afterwards.
-    ///
-    /// This method returns a [`WrapIter`] iterator of lines. If
-    /// processed fully, it has an O(*n*) time and memory complexity
-    /// where *n* is the input string length.
-    ///
-    /// [`self.splitter`]: #structfield.splitter
-    /// [`WordSplitter`]: trait.WordSplitter.html
-    /// [`hyphenation::Corpus`]: https://docs.rs/hyphenation/*/hyphenation/language/struct.Corpus.html
-    /// [`wrap_iter_borrow`]: struct.Wrapper.html#method.wrap_iter_borrow
-    /// [`into_wrap_iter`]: struct.Wrapper.html#method.into_wrap_iter
-    /// [`WrapIter`]: struct.WrapIter.html
-    pub fn wrap_iter(&self, s: &'a str) -> WrapIter<'a, S> {
-        WrapIter {
-            wrapper: (*self).clone(),
-            wrap_iter_impl: WrapIterImpl::new(self, s),
-        }
-    }
-}
-
-impl<'w, 'a: 'w, S: WordSplitter> Wrapper<'a, S> {
-    /// Lazily wrap a line of text at `self.width` characters. Strings
-    /// are wrapped based on their displayed width, not their size in
-    /// bytes.
-    ///
-    /// ```
-    /// use std::borrow::Cow;
-    /// use textwrap::Wrapper;
-    ///
-    /// let wrap20 = Wrapper::new(20);
-    /// let mut wrap20_iter_borrow = wrap20.wrap_iter_borrow("Zero-cost abstractions.");
-    /// assert_eq!(wrap20_iter_borrow.next(), Some(Cow::from("Zero-cost")));
-    /// assert_eq!(wrap20_iter_borrow.next(), Some(Cow::from("abstractions.")));
-    /// assert_eq!(wrap20_iter_borrow.next(), None);
-    ///
-    /// let wrap25 = Wrapper::new(25);
-    /// let mut wrap25_iter_borrow = wrap25.wrap_iter_borrow("Zero-cost abstractions.");
-    /// assert_eq!(wrap25_iter_borrow.next(), Some(Cow::from("Zero-cost abstractions.")));
-    /// assert_eq!(wrap25_iter_borrow.next(), None);
-    /// ```
-    ///
-    /// The [`WordSplitter`] stored in [`self.splitter`] is used
-    /// whenever when a word is too large to fit on the current line.
-    /// By changing the field, different hyphenation strategies can be
-    /// implemented.
-    ///
     /// This method returns a [`WrapIterBorrow`] iterator of lines which
     /// borrows this `Wrapper`. If processed fully, it has an O(*n*)
     /// time and memory complexity where *n* is the input string length.
@@ -512,7 +461,7 @@ impl<'w, 'a: 'w, S: WordSplitter> Wrapper<'a, S> {
     /// [`self.splitter`]: #structfield.splitter
     /// [`WordSplitter`]: trait.WordSplitter.html
     /// [`WrapIterBorrow`]: struct.WrapIterBorrow.html
-    pub fn wrap_iter_borrow(&'w self, s: &'a str) -> WrapIterBorrow<'w, 'a, S> {
+    pub fn wrap_iter(&'w self, s: &'a str) -> WrapIterBorrow<'w, 'a, S> {
         WrapIterBorrow {
             wrapper: self,
             wrap_iter_impl: WrapIterImpl::new(self, s),
@@ -523,14 +472,12 @@ impl<'w, 'a: 'w, S: WordSplitter> Wrapper<'a, S> {
 
 /// An iterator over the lines of the input string which owns a
 /// `Wrapper`. An instance of `WrapIter` is typically obtained through
-/// either [`wrap_iter`] function, [`Wrapper::into_wrap_iter`] or
-/// [`Wrapper::wrap_iter`] methods.
+/// either [`wrap_iter`] or [`Wrapper::into_wrap_iter`].
 ///
 /// Each call of `.next()` method yields a line wrapped in `Some` if the
 /// input hasn't been fully processed yet. Otherwise it returns `None`.
 ///
 /// [`wrap_iter`]: fn.wrap_iter.html
-/// [`Wrapper::wrap_iter`]: struct.Wrapper.html#method.wrap_iter
 /// [`Wrapper::into_wrap_iter`]: struct.Wrapper.html#method.into_wrap_iter
 pub struct WrapIter<'a, S: WordSplitter> {
     wrapper: Wrapper<'a, S>,
@@ -547,12 +494,12 @@ impl<'a, S: WordSplitter> Iterator for WrapIter<'a, S> {
 
 /// An iterator over the lines of the input string which borrows a
 /// `Wrapper`. An instance of `WrapIterBorrow` is typically obtained
-/// through the [`Wrapper::wrap_iter_borrow`] method.
+/// through the [`Wrapper::wrap_iter`] method.
 ///
 /// Each call of `.next()` method yields a line wrapped in `Some` if the
 /// input hasn't been fully processed yet. Otherwise it returns `None`.
 ///
-/// [`Wrapper::wrap_iter_borrow`]: struct.Wrapper.html#method.wrap_iter_borrow
+/// [`Wrapper::wrap_iter`]: struct.Wrapper.html#method.wrap_iter
 pub struct WrapIterBorrow<'w, 'a: 'w, S: WordSplitter + 'w> {
     wrapper: &'w Wrapper<'a, S>,
     wrap_iter_impl: WrapIterImpl<'a>,
@@ -798,11 +745,9 @@ pub fn wrap(s: &str, width: usize) -> Vec<Cow<str>> {
 /// This function creates a Wrapper on the fly with default settings.
 /// If you need to set a language corpus for automatic hyphenation, or
 /// need to wrap many strings, then it is suggested to create Wrapper
-/// and call its [`wrap_iter`], [`wrap_iter_borrow`] or
-/// [`into_wrap_iter`] methods.
+/// and call its [`wrap_iter`] or [`into_wrap_iter`] methods.
 ///
 /// [`wrap_iter`]: struct.Wrapper.html#method.wrap_iter
-/// [`wrap_iter_borrow`]: struct.Wrapper.html#method.wrap_iter_borrow
 /// [`into_wrap_iter`]: struct.Wrapper.html#method.into_wrap_iter
 pub fn wrap_iter<'s>(s: &'s str, width: usize) -> WrapIter<'s, HyphenSplitter> {
     Wrapper::new(width).into_wrap_iter(s)
