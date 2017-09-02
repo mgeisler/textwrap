@@ -411,17 +411,17 @@ impl<'a, S: WordSplitter> Wrapper<'a, S> {
     /// By changing the field, different hyphenation strategies can be
     /// implemented.
     ///
-    /// This method consumes the `Wrapper` and returns a [`WrapIter`]
+    /// This method consumes the `Wrapper` and returns a [`IntoWrapIter`]
     /// iterator of lines. If processed fully, it has an O(*n*) time and
     /// memory complexity where *n* is the input string length.
     ///
     /// [`self.splitter`]: #structfield.splitter
     /// [`WordSplitter`]: trait.WordSplitter.html
-    /// [`WrapIter`]: struct.WrapIter.html
-    pub fn into_wrap_iter(self, s: &'a str) -> WrapIter<'a, S> {
+    /// [`IntoWrapIter`]: struct.IntoWrapIter.html
+    pub fn into_wrap_iter(self, s: &'a str) -> IntoWrapIter<'a, S> {
         let wrap_iter_impl = WrapIterImpl::new(&self, s);
 
-        WrapIter {
+        IntoWrapIter {
             wrapper: self,
             wrap_iter_impl: wrap_iter_impl,
         }
@@ -471,20 +471,20 @@ impl<'w, 'a: 'w, S: WordSplitter> Wrapper<'a, S> {
 
 
 /// An iterator over the lines of the input string which owns a
-/// `Wrapper`. An instance of `WrapIter` is typically obtained through
-/// either [`wrap_iter`] or [`Wrapper::into_wrap_iter`].
+/// `Wrapper`. An instance of `IntoWrapIter` is typically obtained
+/// through either [`wrap_iter`] or [`Wrapper::into_wrap_iter`].
 ///
 /// Each call of `.next()` method yields a line wrapped in `Some` if the
 /// input hasn't been fully processed yet. Otherwise it returns `None`.
 ///
 /// [`wrap_iter`]: fn.wrap_iter.html
 /// [`Wrapper::into_wrap_iter`]: struct.Wrapper.html#method.into_wrap_iter
-pub struct WrapIter<'a, S: WordSplitter> {
+pub struct IntoWrapIter<'a, S: WordSplitter> {
     wrapper: Wrapper<'a, S>,
     wrap_iter_impl: WrapIterImpl<'a>,
 }
 
-impl<'a, S: WordSplitter> Iterator for WrapIter<'a, S> {
+impl<'a, S: WordSplitter> Iterator for IntoWrapIter<'a, S> {
     type Item = Cow<'a, str>;
 
     fn next(&mut self) -> Option<Cow<'a, str>> {
@@ -749,7 +749,7 @@ pub fn wrap(s: &str, width: usize) -> Vec<Cow<str>> {
 ///
 /// [`wrap_iter`]: struct.Wrapper.html#method.wrap_iter
 /// [`into_wrap_iter`]: struct.Wrapper.html#method.into_wrap_iter
-pub fn wrap_iter<'s>(s: &'s str, width: usize) -> WrapIter<'s, HyphenSplitter> {
+pub fn wrap_iter<'s>(s: &'s str, width: usize) -> IntoWrapIter<'s, HyphenSplitter> {
     Wrapper::new(width).into_wrap_iter(s)
 }
 
