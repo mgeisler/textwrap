@@ -400,42 +400,6 @@ impl<'w, 'a: 'w, S: WordSplitter> Wrapper<'a, S> {
     /// use textwrap::Wrapper;
     ///
     /// let wrap20 = Wrapper::new(20);
-    /// let mut wrap20_iter = wrap20.into_wrap_iter("Zero-cost abstractions.");
-    /// assert_eq!(wrap20_iter.next(), Some(Cow::from("Zero-cost")));
-    /// assert_eq!(wrap20_iter.next(), Some(Cow::from("abstractions.")));
-    /// assert_eq!(wrap20_iter.next(), None);
-    /// ```
-    ///
-    /// The [`WordSplitter`] stored in [`self.splitter`] is used
-    /// whenever when a word is too large to fit on the current line.
-    /// By changing the field, different hyphenation strategies can be
-    /// implemented.
-    ///
-    /// This method consumes the `Wrapper` and returns a [`IntoWrapIter`]
-    /// iterator of lines. If processed fully, it has an O(*n*) time and
-    /// memory complexity where *n* is the input string length.
-    ///
-    /// [`self.splitter`]: #structfield.splitter
-    /// [`WordSplitter`]: trait.WordSplitter.html
-    /// [`IntoWrapIter`]: struct.IntoWrapIter.html
-    pub fn into_wrap_iter(self, s: &'a str) -> IntoWrapIter<'a, S> {
-        let wrap_iter_impl = WrapIterImpl::new(&self, s);
-
-        IntoWrapIter {
-            wrapper: self,
-            wrap_iter_impl: wrap_iter_impl,
-        }
-    }
-
-    /// Lazily wrap a line of text at `self.width` characters. Strings
-    /// are wrapped based on their displayed width, not their size in
-    /// bytes.
-    ///
-    /// ```
-    /// use std::borrow::Cow;
-    /// use textwrap::Wrapper;
-    ///
-    /// let wrap20 = Wrapper::new(20);
     /// let mut wrap20_iter = wrap20.wrap_iter("Zero-cost abstractions.");
     /// assert_eq!(wrap20_iter.next(), Some(Cow::from("Zero-cost")));
     /// assert_eq!(wrap20_iter.next(), Some(Cow::from("abstractions.")));
@@ -463,6 +427,42 @@ impl<'w, 'a: 'w, S: WordSplitter> Wrapper<'a, S> {
         WrapIter {
             wrapper: self,
             wrap_iter_impl: WrapIterImpl::new(self, s),
+        }
+    }
+
+    /// Lazily wrap a line of text at `self.width` characters. Strings
+    /// are wrapped based on their displayed width, not their size in
+    /// bytes.
+    ///
+    /// ```
+    /// use std::borrow::Cow;
+    /// use textwrap::Wrapper;
+    ///
+    /// let wrap20 = Wrapper::new(20);
+    /// let mut wrap20_iter = wrap20.into_wrap_iter("Zero-cost abstractions.");
+    /// assert_eq!(wrap20_iter.next(), Some(Cow::from("Zero-cost")));
+    /// assert_eq!(wrap20_iter.next(), Some(Cow::from("abstractions.")));
+    /// assert_eq!(wrap20_iter.next(), None);
+    /// ```
+    ///
+    /// The [`WordSplitter`] stored in [`self.splitter`] is used
+    /// whenever when a word is too large to fit on the current line.
+    /// By changing the field, different hyphenation strategies can be
+    /// implemented.
+    ///
+    /// This method consumes the `Wrapper` and returns a [`IntoWrapIter`]
+    /// iterator of lines. If processed fully, it has an O(*n*) time and
+    /// memory complexity where *n* is the input string length.
+    ///
+    /// [`self.splitter`]: #structfield.splitter
+    /// [`WordSplitter`]: trait.WordSplitter.html
+    /// [`IntoWrapIter`]: struct.IntoWrapIter.html
+    pub fn into_wrap_iter(self, s: &'a str) -> IntoWrapIter<'a, S> {
+        let wrap_iter_impl = WrapIterImpl::new(&self, s);
+
+        IntoWrapIter {
+            wrapper: self,
+            wrap_iter_impl: wrap_iter_impl,
         }
     }
 }
