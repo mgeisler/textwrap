@@ -673,9 +673,9 @@ pub fn termwidth() -> usize {
 /// Fill a line of text at `width` characters. Strings are wrapped
 /// based on their displayed width, not their size in bytes.
 ///
-/// The result is a string with newlines between each line. Use `wrap`
-/// if you need access to the individual lines or `wrap_iter` for its
-/// iterator counterpart.
+/// The result is a string with newlines between each line. Use
+/// [`wrap`] if you need access to the individual lines or
+/// [`wrap_iter`] for its iterator counterpart.
 ///
 /// ```
 /// use textwrap::fill;
@@ -689,6 +689,8 @@ pub fn termwidth() -> usize {
 /// need to fill many strings, then it is suggested to create Wrapper
 /// and call its [`fill` method].
 ///
+/// [`wrap`]: fn.wrap.html
+/// [`wrap_iter`]: fn.wrap_iter.html
 /// [`fill` method]: struct.Wrapper.html#method.fill
 pub fn fill(s: &str, width: usize) -> String {
     Wrapper::new(width).fill(s)
@@ -697,7 +699,7 @@ pub fn fill(s: &str, width: usize) -> String {
 /// Wrap a line of text at `width` characters. Strings are wrapped
 /// based on their displayed width, not their size in bytes.
 ///
-/// The result is a vector of strings. Use `wrap_iter` if you need an
+/// The result is a vector of strings. Use [`wrap_iter`] if you need an
 /// iterator version.
 ///
 /// ```
@@ -718,6 +720,7 @@ pub fn fill(s: &str, width: usize) -> String {
 /// need to wrap many strings, then it is suggested to create Wrapper
 /// and call its [`wrap` method].
 ///
+/// [`wrap_iter`]: fn.wrap_iter.html
 /// [`wrap` method]: struct.Wrapper.html#method.wrap
 pub fn wrap(s: &str, width: usize) -> Vec<Cow<str>> {
     Wrapper::new(width).wrap(s)
