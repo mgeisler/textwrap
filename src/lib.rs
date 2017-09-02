@@ -268,7 +268,7 @@ impl<'a> Wrapper<'a, HyphenSplitter> {
     }
 }
 
-impl<'a, S: WordSplitter> Wrapper<'a, S> {
+impl<'w, 'a: 'w, S: WordSplitter> Wrapper<'a, S> {
     /// Use the given [`WordSplitter`] to create a new Wrapper for
     /// wrapping at the specified width. By default, we allow words
     /// longer than `width` to be broken.
@@ -426,9 +426,7 @@ impl<'a, S: WordSplitter> Wrapper<'a, S> {
             wrap_iter_impl: wrap_iter_impl,
         }
     }
-}
 
-impl<'w, 'a: 'w, S: WordSplitter> Wrapper<'a, S> {
     /// Lazily wrap a line of text at `self.width` characters. Strings
     /// are wrapped based on their displayed width, not their size in
     /// bytes.
