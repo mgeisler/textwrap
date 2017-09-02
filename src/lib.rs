@@ -416,9 +416,15 @@ impl<'w, 'a: 'w, S: WordSplitter> Wrapper<'a, S> {
     /// By changing the field, different hyphenation strategies can be
     /// implemented.
     ///
-    /// This method returns a [`WrapIter`] iterator of lines which
-    /// borrows this `Wrapper`. If processed fully, it has an O(*n*)
-    /// time and memory complexity where *n* is the input string length.
+    /// This method returns a [`WrapIter`] iterator which borrows this
+    /// `Wrapper`. The algorithm used has a linear complexity, so
+    /// getting the next line from the iterator will take O(*w*) time,
+    /// where *w* is the wrapping width. Fully processing the iterator
+    /// will take O(*n*) time for an input string of length *n*.
+    ///
+    /// When no indentation is used, each line returned is a slice of
+    /// the input string and the memory overhead is thus constant.
+    /// Otherwise new memory is allocated for each line returned.
     ///
     /// [`self.splitter`]: #structfield.splitter
     /// [`WordSplitter`]: trait.WordSplitter.html
@@ -450,13 +456,15 @@ impl<'w, 'a: 'w, S: WordSplitter> Wrapper<'a, S> {
     /// By changing the field, different hyphenation strategies can be
     /// implemented.
     ///
-    /// This method consumes the `Wrapper` and returns a [`IntoWrapIter`]
-    /// iterator of lines. If processed fully, it has an O(*n*) time and
-    /// memory complexity where *n* is the input string length.
+    /// This method consumes the `Wrapper` and returns a
+    /// [`IntoWrapIter`] iterator. Fully processing the iterator has
+    /// the same O(*n*) time complexity as [`wrap_iter`], where *n* is
+    /// the length of the input string.
     ///
     /// [`self.splitter`]: #structfield.splitter
     /// [`WordSplitter`]: trait.WordSplitter.html
     /// [`IntoWrapIter`]: struct.IntoWrapIter.html
+    /// [`wrap_iter`]: #method.wrap_iter
     pub fn into_wrap_iter(self, s: &'a str) -> IntoWrapIter<'a, S> {
         let wrap_iter_impl = WrapIterImpl::new(&self, s);
 
