@@ -4,7 +4,7 @@
 //! want to format dynamic output nicely so it looks good in a
 //! terminal. A quick example:
 //!
-//! ```
+//! ```no_run
 //! extern crate textwrap;
 //! use textwrap::fill;
 //!
@@ -87,7 +87,7 @@ pub trait WordSplitter {
     /// include no split at all. So the word "technology" could be
     /// split into
     ///
-    /// ```
+    /// ```no_run
     /// vec![("tech", "-", "nology"),
     ///      ("technol", "-", "ogy"),
     ///      ("technolo", "-", "gy"),
@@ -258,7 +258,7 @@ impl<'a> Wrapper<'a, HyphenSplitter> {
     ///
     /// Equivalent to:
     ///
-    /// ```
+    /// ```no_run
     /// use textwrap::{Wrapper, termwidth};
     ///
     /// let wrapper = Wrapper::new(termwidth());
@@ -658,7 +658,7 @@ impl<'a> WrapIterImpl<'a> {
 /// Create a `Wrapper` for the current terminal with a two column
 /// margin:
 ///
-/// ```
+/// ```no_run
 /// use textwrap::{Wrapper, NoHyphenation, termwidth};
 ///
 /// let width = termwidth() - 4; // Two columns on each side.
