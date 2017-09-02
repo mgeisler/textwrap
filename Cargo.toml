@@ -1,6 +1,6 @@
 [package]
 name = "textwrap"
-version = "0.7.0"
+version = "0.7.0" # Remember to update html_root_url.
 authors = ["Martin Geisler <martin@geisler.net>"]
 description = """
 Textwrap is a small library for word wrapping, indenting, and
