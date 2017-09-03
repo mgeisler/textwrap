@@ -788,7 +788,7 @@ pub fn wrap(s: &str, width: usize) -> Vec<Cow<str>> {
 /// [`into_wrap_iter`]: struct.Wrapper.html#method.into_wrap_iter
 /// [`IntoWrapIter`]: struct.IntoWrapIter.html
 /// [`WrapIter`]: struct.WrapIter.html
-pub fn wrap_iter<'s>(s: &'s str, width: usize) -> IntoWrapIter<'s, HyphenSplitter> {
+pub fn wrap_iter(s: &str, width: usize) -> IntoWrapIter<HyphenSplitter> {
     Wrapper::new(width).into_wrap_iter(s)
 }
 
@@ -894,7 +894,7 @@ mod tests {
 
     /// Add newlines. Ensures that the final line in the vector also
     /// has a newline.
-    fn add_nl(lines: &Vec<&str>) -> String {
+    fn add_nl(lines: &[&str]) -> String {
         lines.join("\n") + "\n"
     }
 
