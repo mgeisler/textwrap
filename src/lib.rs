@@ -924,6 +924,11 @@ mod tests {
     }
 
     #[test]
+    fn max_width() {
+        assert_eq!(wrap("foo bar", usize::max_value()), vec!["foo bar"]);
+    }
+
+    #[test]
     fn leading_whitespace() {
         assert_eq!(wrap("  foo bar", 6), vec!["  foo", "bar"]);
     }
