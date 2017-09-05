@@ -293,5 +293,7 @@ Contributions will be accepted under the same license.
 [issue-36]: ../../issues/36
 [issue-39]: ../../issues/39
 [issue-58]: ../../issues/58
+[issue-59]: ../../issues/59
 [issue-61]: ../../issues/61
+[issue-81]: ../../issues/81
 [mit]: LICENSE
