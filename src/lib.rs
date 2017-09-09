@@ -229,7 +229,7 @@ pub struct Wrapper<'a, S: WordSplitter> {
     /// Indentation used for subsequent lines of output.
     pub subsequent_indent: &'a str,
     /// Allow long words to be broken if they cannot fit on a line.
-    /// When set to `false`, some lines be being longer than
+    /// When set to `false`, some lines may be longer than
     /// `self.width`.
     pub break_words: bool,
     /// The method for splitting words. If the `hyphenation` feature
@@ -259,6 +259,7 @@ impl<'a> Wrapper<'a, HyphenSplitter> {
     /// Equivalent to:
     ///
     /// ```no_run
+    /// # #![allow(unused_variables)]
     /// use textwrap::{Wrapper, termwidth};
     ///
     /// let wrapper = Wrapper::new(termwidth());
@@ -289,10 +290,11 @@ impl<'w, 'a: 'w, S: WordSplitter> Wrapper<'a, S> {
     ///
     /// # Examples
     ///
-    /// Classic paragraph indentation can be achived by specifying an
+    /// Classic paragraph indentation can be achieved by specifying an
     /// initial indentation and wrapping each paragraph by itself:
     ///
     /// ```no_run
+    /// # #![allow(unused_variables)]
     /// use textwrap::Wrapper;
     ///
     /// let wrapper = Wrapper::new(15).initial_indent("    ");
@@ -312,6 +314,7 @@ impl<'w, 'a: 'w, S: WordSplitter> Wrapper<'a, S> {
     /// single paragraph as a bullet list:
     ///
     /// ```no_run
+    /// # #![allow(unused_variables)]
     /// use textwrap::Wrapper;
     ///
     /// let wrapper = Wrapper::new(15)
@@ -683,6 +686,7 @@ impl<'a> WrapIterImpl<'a> {
 /// margin:
 ///
 /// ```no_run
+/// # #![allow(unused_variables)]
 /// use textwrap::{Wrapper, NoHyphenation, termwidth};
 ///
 /// let width = termwidth() - 4; // Two columns on each side.
@@ -710,7 +714,7 @@ pub fn termwidth() -> usize {
 ///
 /// This function creates a Wrapper on the fly with default settings.
 /// If you need to set a language corpus for automatic hyphenation, or
-/// need to fill many strings, then it is suggested to create Wrapper
+/// need to fill many strings, then it is suggested to create a Wrapper
 /// and call its [`fill` method].
 ///
 /// [`wrap`]: fn.wrap.html
@@ -725,7 +729,7 @@ pub fn fill(s: &str, width: usize) -> String {
 ///
 /// This function creates a Wrapper on the fly with default settings.
 /// If you need to set a language corpus for automatic hyphenation, or
-/// need to wrap many strings, then it is suggested to create Wrapper
+/// need to wrap many strings, then it is suggested to create a Wrapper
 /// and call its [`wrap` method].
 ///
 /// The result is a vector of strings. Use [`wrap_iter`] if you need an
@@ -761,7 +765,7 @@ pub fn wrap(s: &str, width: usize) -> Vec<Cow<str>> {
 /// name would otherwise suggest.
 ///
 /// If you need to set a language corpus for automatic hyphenation, or
-/// need to wrap many strings, then it is suggested to create Wrapper
+/// need to wrap many strings, then it is suggested to create a Wrapper
 /// and call its [`wrap_iter`] or [`into_wrap_iter`] methods.
 ///
 /// # Examples
@@ -784,7 +788,7 @@ pub fn wrap(s: &str, width: usize) -> Vec<Cow<str>> {
 /// [`into_wrap_iter`]: struct.Wrapper.html#method.into_wrap_iter
 /// [`IntoWrapIter`]: struct.IntoWrapIter.html
 /// [`WrapIter`]: struct.WrapIter.html
-pub fn wrap_iter<'s>(s: &'s str, width: usize) -> IntoWrapIter<'s, HyphenSplitter> {
+pub fn wrap_iter(s: &str, width: usize) -> IntoWrapIter<HyphenSplitter> {
     Wrapper::new(width).into_wrap_iter(s)
 }
 
@@ -890,7 +894,7 @@ mod tests {
 
     /// Add newlines. Ensures that the final line in the vector also
     /// has a newline.
-    fn add_nl(lines: &Vec<&str>) -> String {
+    fn add_nl(lines: &[&str]) -> String {
         lines.join("\n") + "\n"
     }
 
@@ -917,6 +921,11 @@ mod tests {
     #[test]
     fn long_words() {
         assert_eq!(wrap("foo bar", 0), vec!["f", "o", "o", "b", "a", "r"]);
+    }
+
+    #[test]
+    fn max_width() {
+        assert_eq!(wrap("foo bar", usize::max_value()), vec!["foo bar"]);
     }
 
     #[test]
