@@ -259,9 +259,9 @@ impl<'a> Wrapper<'a, HyphenSplitter> {
     /// Equivalent to:
     ///
     /// ```no_run
+    /// # #![allow(unused_variables)]
     /// use textwrap::{Wrapper, termwidth};
     ///
-    /// # #[allow(unused_variables)]
     /// let wrapper = Wrapper::new(termwidth());
     /// ```
     pub fn with_termwidth() -> Wrapper<'a, HyphenSplitter> {
@@ -294,9 +294,9 @@ impl<'w, 'a: 'w, S: WordSplitter> Wrapper<'a, S> {
     /// initial indentation and wrapping each paragraph by itself:
     ///
     /// ```no_run
+    /// # #![allow(unused_variables)]
     /// use textwrap::Wrapper;
     ///
-    /// # #[allow(unused_variables)]
     /// let wrapper = Wrapper::new(15).initial_indent("    ");
     /// ```
     ///
@@ -314,9 +314,9 @@ impl<'w, 'a: 'w, S: WordSplitter> Wrapper<'a, S> {
     /// single paragraph as a bullet list:
     ///
     /// ```no_run
+    /// # #![allow(unused_variables)]
     /// use textwrap::Wrapper;
     ///
-    /// # #[allow(unused_variables)]
     /// let wrapper = Wrapper::new(15)
     ///     .initial_indent("* ")
     ///     .subsequent_indent("  ");
@@ -686,10 +686,10 @@ impl<'a> WrapIterImpl<'a> {
 /// margin:
 ///
 /// ```no_run
+/// # #![allow(unused_variables)]
 /// use textwrap::{Wrapper, NoHyphenation, termwidth};
 ///
 /// let width = termwidth() - 4; // Two columns on each side.
-/// # #[allow(unused_variables)]
 /// let wrapper = Wrapper::with_splitter(width, NoHyphenation)
 ///     .initial_indent("  ")
 ///     .subsequent_indent("  ");
