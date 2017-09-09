@@ -229,7 +229,7 @@ pub struct Wrapper<'a, S: WordSplitter> {
     /// Indentation used for subsequent lines of output.
     pub subsequent_indent: &'a str,
     /// Allow long words to be broken if they cannot fit on a line.
-    /// When set to `false`, some lines be being longer than
+    /// When set to `false`, some lines may be longer than
     /// `self.width`.
     pub break_words: bool,
     /// The method for splitting words. If the `hyphenation` feature
@@ -261,6 +261,7 @@ impl<'a> Wrapper<'a, HyphenSplitter> {
     /// ```no_run
     /// use textwrap::{Wrapper, termwidth};
     ///
+    /// # #[allow(unused_variables)]
     /// let wrapper = Wrapper::new(termwidth());
     /// ```
     pub fn with_termwidth() -> Wrapper<'a, HyphenSplitter> {
@@ -289,12 +290,13 @@ impl<'w, 'a: 'w, S: WordSplitter> Wrapper<'a, S> {
     ///
     /// # Examples
     ///
-    /// Classic paragraph indentation can be achived by specifying an
+    /// Classic paragraph indentation can be achieved by specifying an
     /// initial indentation and wrapping each paragraph by itself:
     ///
     /// ```no_run
     /// use textwrap::Wrapper;
     ///
+    /// # #[allow(unused_variables)]
     /// let wrapper = Wrapper::new(15).initial_indent("    ");
     /// ```
     ///
@@ -314,6 +316,7 @@ impl<'w, 'a: 'w, S: WordSplitter> Wrapper<'a, S> {
     /// ```no_run
     /// use textwrap::Wrapper;
     ///
+    /// # #[allow(unused_variables)]
     /// let wrapper = Wrapper::new(15)
     ///     .initial_indent("* ")
     ///     .subsequent_indent("  ");
@@ -686,6 +689,7 @@ impl<'a> WrapIterImpl<'a> {
 /// use textwrap::{Wrapper, NoHyphenation, termwidth};
 ///
 /// let width = termwidth() - 4; // Two columns on each side.
+/// # #[allow(unused_variables)]
 /// let wrapper = Wrapper::with_splitter(width, NoHyphenation)
 ///     .initial_indent("  ")
 ///     .subsequent_indent("  ");
@@ -710,7 +714,7 @@ pub fn termwidth() -> usize {
 ///
 /// This function creates a Wrapper on the fly with default settings.
 /// If you need to set a language corpus for automatic hyphenation, or
-/// need to fill many strings, then it is suggested to create Wrapper
+/// need to fill many strings, then it is suggested to create a Wrapper
 /// and call its [`fill` method].
 ///
 /// [`wrap`]: fn.wrap.html
@@ -725,7 +729,7 @@ pub fn fill(s: &str, width: usize) -> String {
 ///
 /// This function creates a Wrapper on the fly with default settings.
 /// If you need to set a language corpus for automatic hyphenation, or
-/// need to wrap many strings, then it is suggested to create Wrapper
+/// need to wrap many strings, then it is suggested to create a Wrapper
 /// and call its [`wrap` method].
 ///
 /// The result is a vector of strings. Use [`wrap_iter`] if you need an
@@ -761,7 +765,7 @@ pub fn wrap(s: &str, width: usize) -> Vec<Cow<str>> {
 /// name would otherwise suggest.
 ///
 /// If you need to set a language corpus for automatic hyphenation, or
-/// need to wrap many strings, then it is suggested to create Wrapper
+/// need to wrap many strings, then it is suggested to create a Wrapper
 /// and call its [`wrap_iter`] or [`into_wrap_iter`] methods.
 ///
 /// # Examples
