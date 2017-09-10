@@ -32,3 +32,4 @@ hyphenation = { version = "0.6.1", optional = true }
 [dev-dependencies]
 lipsum = "0.3"
 rand = "0.3"
+check-versions = "0.1"

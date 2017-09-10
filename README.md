@@ -27,7 +27,7 @@ If you would like to have automatic hyphenation, specify the
 dependency as:
 ```toml
 [dependencies]
-textwrap = { version: "0.8", features: ["hyphenation"] }
+textwrap = { version = "0.8", features = ["hyphenation"] }
 ```
 
 ## Documentation

@@ -8,6 +8,12 @@ rust:
 cache: cargo
 
 script:
+  - |
+      if [[ "$TRAVIS_RUST_VERSION" =~ 1\.(8|13)\.0 ]]; then
+          echo "Old Rust, removing check-versions dependency"
+          sed -i "/^check-versions =/d" Cargo.toml
+          rm "tests/check-versions.rs"
+      fi
   - cargo build --verbose --features "$FEATURES"
   - cargo test --verbose --features "$FEATURES"
 
