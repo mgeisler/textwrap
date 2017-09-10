@@ -1,5 +1,5 @@
 #[macro_use]
-extern crate check_versions;
+extern crate version_sync;
 
 #[test]
 fn test_readme_deps() {
