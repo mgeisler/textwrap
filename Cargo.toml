@@ -16,6 +16,7 @@ readme = "README.md"
 keywords = ["text", "formatting", "wrap", "typesetting", "hyphenation"]
 categories = ["text-processing", "command-line-interface"]
 license = "MIT"
+exclude = [".dir-locals.el"]
 
 [package.metadata.docs.rs]
 all-features = true
