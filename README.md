@@ -173,6 +173,11 @@ cost abstractions.
 
 This section lists the largest changes per release.
 
+### Unreleased
+
+Added a regression test for case where width is set to usize::MAX.
+Thanks @Fraser999!
+
 ### Version 0.8.0 — September 4th, 2017
 
 The `Wrapper` stuct is now generic over the type of word splitter
