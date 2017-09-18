@@ -175,6 +175,8 @@ This section lists the largest changes per release.
 
 ### Unreleased
 
+All public structs now implement `Debug`.
+
 Added a regression test for case where width is set to usize::MAX.
 Thanks @Fraser999!
 
