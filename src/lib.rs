@@ -363,9 +363,8 @@ impl<'w, 'a: 'w, S: WordSplitter> Wrapper<'a, S> {
 
         for (i, line) in self.wrap_iter(s).enumerate() {
             if i > 0 {
-                result.push_str("\n");
+                result.push('\n');
             }
-
             result.push_str(&line);
         }
 
