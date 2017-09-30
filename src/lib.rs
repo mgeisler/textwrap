@@ -43,12 +43,14 @@
 
 #![doc(html_root_url = "https://docs.rs/textwrap/0.8.0")]
 #![deny(missing_docs)]
+#![deny(missing_debug_implementations)]
 
 extern crate unicode_width;
 extern crate term_size;
 #[cfg(feature = "hyphenation")]
 extern crate hyphenation;
 
+use std::fmt;
 use std::borrow::Cow;
 use std::str::CharIndices;
 
@@ -107,7 +109,7 @@ pub trait WordSplitter {
 /// ```
 ///
 /// [`Wrapper.splitter`]: struct.Wrapper.html#structfield.splitter
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct NoHyphenation;
 
 /// `NoHyphenation` implements `WordSplitter` by not splitting the
@@ -123,7 +125,7 @@ impl WordSplitter for NoHyphenation {
 ///
 /// You probably don't need to use this type since it's already used
 /// by default by `Wrapper::new`.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct HyphenSplitter;
 
 /// `HyphenSplitter` is the default `WordSplitter` used by
@@ -220,7 +222,7 @@ fn cow_add_assign<'a>(lhs: &mut Cow<'a, str>, rhs: &'a str) {
 /// words in the input string (where each single scan yields a single
 /// line) so that the overall time and memory complexity is O(*n*) where
 /// *n* is the length of the input string.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Wrapper<'a, S: WordSplitter> {
     /// The width in columns at which the text will be wrapped.
     pub width: usize,
@@ -518,6 +520,15 @@ impl<'a, S: WordSplitter> Iterator for IntoWrapIter<'a, S> {
     }
 }
 
+impl<'a, S: WordSplitter + fmt::Debug> fmt::Debug for IntoWrapIter<'a, S> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f,
+               "IntoWrapIter {{ wrapper: {:?}, source: {:?} }}",
+               self.wrapper,
+               self.wrap_iter_impl.source)
+    }
+}
+
 /// An iterator over the lines of the input string which borrows a
 /// `Wrapper`. An instance of `WrapIter` is typically obtained
 /// through the [`Wrapper::wrap_iter`] method.
@@ -536,6 +547,15 @@ impl<'w, 'a: 'w, S: WordSplitter> Iterator for WrapIter<'w, 'a, S> {
 
     fn next(&mut self) -> Option<Cow<'a, str>> {
         self.wrap_iter_impl.impl_next(self.wrapper)
+    }
+}
+
+impl<'w, 'a, S: WordSplitter + fmt::Debug + 'w> fmt::Debug for WrapIter<'w, 'a, S> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f,
+               "WrapIter {{ wrapper: {:?}, source: {:?} }}",
+               self.wrapper,
+               self.wrap_iter_impl.source)
     }
 }
 
