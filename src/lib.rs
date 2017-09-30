@@ -507,6 +507,7 @@ impl<'w, 'a: 'w, S: WordSplitter> Wrapper<'a, S> {
 ///
 /// [`wrap_iter`]: fn.wrap_iter.html
 /// [`Wrapper::into_wrap_iter`]: struct.Wrapper.html#method.into_wrap_iter
+#[derive(Debug)]
 pub struct IntoWrapIter<'a, S: WordSplitter> {
     wrapper: Wrapper<'a, S>,
     wrap_iter_impl: WrapIterImpl<'a>,
@@ -520,15 +521,6 @@ impl<'a, S: WordSplitter> Iterator for IntoWrapIter<'a, S> {
     }
 }
 
-impl<'a, S: WordSplitter + fmt::Debug> fmt::Debug for IntoWrapIter<'a, S> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f,
-               "IntoWrapIter {{ wrapper: {:?}, source: {:?} }}",
-               self.wrapper,
-               self.wrap_iter_impl.source)
-    }
-}
-
 /// An iterator over the lines of the input string which borrows a
 /// `Wrapper`. An instance of `WrapIter` is typically obtained
 /// through the [`Wrapper::wrap_iter`] method.
@@ -537,6 +529,7 @@ impl<'a, S: WordSplitter + fmt::Debug> fmt::Debug for IntoWrapIter<'a, S> {
 /// input hasn't been fully processed yet. Otherwise it returns `None`.
 ///
 /// [`Wrapper::wrap_iter`]: struct.Wrapper.html#method.wrap_iter
+#[derive(Debug)]
 pub struct WrapIter<'w, 'a: 'w, S: WordSplitter + 'w> {
     wrapper: &'w Wrapper<'a, S>,
     wrap_iter_impl: WrapIterImpl<'a>,
@@ -547,15 +540,6 @@ impl<'w, 'a: 'w, S: WordSplitter> Iterator for WrapIter<'w, 'a, S> {
 
     fn next(&mut self) -> Option<Cow<'a, str>> {
         self.wrap_iter_impl.impl_next(self.wrapper)
-    }
-}
-
-impl<'w, 'a, S: WordSplitter + fmt::Debug + 'w> fmt::Debug for WrapIter<'w, 'a, S> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f,
-               "WrapIter {{ wrapper: {:?}, source: {:?} }}",
-               self.wrapper,
-               self.wrap_iter_impl.source)
     }
 }
 
@@ -580,6 +564,23 @@ struct WrapIterImpl<'a> {
     in_whitespace: bool,
     // Has iterator finished producing elements?
     finished: bool,
+}
+
+impl<'a> fmt::Debug for WrapIterImpl<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_struct("WrapIterImpl")
+            .field("source", &self.source)
+            .field("char_indices", &"CharIndices { ... }")
+            .field("is_next_first", &self.is_next_first)
+            .field("start", &self.start)
+            .field("split", &self.split)
+            .field("split_len", &self.split_len)
+            .field("line_width", &self.line_width)
+            .field("line_width_at_split", &self.line_width_at_split)
+            .field("in_whitespace", &self.in_whitespace)
+            .field("finished", &self.finished)
+            .finish()
+    }
 }
 
 impl<'a> WrapIterImpl<'a> {
