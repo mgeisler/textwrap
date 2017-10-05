@@ -46,6 +46,7 @@
 #![deny(missing_debug_implementations)]
 
 extern crate unicode_width;
+#[cfg(feature = "term_size")]
 extern crate term_size;
 #[cfg(feature = "hyphenation")]
 extern crate hyphenation;
@@ -266,6 +267,7 @@ impl<'a> Wrapper<'a, HyphenSplitter> {
     ///
     /// let wrapper = Wrapper::new(termwidth());
     /// ```
+    #[cfg(feature = "term_size")]
     pub fn with_termwidth() -> Wrapper<'a, HyphenSplitter> {
         Wrapper::new(termwidth())
     }
@@ -716,6 +718,7 @@ impl<'a> WrapIterImpl<'a> {
 ///     .initial_indent("  ")
 ///     .subsequent_indent("  ");
 /// ```
+#[cfg(feature = "term_size")]
 pub fn termwidth() -> usize {
     term_size::dimensions_stdout().map_or(80, |(w, _)| w)
 }

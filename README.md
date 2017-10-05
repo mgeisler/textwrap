@@ -30,6 +30,14 @@ dependency as:
 textwrap = { version = "0.8", features = ["hyphenation"] }
 ```
 
+To conveniently wrap text at the current terminal width, enable the
+`term_size` feature:
+
+```toml
+[dependencies]
+textwrap = { version = "0.8", features = ["term_size"] }
+```
+
 ## Documentation
 
 **[API documentation][api-docs]**
@@ -175,10 +183,18 @@ This section lists the largest changes per release.
 
 ### Unreleased
 
-All public structs now implement `Debug`.
+The dependency on `term_size` is now optional, and by default this
+feature is not enabled. This is a *breaking change* for users of
+`Wrapper::with_termwidth`. Enable the `term_size` feature to restore
+the old functionality.
 
 Added a regression test for case where width is set to usize::MAX.
-Thanks @Fraser999!
+Thanks @Fraser999! All public structs now implement `Debug`.
+
+Issues closed:
+
+* Fixed [#101][issue-101]: Remove `term_size` as a (hard required)
+  dependency.
 
 ### Version 0.8.0 — September 4th, 2017
 
@@ -303,4 +319,5 @@ Contributions will be accepted under the same license.
 [issue-59]: ../../issues/59
 [issue-61]: ../../issues/61
 [issue-81]: ../../issues/81
+[issue-101]: ../../issues/101
 [mit]: LICENSE
