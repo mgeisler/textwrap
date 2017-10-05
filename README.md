@@ -183,15 +183,13 @@ This section lists the largest changes per release.
 
 ### Unreleased
 
-All public structs now implement `Debug`.
-
 The dependency on `term_size` is now optional, and by default this
 feature is not enabled. This is a *breaking change* for users of
 `Wrapper::with_termwidth`. Enable the `term_size` feature to restore
 the old functionality.
 
 Added a regression test for case where width is set to usize::MAX.
-Thanks @Fraser999!
+Thanks @Fraser999! All public structs now implement `Debug`.
 
 Issues closed:
 
