@@ -58,7 +58,7 @@ use std::str::CharIndices;
 use unicode_width::UnicodeWidthStr;
 use unicode_width::UnicodeWidthChar;
 #[cfg(feature = "hyphenation")]
-use hyphenation::{Hyphenation, Corpus};
+use hyphenation::{Corpus, Hyphenation};
 
 /// A non-breaking space.
 const NBSP: char = '\u{a0}';
