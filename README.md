@@ -189,7 +189,8 @@ feature is not enabled. This is a *breaking change* for users of
 the old functionality.
 
 Added a regression test for case where width is set to usize::MAX.
-Thanks @Fraser999! All public structs now implement `Debug`.
+Thanks @Fraser999! All public structs now implement `Debug`, thanks
+@hcpl!
 
 Issues closed:
 
