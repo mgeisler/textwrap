@@ -188,8 +188,9 @@ feature is not enabled. This is a *breaking change* for users of
 `Wrapper::with_termwidth`. Enable the `term_size` feature to restore
 the old functionality.
 
-Added a regression test for case where width is set to usize::MAX.
-Thanks @Fraser999! All public structs now implement `Debug`.
+Added a regression test for the case where `width` is set to
+`usize::MAX`, thanks @Fraser999! All public structs now implement
+`Debug`, thanks @hcpl!
 
 Issues closed:
 
