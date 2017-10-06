@@ -9,8 +9,8 @@
 //! use textwrap::fill;
 //!
 //! fn main() {
-//!    let text = "textwrap: a small library for wrapping text.";
-//!    println!("{}", fill(text, 18));
+//!     let text = "textwrap: a small library for wrapping text.";
+//!     println!("{}", fill(text, 18));
 //! }
 //! ```
 //!
@@ -545,6 +545,7 @@ impl<'w, 'a: 'w, S: WordSplitter> Iterator for WrapIter<'w, 'a, S> {
     }
 }
 
+/// Common implementation details for `WrapIter` and `IntoWrapIter`.
 struct WrapIterImpl<'a> {
     // String to wrap.
     source: &'a str,
@@ -568,6 +569,8 @@ struct WrapIterImpl<'a> {
     finished: bool,
 }
 
+// Replace this with #[derive(Debug)] after bumping minimal Rust version
+// to 1.9+
 impl<'a> fmt::Debug for WrapIterImpl<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.debug_struct("WrapIterImpl")
@@ -781,7 +784,7 @@ pub fn wrap(s: &str, width: usize) -> Vec<Cow<str>> {
     Wrapper::new(width).wrap(s)
 }
 
-/// Lazily wrap a line of text at `self.width` characters. Strings are
+/// Lazily wrap a line of text at `width` characters. Strings are
 /// wrapped based on their displayed width, not their size in bytes.
 ///
 /// This function creates a Wrapper on the fly with default settings.
