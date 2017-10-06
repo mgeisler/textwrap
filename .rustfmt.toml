@@ -4,3 +4,5 @@ fn_args_layout = "Visual"
 fn_call_style = "Visual"
 generics_indent = "Visual"
 struct_lit_width = 40
+reorder_imports_in_group = true
+reorder_imported_names = true
