@@ -988,7 +988,7 @@ mod tests {
     }
 
     #[test]
-    fn indent_empty() {
+    fn empty_input_not_indented() {
         let wrapper = Wrapper::new(10).initial_indent("!!!");
         assert_eq!(wrapper.fill(""), "");
     }
@@ -1129,30 +1129,30 @@ mod tests {
     }
 
     #[test]
-    fn test_non_breaking_space() {
+    fn non_breaking_space() {
         let wrapper = Wrapper::new(5).break_words(false);
         assert_eq!(wrapper.fill("foo bar baz"), "foo bar baz");
     }
 
     #[test]
-    fn test_non_breaking_hyphen() {
+    fn non_breaking_hyphen() {
         let wrapper = Wrapper::new(5).break_words(false);
         assert_eq!(wrapper.fill("foo‑bar‑baz"), "foo‑bar‑baz");
     }
 
     #[test]
-    fn test_fill() {
+    fn fill_simple() {
         assert_eq!(fill("foo bar baz", 10), "foo bar\nbaz");
     }
 
     #[test]
-    fn test_indent_empty() {
+    fn indent_empty() {
         assert_eq!(indent("\n", "  "), "\n");
     }
 
     #[test]
     #[cfg_attr(rustfmt, rustfmt_skip)]
-    fn test_indent_nonempty() {
+    fn indent_nonempty() {
         let x = vec!["  foo",
                      "bar",
                      "  baz"];
@@ -1164,7 +1164,7 @@ mod tests {
 
     #[test]
     #[cfg_attr(rustfmt, rustfmt_skip)]
-    fn test_indent_empty_line() {
+    fn indent_empty_line() {
         let x = vec!["  foo",
                      "bar",
                      "",
@@ -1177,13 +1177,13 @@ mod tests {
     }
 
     #[test]
-    fn test_dedent_empty() {
+    fn dedent_empty() {
         assert_eq!(dedent(""), "");
     }
 
     #[test]
     #[cfg_attr(rustfmt, rustfmt_skip)]
-    fn test_dedent_multi_line() {
+    fn dedent_multi_line() {
         let x = vec!["    foo",
                      "  bar",
                      "    baz"];
@@ -1195,7 +1195,7 @@ mod tests {
 
     #[test]
     #[cfg_attr(rustfmt, rustfmt_skip)]
-    fn test_dedent_empty_line() {
+    fn dedent_empty_line() {
         let x = vec!["    foo",
                      "  bar",
                      "   ",
@@ -1209,7 +1209,7 @@ mod tests {
 
     #[test]
     #[cfg_attr(rustfmt, rustfmt_skip)]
-    fn test_dedent_mixed_whitespace() {
+    fn dedent_mixed_whitespace() {
         let x = vec!["\tfoo",
                      "  bar"];
         let y = vec!["\tfoo",
