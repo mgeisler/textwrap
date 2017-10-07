@@ -21,13 +21,13 @@ script:
   - cargo test --verbose --features "$FEATURES"
 
 env:
-  - FEATURES=""
+  - FEATURES="term_size"
   - FEATURES="hyphenation"
 
 matrix:
   include:
     - rust: 1.8.0
-      env: FEATURES=""
+      env: FEATURES="term_size"
     - rust: 1.13.0
       env: FEATURES="hyphenation"
   allow_failures:
