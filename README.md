@@ -181,6 +181,11 @@ cost abstractions.
 
 This section lists the largest changes per release.
 
+### Unreleased
+
+Due to a change in the libc crate, the minimum version of Rust we test
+against is now 1.9.0.
+
 ### Version 0.9.0 — October 5th, 2017
 
 The dependency on `term_size` is now optional, and by default this
