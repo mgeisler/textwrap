@@ -515,7 +515,7 @@ impl<'a, S: WordSplitter> Iterator for IntoWrapIter<'a, S> {
     type Item = Cow<'a, str>;
 
     fn next(&mut self) -> Option<Cow<'a, str>> {
-        self.inner.impl_next(&self.wrapper)
+        self.inner.next(&self.wrapper)
     }
 }
 
@@ -537,7 +537,7 @@ impl<'w, 'a: 'w, S: WordSplitter> Iterator for WrapIter<'w, 'a, S> {
     type Item = Cow<'a, str>;
 
     fn next(&mut self) -> Option<Cow<'a, str>> {
-        self.inner.impl_next(self.wrapper)
+        self.inner.next(self.wrapper)
     }
 }
 
@@ -591,7 +591,7 @@ impl<'a> WrapIterImpl<'a> {
         }
     }
 
-    fn impl_next<S: WordSplitter>(&mut self, wrapper: &Wrapper<'a, S>) -> Option<Cow<'a, str>> {
+    fn next<S: WordSplitter>(&mut self, wrapper: &Wrapper<'a, S>) -> Option<Cow<'a, str>> {
         if self.finished {
             return None;
         }
