@@ -548,8 +548,6 @@ struct WrapIterImpl<'a> {
     source: &'a str,
     // CharIndices iterator over self.source.
     char_indices: CharIndices<'a>,
-    // Is the next element the first one ever produced?
-    is_next_first: bool,
     // Byte index where the current line starts.
     start: usize,
     // Byte index of the last place where the string can be split.
@@ -571,7 +569,6 @@ impl<'a> WrapIterImpl<'a> {
         WrapIterImpl {
             source: s,
             char_indices: s.char_indices(),
-            is_next_first: true,
             start: 0,
             split: 0,
             split_len: 0,
@@ -582,9 +579,8 @@ impl<'a> WrapIterImpl<'a> {
         }
     }
 
-    fn create_result_line<S: WordSplitter>(&mut self, wrapper: &Wrapper<'a, S>) -> Cow<'a, str> {
-        if self.is_next_first {
-            self.is_next_first = false;
+    fn create_result_line<S: WordSplitter>(&self, wrapper: &Wrapper<'a, S>) -> Cow<'a, str> {
+        if self.start == 0 {
             Cow::from(wrapper.initial_indent)
         } else {
             Cow::from(wrapper.subsequent_indent)
