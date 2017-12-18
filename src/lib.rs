@@ -51,7 +51,6 @@ extern crate term_size;
 #[cfg(feature = "hyphenation")]
 extern crate hyphenation;
 
-use std::fmt;
 use std::borrow::Cow;
 use std::str::CharIndices;
 
@@ -546,6 +545,7 @@ impl<'w, 'a: 'w, S: WordSplitter> Iterator for WrapIter<'w, 'a, S> {
 }
 
 /// Common implementation details for `WrapIter` and `IntoWrapIter`.
+#[derive(Debug)]
 struct WrapIterImpl<'a> {
     // String to wrap.
     source: &'a str,
@@ -567,25 +567,6 @@ struct WrapIterImpl<'a> {
     in_whitespace: bool,
     // Has iterator finished producing elements?
     finished: bool,
-}
-
-// Replace this with #[derive(Debug)] after bumping minimal Rust version
-// to 1.9+
-impl<'a> fmt::Debug for WrapIterImpl<'a> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.debug_struct("WrapIterImpl")
-            .field("source", &self.source)
-            .field("char_indices", &"CharIndices { ... }")
-            .field("is_next_first", &self.is_next_first)
-            .field("start", &self.start)
-            .field("split", &self.split)
-            .field("split_len", &self.split_len)
-            .field("line_width", &self.line_width)
-            .field("line_width_at_split", &self.line_width_at_split)
-            .field("in_whitespace", &self.in_whitespace)
-            .field("finished", &self.finished)
-            .finish()
-    }
 }
 
 impl<'a> WrapIterImpl<'a> {
