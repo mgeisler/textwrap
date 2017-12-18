@@ -451,7 +451,7 @@ impl<'w, 'a: 'w, S: WordSplitter> Wrapper<'a, S> {
     pub fn wrap_iter(&'w self, s: &'a str) -> WrapIter<'w, 'a, S> {
         WrapIter {
             wrapper: self,
-            wrap_iter_impl: WrapIterImpl::new(self, s),
+            inner: WrapIterImpl::new(self, s),
         }
     }
 
@@ -489,12 +489,9 @@ impl<'w, 'a: 'w, S: WordSplitter> Wrapper<'a, S> {
     /// [`IntoWrapIter`]: struct.IntoWrapIter.html
     /// [`wrap_iter`]: #method.wrap_iter
     pub fn into_wrap_iter(self, s: &'a str) -> IntoWrapIter<'a, S> {
-        let wrap_iter_impl = WrapIterImpl::new(&self, s);
+        let inner = WrapIterImpl::new(&self, s);
 
-        IntoWrapIter {
-            wrapper: self,
-            wrap_iter_impl: wrap_iter_impl,
-        }
+        IntoWrapIter { wrapper: self, inner: inner }
     }
 }
 
@@ -511,14 +508,14 @@ impl<'w, 'a: 'w, S: WordSplitter> Wrapper<'a, S> {
 #[derive(Debug)]
 pub struct IntoWrapIter<'a, S: WordSplitter> {
     wrapper: Wrapper<'a, S>,
-    wrap_iter_impl: WrapIterImpl<'a>,
+    inner: WrapIterImpl<'a>,
 }
 
 impl<'a, S: WordSplitter> Iterator for IntoWrapIter<'a, S> {
     type Item = Cow<'a, str>;
 
     fn next(&mut self) -> Option<Cow<'a, str>> {
-        self.wrap_iter_impl.impl_next(&self.wrapper)
+        self.inner.impl_next(&self.wrapper)
     }
 }
 
@@ -533,14 +530,14 @@ impl<'a, S: WordSplitter> Iterator for IntoWrapIter<'a, S> {
 #[derive(Debug)]
 pub struct WrapIter<'w, 'a: 'w, S: WordSplitter + 'w> {
     wrapper: &'w Wrapper<'a, S>,
-    wrap_iter_impl: WrapIterImpl<'a>,
+    inner: WrapIterImpl<'a>,
 }
 
 impl<'w, 'a: 'w, S: WordSplitter> Iterator for WrapIter<'w, 'a, S> {
     type Item = Cow<'a, str>;
 
     fn next(&mut self) -> Option<Cow<'a, str>> {
-        self.wrap_iter_impl.impl_next(self.wrapper)
+        self.inner.impl_next(self.wrapper)
     }
 }
 
