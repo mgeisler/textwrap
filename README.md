@@ -186,6 +186,10 @@ This section lists the largest changes per release.
 Due to a change in the libc crate, the minimum version of Rust we test
 against is now 1.9.0.
 
+Issues closed:
+
+* Fixed [#99][issue-99]: Word broken even though it would fit on line.
+
 ### Version 0.9.0 — October 5th, 2017
 
 The dependency on `term_size` is now optional, and by default this
@@ -325,5 +329,6 @@ Contributions will be accepted under the same license.
 [issue-59]: https://github.com/mgeisler/textwrap/issues/59
 [issue-61]: https://github.com/mgeisler/textwrap/issues/61
 [issue-81]: https://github.com/mgeisler/textwrap/issues/81
+[issue-99]: https://github.com/mgeisler/textwrap/issues/99
 [issue-101]: https://github.com/mgeisler/textwrap/issues/101
 [mit]: LICENSE

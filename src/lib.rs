@@ -634,6 +634,7 @@ impl<'a> WrapIterImpl<'a> {
             } else if self.line_width + char_width > wrapper.width {
                 // There is no room for this character on the current
                 // line. Try to split the final word.
+                self.in_whitespace = false;
                 let remaining_text = &self.source[self.split + self.split_len..];
                 let final_word = match remaining_text
                           .find(|ch: char| ch.is_whitespace() && ch != NBSP) {
@@ -978,6 +979,14 @@ mod tests {
         // column zero and is not indented. The line before might end
         // up with trailing whitespace.
         assert_eq!(wrap("foo               bar", 5), vec!["foo", "bar"]);
+    }
+
+    #[test]
+    fn test_issue_99() {
+        // We did not reset the in_whitespace flag correctly and did
+        // not handle single-character words after a line break.
+        assert_eq!(wrap("aaabbbccc x yyyzzzwww", 9),
+                   vec!["aaabbbccc", "x", "yyyzzzwww"]);
     }
 
     #[test]
