@@ -648,16 +648,16 @@ impl<'a> WrapIterImpl<'a> {
                 }
 
                 if self.start < self.split {
-                    let mut result_line = self.create_result_line(wrapper);
-                    cow_add_assign(&mut result_line, &self.source[self.start..self.split]);
-                    cow_add_assign(&mut result_line, hyphen);
+                    let mut line = self.create_result_line(wrapper);
+                    cow_add_assign(&mut line, &self.source[self.start..self.split]);
+                    cow_add_assign(&mut line, hyphen);
 
                     self.start = self.split + self.split_len;
                     self.line_width += wrapper.subsequent_indent.width();
                     self.line_width -= self.line_width_at_split;
                     self.line_width += char_width;
 
-                    return Some(result_line);
+                    return Some(line);
                 }
             } else {
                 self.in_whitespace = false;
@@ -667,10 +667,10 @@ impl<'a> WrapIterImpl<'a> {
 
         // Add final line.
         let final_line = if self.start < self.source.len() {
-            let mut result_line = self.create_result_line(wrapper);
-            cow_add_assign(&mut result_line, &self.source[self.start..]);
+            let mut line = self.create_result_line(wrapper);
+            cow_add_assign(&mut line, &self.source[self.start..]);
 
-            Some(result_line)
+            Some(line)
         } else {
             None
         };
