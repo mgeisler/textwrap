@@ -541,6 +541,12 @@ impl<'w, 'a: 'w, S: WordSplitter> Iterator for WrapIter<'w, 'a, S> {
     }
 }
 
+/// Like `char::is_whitespace`, but non-breaking spaces don't count.
+#[inline]
+fn is_whitespace(ch: char) -> bool {
+    ch.is_whitespace() && ch != NBSP
+}
+
 /// Common implementation details for `WrapIter` and `IntoWrapIter`.
 #[derive(Debug)]
 struct WrapIterImpl<'a> {
@@ -595,7 +601,7 @@ impl<'a> WrapIterImpl<'a> {
         while let Some((idx, ch)) = self.char_indices.next() {
             let char_width = ch.width().unwrap_or(0);
             let char_len = ch.len_utf8();
-            if ch.is_whitespace() && ch != NBSP {
+            if is_whitespace(ch) {
                 // Extend the previous split or create a new one.
                 if self.in_whitespace {
                     self.split_len += char_len;
@@ -610,8 +616,7 @@ impl<'a> WrapIterImpl<'a> {
                 // line. Try to split the final word.
                 self.in_whitespace = false;
                 let remaining_text = &self.source[self.split + self.split_len..];
-                let final_word = match remaining_text
-                          .find(|ch: char| ch.is_whitespace() && ch != NBSP) {
+                let final_word = match remaining_text.find(is_whitespace) {
                     Some(i) => &remaining_text[..i],
                     None => remaining_text,
                 };
