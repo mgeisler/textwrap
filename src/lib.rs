@@ -451,7 +451,7 @@ impl<'w, 'a: 'w, S: WordSplitter> Wrapper<'a, S> {
     pub fn wrap_iter(&'w self, s: &'a str) -> WrapIter<'w, 'a, S> {
         WrapIter {
             wrapper: self,
-            wrap_iter_impl: WrapIterImpl::new(self, s),
+            inner: WrapIterImpl::new(self, s),
         }
     }
 
@@ -489,12 +489,9 @@ impl<'w, 'a: 'w, S: WordSplitter> Wrapper<'a, S> {
     /// [`IntoWrapIter`]: struct.IntoWrapIter.html
     /// [`wrap_iter`]: #method.wrap_iter
     pub fn into_wrap_iter(self, s: &'a str) -> IntoWrapIter<'a, S> {
-        let wrap_iter_impl = WrapIterImpl::new(&self, s);
+        let inner = WrapIterImpl::new(&self, s);
 
-        IntoWrapIter {
-            wrapper: self,
-            wrap_iter_impl: wrap_iter_impl,
-        }
+        IntoWrapIter { wrapper: self, inner: inner }
     }
 }
 
@@ -511,14 +508,14 @@ impl<'w, 'a: 'w, S: WordSplitter> Wrapper<'a, S> {
 #[derive(Debug)]
 pub struct IntoWrapIter<'a, S: WordSplitter> {
     wrapper: Wrapper<'a, S>,
-    wrap_iter_impl: WrapIterImpl<'a>,
+    inner: WrapIterImpl<'a>,
 }
 
 impl<'a, S: WordSplitter> Iterator for IntoWrapIter<'a, S> {
     type Item = Cow<'a, str>;
 
     fn next(&mut self) -> Option<Cow<'a, str>> {
-        self.wrap_iter_impl.impl_next(&self.wrapper)
+        self.inner.next(&self.wrapper)
     }
 }
 
@@ -533,15 +530,21 @@ impl<'a, S: WordSplitter> Iterator for IntoWrapIter<'a, S> {
 #[derive(Debug)]
 pub struct WrapIter<'w, 'a: 'w, S: WordSplitter + 'w> {
     wrapper: &'w Wrapper<'a, S>,
-    wrap_iter_impl: WrapIterImpl<'a>,
+    inner: WrapIterImpl<'a>,
 }
 
 impl<'w, 'a: 'w, S: WordSplitter> Iterator for WrapIter<'w, 'a, S> {
     type Item = Cow<'a, str>;
 
     fn next(&mut self) -> Option<Cow<'a, str>> {
-        self.wrap_iter_impl.impl_next(self.wrapper)
+        self.inner.next(self.wrapper)
     }
+}
+
+/// Like `char::is_whitespace`, but non-breaking spaces don't count.
+#[inline]
+fn is_whitespace(ch: char) -> bool {
+    ch.is_whitespace() && ch != NBSP
 }
 
 /// Common implementation details for `WrapIter` and `IntoWrapIter`.
@@ -551,8 +554,6 @@ struct WrapIterImpl<'a> {
     source: &'a str,
     // CharIndices iterator over self.source.
     char_indices: CharIndices<'a>,
-    // Is the next element the first one ever produced?
-    is_next_first: bool,
     // Byte index where the current line starts.
     start: usize,
     // Byte index of the last place where the string can be split.
@@ -574,7 +575,6 @@ impl<'a> WrapIterImpl<'a> {
         WrapIterImpl {
             source: s,
             char_indices: s.char_indices(),
-            is_next_first: true,
             start: 0,
             split: 0,
             split_len: 0,
@@ -585,16 +585,15 @@ impl<'a> WrapIterImpl<'a> {
         }
     }
 
-    fn create_result_line<S: WordSplitter>(&mut self, wrapper: &Wrapper<'a, S>) -> Cow<'a, str> {
-        if self.is_next_first {
-            self.is_next_first = false;
+    fn create_result_line<S: WordSplitter>(&self, wrapper: &Wrapper<'a, S>) -> Cow<'a, str> {
+        if self.start == 0 {
             Cow::from(wrapper.initial_indent)
         } else {
             Cow::from(wrapper.subsequent_indent)
         }
     }
 
-    fn impl_next<S: WordSplitter>(&mut self, wrapper: &Wrapper<'a, S>) -> Option<Cow<'a, str>> {
+    fn next<S: WordSplitter>(&mut self, wrapper: &Wrapper<'a, S>) -> Option<Cow<'a, str>> {
         if self.finished {
             return None;
         }
@@ -602,7 +601,7 @@ impl<'a> WrapIterImpl<'a> {
         while let Some((idx, ch)) = self.char_indices.next() {
             let char_width = ch.width().unwrap_or(0);
             let char_len = ch.len_utf8();
-            if ch.is_whitespace() && ch != NBSP {
+            if is_whitespace(ch) {
                 // Extend the previous split or create a new one.
                 if self.in_whitespace {
                     self.split_len += char_len;
@@ -617,8 +616,7 @@ impl<'a> WrapIterImpl<'a> {
                 // line. Try to split the final word.
                 self.in_whitespace = false;
                 let remaining_text = &self.source[self.split + self.split_len..];
-                let final_word = match remaining_text
-                          .find(|ch: char| ch.is_whitespace() && ch != NBSP) {
+                let final_word = match remaining_text.find(is_whitespace) {
                     Some(i) => &remaining_text[..i],
                     None => remaining_text,
                 };
@@ -651,16 +649,16 @@ impl<'a> WrapIterImpl<'a> {
                 }
 
                 if self.start < self.split {
-                    let mut result_line = self.create_result_line(wrapper);
-                    cow_add_assign(&mut result_line, &self.source[self.start..self.split]);
-                    cow_add_assign(&mut result_line, hyphen);
+                    let mut line = self.create_result_line(wrapper);
+                    cow_add_assign(&mut line, &self.source[self.start..self.split]);
+                    cow_add_assign(&mut line, hyphen);
 
                     self.start = self.split + self.split_len;
                     self.line_width += wrapper.subsequent_indent.width();
                     self.line_width -= self.line_width_at_split;
                     self.line_width += char_width;
 
-                    return Some(result_line);
+                    return Some(line);
                 }
             } else {
                 self.in_whitespace = false;
@@ -668,19 +666,16 @@ impl<'a> WrapIterImpl<'a> {
             self.line_width += char_width;
         }
 
-        // Add final line.
-        let final_line = if self.start < self.source.len() {
-            let mut result_line = self.create_result_line(wrapper);
-            cow_add_assign(&mut result_line, &self.source[self.start..]);
-
-            Some(result_line)
-        } else {
-            None
-        };
-
         self.finished = true;
 
-        final_line
+        // Add final line.
+        if self.start < self.source.len() {
+            let mut line = self.create_result_line(wrapper);
+            cow_add_assign(&mut line, &self.source[self.start..]);
+            return Some(line);
+        }
+
+        None
     }
 }
 
