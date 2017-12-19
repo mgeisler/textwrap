@@ -661,19 +661,16 @@ impl<'a> WrapIterImpl<'a> {
             self.line_width += char_width;
         }
 
-        // Add final line.
-        let final_line = if self.start < self.source.len() {
-            let mut line = self.create_result_line(wrapper);
-            cow_add_assign(&mut line, &self.source[self.start..]);
-
-            Some(line)
-        } else {
-            None
-        };
-
         self.finished = true;
 
-        final_line
+        // Add final line.
+        if self.start < self.source.len() {
+            let mut line = self.create_result_line(wrapper);
+            cow_add_assign(&mut line, &self.source[self.start..]);
+            return Some(line);
+        }
+
+        None
     }
 }
 
