@@ -625,7 +625,10 @@ impl<'a> WrapIterImpl<'a> {
                 let splits = wrapper.splitter.split(final_word);
                 for &(head, hyp, _) in splits.iter().rev() {
                     if self.line_width_at_split + head.width() + hyp.width() <= wrapper.width {
-                        self.split += head.len();
+                        // We can fit head into the current line.
+                        // Advance the split point by the width of the
+                        // whitespace and the head length.
+                        self.split += self.split_len + head.len();
                         self.split_len = 0;
                         hyphen = hyp;
                         break;
@@ -1064,6 +1067,17 @@ mod tests {
         let wrapper = Wrapper::with_splitter(10, corpus);
         assert_eq!(wrapper.wrap("Internationalization"),
                    vec!["Interna-", "tionaliza-", "tion"]);
+    }
+
+    #[test]
+    #[cfg(feature = "hyphenation")]
+    fn split_len_hyphenation() {
+        // Test that hyphenation takes the width of the wihtespace
+        // into account.
+        let corpus = hyphenation::load(Language::English_US).unwrap();
+        let wrapper = Wrapper::with_splitter(15, corpus);
+        assert_eq!(wrapper.wrap("garbage   collection"),
+                   vec!["garbage   col-", "lection"]);
     }
 
     #[test]
