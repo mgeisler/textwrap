@@ -189,6 +189,7 @@ against is now 1.9.0.
 Issues closed:
 
 * Fixed [#99][issue-99]: Word broken even though it would fit on line.
+* Fixed [#107][issue-107]: Automatic hyphenation is off by one.
 
 ### Version 0.9.0 — October 5th, 2017
 
@@ -331,4 +332,5 @@ Contributions will be accepted under the same license.
 [issue-81]: https://github.com/mgeisler/textwrap/issues/81
 [issue-99]: https://github.com/mgeisler/textwrap/issues/99
 [issue-101]: https://github.com/mgeisler/textwrap/issues/101
+[issue-107]: https://github.com/mgeisler/textwrap/issues/107
 [mit]: LICENSE
