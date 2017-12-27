@@ -789,7 +789,13 @@ pub fn wrap_iter(s: &str, width: usize) -> IntoWrapIter<HyphenSplitter> {
 /// ```
 /// use textwrap::indent;
 ///
-/// assert_eq!(indent("Foo\nBar\n", "  "), "  Foo\n  Bar\n");
+/// assert_eq!(indent("
+/// Foo
+/// Bar
+/// ", "  "), "
+///   Foo
+///   Bar
+/// ");
 /// ```
 ///
 /// Empty lines (lines consisting only of whitespace) are not indented
@@ -798,8 +804,19 @@ pub fn wrap_iter(s: &str, width: usize) -> IntoWrapIter<HyphenSplitter> {
 /// ```
 /// use textwrap::indent;
 ///
-/// assert_eq!(indent("Foo\n\nBar\n  \t  \nBaz\n", "  "),
-///            "  Foo\n\n  Bar\n\n  Baz\n");
+/// assert_eq!(indent("
+/// Foo
+///
+/// Bar
+///   \t
+/// Baz
+/// ", "->"), "
+/// ->Foo
+///
+/// ->Bar
+///
+/// ->Baz
+/// ");
 /// ```
 ///
 /// Leading and trailing whitespace on non-empty lines is kept
@@ -808,7 +825,7 @@ pub fn wrap_iter(s: &str, width: usize) -> IntoWrapIter<HyphenSplitter> {
 /// ```
 /// use textwrap::indent;
 ///
-/// assert_eq!(indent(" \t  Foo   ", "  "), "   \t  Foo   \n");
+/// assert_eq!(indent(" \t  Foo   ", "->"), "-> \t  Foo   \n");
 /// ```
 pub fn indent(s: &str, prefix: &str) -> String {
     let mut result = String::new();
