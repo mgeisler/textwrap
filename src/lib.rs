@@ -824,14 +824,21 @@ pub fn indent(s: &str, prefix: &str) -> String {
 
 /// Removes common leading whitespace from each line.
 ///
-/// This will look at each non-empty line and determine the maximum
-/// amount of whitespace that can be removed from the line.
+/// This function will look at each non-empty line and determine the
+/// maximum amount of whitespace that can be removed from all lines:
 ///
 /// ```
 /// use textwrap::dedent;
 ///
-/// assert_eq!(dedent("  1st line\n  2nd line\n"),
-///            "1st line\n2nd line\n");
+/// assert_eq!(dedent("
+///     1st line
+///       2nd line
+///     3rd line
+/// "), "
+/// 1st line
+///   2nd line
+/// 3rd line
+/// ");
 /// ```
 pub fn dedent(s: &str) -> String {
     let mut prefix = String::new();
