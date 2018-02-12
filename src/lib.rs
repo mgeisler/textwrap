@@ -192,22 +192,6 @@ impl WordSplitter for Corpus {
     }
 }
 
-/// Backport of the `AddAssign` trait implementation from Rust 1.14.
-fn cow_add_assign<'a>(lhs: &mut Cow<'a, str>, rhs: &'a str) {
-    if lhs.is_empty() {
-        *lhs = Cow::Borrowed(rhs)
-    } else if rhs.is_empty() {
-        return;
-    } else {
-        if let Cow::Borrowed(inner) = *lhs {
-            let mut s = String::with_capacity(lhs.len() + rhs.len());
-            s.push_str(inner);
-            *lhs = Cow::Owned(s);
-        }
-        lhs.to_mut().push_str(rhs);
-    }
-}
-
 
 /// A Wrapper holds settings for wrapping and filling text. Use it
 /// when the convenience [`wrap_iter`], [`wrap`] and [`fill`] functions
@@ -653,8 +637,8 @@ impl<'a> WrapIterImpl<'a> {
 
                 if self.start < self.split {
                     let mut line = self.create_result_line(wrapper);
-                    cow_add_assign(&mut line, &self.source[self.start..self.split]);
-                    cow_add_assign(&mut line, hyphen);
+                    line += &self.source[self.start..self.split];
+                    line += hyphen;
 
                     self.start = self.split + self.split_len;
                     self.line_width += wrapper.subsequent_indent.width();
@@ -674,7 +658,7 @@ impl<'a> WrapIterImpl<'a> {
         // Add final line.
         if self.start < self.source.len() {
             let mut line = self.create_result_line(wrapper);
-            cow_add_assign(&mut line, &self.source[self.start..]);
+            line += &self.source[self.start..];
             return Some(line);
         }
 
