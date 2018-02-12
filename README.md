@@ -183,8 +183,8 @@ This section lists the largest changes per release.
 
 ### Unreleased
 
-Due to a change in the libc crate, the minimum version of Rust we test
-against is now 1.9.0.
+Due to our dependencies bumping their minimum supported version of
+Rust, the minimum version of Rust we test against is now 1.17.0.
 
 Issues closed:
 
