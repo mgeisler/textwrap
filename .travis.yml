@@ -4,17 +4,9 @@ rust:
   - stable
   - beta
   - nightly
+  - 1.17.0
 
 cache: cargo
-
-before_install:
-  # We need Rust 1.15 or later for version-sync
-  - |
-      if [[ "$TRAVIS_RUST_VERSION" =~ 1\.(9|13)\.0 ]]; then
-          echo "Old Rust detected, removing version-sync dependency"
-          sed -i "/^version-sync =/d" Cargo.toml
-          rm "tests/version-numbers.rs"
-      fi
 
 script:
   - cargo build --verbose --features "$FEATURES"
@@ -25,10 +17,5 @@ env:
   - FEATURES="hyphenation"
 
 matrix:
-  include:
-    - rust: 1.9.0
-      env: FEATURES="term_size"
-    - rust: 1.13.0
-      env: FEATURES="hyphenation"
   allow_failures:
     - rust: nightly
