@@ -596,7 +596,7 @@ impl<'a> WrapIterImpl<'a> {
                 // we will return the line with its line break after exiting the loop
                 if self.split + self.split_len < self.source.len() {
                     let mut line = self.create_result_line(wrapper);
-                    cow_add_assign(&mut line, &self.source[self.start..self.split]);
+                    line += &self.source[self.start..self.split];
 
                     self.start = self.split + self.split_len;
                     self.line_width += wrapper.subsequent_indent.width();
