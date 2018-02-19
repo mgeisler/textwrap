@@ -604,8 +604,7 @@ impl<'a> WrapIterImpl<'a> {
 
                     return Some(line);
                 }
-            }
-            else if is_whitespace(ch) {
+            } else if is_whitespace(ch) {
                 // Extend the previous split or create a new one.
                 if self.in_whitespace {
                     self.split_len += char_len;
@@ -1246,21 +1245,24 @@ mod tests {
 
     #[test]
     fn multiline() {
-        assert_eq!(fill("1 3 5 7\n1 3 5 7",11),"1 3 5 7\n1 3 5 7");
-        assert_eq!(fill("1 3 5 7\n1 3 5 7",5),"1 3 5\n7\n1 3 5\n7");
-        assert_eq!(fill("1 3 5 7\n1 3 5 7",6),"1 3 5\n7\n1 3 5\n7");
-        assert_eq!(fill("1 3 5 7\nabcdefghi k",5),"1 3 5\n7\nabcde\nfghi\nk");
-        assert_eq!(fill("abcdefgh\ni k",5),"abcde\nfgh\ni k");
-        assert_eq!(fill("abcdefgh\nijklmnop",5),"abcde\nfgh\nijklm\nnop");
+        assert_eq!(fill("1 3 5 7\n1 3 5 7", 11), "1 3 5 7\n1 3 5 7");
+        assert_eq!(fill("1 3 5 7\n1 3 5 7", 5), "1 3 5\n7\n1 3 5\n7");
+        assert_eq!(fill("1 3 5 7\n1 3 5 7", 6), "1 3 5\n7\n1 3 5\n7");
+        assert_eq!(fill("1 3 5 7\nabcdefghi k", 5), "1 3 5\n7\nabcde\nfghi\nk");
+        assert_eq!(fill("abcdefgh\ni k", 5), "abcde\nfgh\ni k");
+        assert_eq!(fill("abcdefgh\nijklmnop", 5), "abcde\nfgh\nijklm\nnop");
 
-        assert_eq!(fill("test\n",11),"test\n");
-        assert_eq!(fill("test\na",11),"test\na");
-        assert_eq!(fill("test\na\n",11),"test\na\n");
-        assert_eq!(fill("test\n\na\n\n",11),"test\n\na\n\n");
-        assert_eq!(fill("test\n\nabcdefghijk\n\nabcdefghijkm",11),"test\n\nabcdefghijk\n\nabcdefghijk\nm");
-        assert_eq!(fill("test\nabcdefghi\n",11),"test\nabcdefghi\n");
-        assert_eq!(fill("test\nabcdefghi\n\n",11),"test\nabcdefghi\n\n");
-        assert_eq!(fill("test\nabcdefghijklmnopq\n\n",11),"test\nabcdefghijk\nlmnopq\n\n");
-        assert_eq!(fill("test\nabcdefghijklmnopq abcdefghijk\n\n",11),"test\nabcdefghijk\nlmnopq\nabcdefghijk\n\n");
+        assert_eq!(fill("test\n", 11), "test\n");
+        assert_eq!(fill("test\na", 11), "test\na");
+        assert_eq!(fill("test\na\n", 11), "test\na\n");
+        assert_eq!(fill("test\n\na\n\n", 11), "test\n\na\n\n");
+        assert_eq!(fill("test\n\nabcdefghijk\n\nabcdefghijkm", 11),
+                   "test\n\nabcdefghijk\n\nabcdefghijk\nm");
+        assert_eq!(fill("test\nabcdefghi\n", 11), "test\nabcdefghi\n");
+        assert_eq!(fill("test\nabcdefghi\n\n", 11), "test\nabcdefghi\n\n");
+        assert_eq!(fill("test\nabcdefghijklmnopq\n\n", 11),
+                   "test\nabcdefghijk\nlmnopq\n\n");
+        assert_eq!(fill("test\nabcdefghijklmnopq abcdefghijk\n\n", 11),
+                   "test\nabcdefghijk\nlmnopq\nabcdefghijk\n\n");
     }
 }
