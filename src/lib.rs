@@ -599,8 +599,7 @@ impl<'a> WrapIterImpl<'a> {
                     line += &self.source[self.start..self.split];
 
                     self.start = self.split + self.split_len;
-                    self.line_width += wrapper.subsequent_indent.width();
-                    self.line_width -= self.line_width_at_split;
+                    self.line_width = wrapper.subsequent_indent.width();
 
                     return Some(line);
                 }
