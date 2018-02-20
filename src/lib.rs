@@ -585,7 +585,25 @@ impl<'a> WrapIterImpl<'a> {
         while let Some((idx, ch)) = self.char_indices.next() {
             let char_width = ch.width().unwrap_or(0);
             let char_len = ch.len_utf8();
-            if is_whitespace(ch) {
+
+            if ch == '\n' {
+                self.split = idx;
+                self.split_len = char_len;
+                self.line_width_at_split = self.line_width;
+                self.in_whitespace = false;
+
+                // If this is not the final line, return the current line. Otherwise,
+                // we will return the line with its line break after exiting the loop
+                if self.split + self.split_len < self.source.len() {
+                    let mut line = self.create_result_line(wrapper);
+                    line += &self.source[self.start..self.split];
+
+                    self.start = self.split + self.split_len;
+                    self.line_width = wrapper.subsequent_indent.width();
+
+                    return Some(line);
+                }
+            } else if is_whitespace(ch) {
                 // Extend the previous split or create a new one.
                 if self.in_whitespace {
                     self.split_len += char_len;
@@ -1133,6 +1151,24 @@ mod tests {
     #[test]
     fn break_words_zero_width() {
         assert_eq!(wrap("foobar", 0), vec!["f", "o", "o", "b", "a", "r"]);
+    }
+
+    #[test]
+    fn break_words_line_breaks() {
+        assert_eq!(fill("ab\ncdefghijkl", 5), "ab\ncdefg\nhijkl");
+        assert_eq!(fill("abcdefgh\nijkl", 5), "abcde\nfgh\nijkl");
+    }
+
+    #[test]
+    fn preserve_line_breaks() {
+        assert_eq!(fill("test\n", 11), "test\n");
+        assert_eq!(fill("test\n\na\n\n", 11), "test\n\na\n\n");
+        assert_eq!(fill("1 3 5 7\n1 3 5 7", 7), "1 3 5 7\n1 3 5 7");
+    }
+
+    #[test]
+    fn wrap_preserve_line_breaks() {
+        assert_eq!(fill("1 3 5 7\n1 3 5 7", 5), "1 3 5\n7\n1 3 5\n7");
     }
 
     #[test]
