@@ -386,6 +386,19 @@ impl<'w, 'a: 'w, S: WordSplitter> Wrapper<'a, S> {
     ///            vec!["Concurrency without",
     ///                 "data races."]);
     /// ```
+    ///
+    /// Notice that newlines in the input are preserved. This means
+    /// that they force a line break, regardless of how long the
+    /// current line is:
+    ///
+    /// ```
+    /// use textwrap::Wrapper;
+    ///
+    /// let wrapper = Wrapper::new(40);
+    /// assert_eq!(wrapper.wrap("First line.\nSecond line."),
+    ///            vec!["First line.", "Second line."]);
+    /// ```
+    ///
     pub fn wrap(&self, s: &'a str) -> Vec<Cow<'a, str>> {
         self.wrap_iter(s).collect::<Vec<_>>()
     }
