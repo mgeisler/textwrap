@@ -55,7 +55,7 @@ use std::borrow::Cow;
 use std::str::CharIndices;
 
 use unicode_width::UnicodeWidthStr;
-use unicode_width::UnicodeWidthChar;
+pub use unicode_width::UnicodeWidthChar;
 #[cfg(feature = "hyphenation")]
 use hyphenation::{Corpus, Hyphenation};
 
@@ -224,6 +224,10 @@ pub struct Wrapper<'a, S: WordSplitter> {
     pub splitter: S,
 }
 
+fn default_width_provider(a: char) -> usize {
+    a.width().unwrap_or(0)
+}
+
 impl<'a> Wrapper<'a, HyphenSplitter> {
     /// Create a new Wrapper for wrapping at the specified width. By
     /// default, we allow words longer than `width` to be broken. A
@@ -324,8 +328,47 @@ impl<'w, 'a: 'w, S: WordSplitter> Wrapper<'a, S> {
     }
 
     /// Fill a line of text at `self.width` characters. Strings are
-    /// wrapped based on their displayed width, not their size in
-    /// bytes.
+    /// wrapped based on their displayed width you provide through
+    /// a closure, not their size in bytes.
+    ///
+    /// The result is a string with newlines between each line. Use
+    /// the `wrap` method if you need access to the individual lines.
+    ///
+    /// # Complexities
+    ///
+    /// This method simply joins the lines produced by `wrap_iter`. As
+    /// such, it inherits the O(*n*) time and memory complexity where
+    /// *n* is the input string length.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use textwrap::Wrapper;
+    /// 
+    /// // Provides utilities to measure the width of text in the terminal
+    /// use textwrap::UnicodeWidthChar;
+    ///
+    /// let wrapper = Wrapper::new(15);
+    /// assert_eq!(wrapper.fill_dynamic("Memory safety without garbage collection.", |c| c.width().unwrap_or(0)),
+    ///            "Memory safety\nwithout garbage\ncollection.");
+    /// ```
+    pub fn fill_dynamic<F>(&self, s: &str, width_provider: F) -> String where F: FnMut(char) -> usize {
+        // This will avoid reallocation in simple cases (no
+        // indentation, no hyphenation).
+        let mut result = String::with_capacity(s.len());
+
+        for (i, line) in self.wrap_iter(s, width_provider).enumerate() {
+            if i > 0 {
+                result.push('\n');
+            }
+            result.push_str(&line);
+        }
+
+        result
+    }
+
+    /// Fill a line of text at `self.width` characters. Strings are
+    /// wrapped based on their displayed width, not their size in bytes.
     ///
     /// The result is a string with newlines between each line. Use
     /// the `wrap` method if you need access to the individual lines.
@@ -345,24 +388,62 @@ impl<'w, 'a: 'w, S: WordSplitter> Wrapper<'a, S> {
     /// assert_eq!(wrapper.fill("Memory safety without garbage collection."),
     ///            "Memory safety\nwithout garbage\ncollection.");
     /// ```
+    #[inline(always)]
     pub fn fill(&self, s: &str) -> String {
-        // This will avoid reallocation in simple cases (no
-        // indentation, no hyphenation).
-        let mut result = String::with_capacity(s.len());
-
-        for (i, line) in self.wrap_iter(s).enumerate() {
-            if i > 0 {
-                result.push('\n');
-            }
-            result.push_str(&line);
-        }
-
-        result
+        self.fill_dynamic(s, default_width_provider)
     }
 
     /// Wrap a line of text at `self.width` characters. Strings are
     /// wrapped based on their displayed width, not their size in
     /// bytes.
+    ///
+    /// # Complexities
+    ///
+    /// This method simply collects the lines produced by `wrap_iter`.
+    /// As such, it inherits the O(*n*) overall time and memory
+    /// complexity where *n* is the input string length.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use textwrap::Wrapper;
+    ///
+    /// // Provides utilities to measure the width of text in the terminal
+    /// use textwrap::UnicodeWidthChar;
+    /// 
+    /// let wrap15 = Wrapper::new(15);
+    /// assert_eq!(wrap15.wrap_dynamic("Concurrency without data races.", |c| c.width().unwrap_or(0)),
+    ///            vec!["Concurrency",
+    ///                 "without data",
+    ///                 "races."]);
+    ///
+    /// let wrap20 = Wrapper::new(20);
+    /// assert_eq!(wrap20.wrap_dynamic("Concurrency without data races.", |c| c.width().unwrap_or(0)),
+    ///            vec!["Concurrency without",
+    ///                 "data races."]);
+    /// ```
+    ///
+    /// Notice that newlines in the input are preserved. This means
+    /// that they force a line break, regardless of how long the
+    /// current line is:
+    ///
+    /// ```
+    /// use textwrap::Wrapper;
+    /// 
+    /// // Provides utilities to measure the width of text in the terminal
+    /// use textwrap::UnicodeWidthChar;
+    ///
+    /// let wrapper = Wrapper::new(40);
+    /// assert_eq!(wrapper.wrap_dynamic("First line.\nSecond line.", |c| c.width().unwrap_or(0)),
+    ///            vec!["First line.", "Second line."]);
+    /// ```
+    pub fn wrap_dynamic<F>(&self, s: &'a str, width_provider: F) -> Vec<Cow<'a, str>> where F: FnMut(char) -> usize {
+        self.wrap_iter(s, width_provider).collect::<Vec<_>>()
+    }
+
+    /// Wrap a line of text at `self.width` characters. Strings are
+    /// wrapped based on their displayed width you provide through
+    /// a closure, not their size in bytes.
     ///
     /// # Complexities
     ///
@@ -398,14 +479,14 @@ impl<'w, 'a: 'w, S: WordSplitter> Wrapper<'a, S> {
     /// assert_eq!(wrapper.wrap("First line.\nSecond line."),
     ///            vec!["First line.", "Second line."]);
     /// ```
-    ///
+    #[inline(always)]
     pub fn wrap(&self, s: &'a str) -> Vec<Cow<'a, str>> {
-        self.wrap_iter(s).collect::<Vec<_>>()
+        self.wrap_dynamic(s, default_width_provider)
     }
 
     /// Lazily wrap a line of text at `self.width` characters. Strings
-    /// are wrapped based on their displayed width, not their size in
-    /// bytes.
+    /// are wrapped based on their displayed width you provide through
+    /// a closure, not their size in bytes.
     ///
     /// The [`WordSplitter`] stored in [`self.splitter`] is used
     /// whenever when a word is too large to fit on the current line.
@@ -429,15 +510,18 @@ impl<'w, 'a: 'w, S: WordSplitter> Wrapper<'a, S> {
     /// ```
     /// use std::borrow::Cow;
     /// use textwrap::Wrapper;
+    /// 
+    /// // Provides utilities to measure the width of text in the terminal
+    /// use textwrap::UnicodeWidthChar;
     ///
     /// let wrap20 = Wrapper::new(20);
-    /// let mut wrap20_iter = wrap20.wrap_iter("Zero-cost abstractions.");
+    /// let mut wrap20_iter = wrap20.wrap_iter("Zero-cost abstractions.", |c| c.width().unwrap_or(0));
     /// assert_eq!(wrap20_iter.next(), Some(Cow::from("Zero-cost")));
     /// assert_eq!(wrap20_iter.next(), Some(Cow::from("abstractions.")));
     /// assert_eq!(wrap20_iter.next(), None);
     ///
     /// let wrap25 = Wrapper::new(25);
-    /// let mut wrap25_iter = wrap25.wrap_iter("Zero-cost abstractions.");
+    /// let mut wrap25_iter = wrap25.wrap_iter("Zero-cost abstractions.", |c| c.width().unwrap_or(0));
     /// assert_eq!(wrap25_iter.next(), Some(Cow::from("Zero-cost abstractions.")));
     /// assert_eq!(wrap25_iter.next(), None);
     /// ```
@@ -445,16 +529,17 @@ impl<'w, 'a: 'w, S: WordSplitter> Wrapper<'a, S> {
     /// [`self.splitter`]: #structfield.splitter
     /// [`WordSplitter`]: trait.WordSplitter.html
     /// [`WrapIter`]: struct.WrapIter.html
-    pub fn wrap_iter(&'w self, s: &'a str) -> WrapIter<'w, 'a, S> {
+    pub fn wrap_iter<F>(&'w self, s: &'a str, p: F) -> WrapIter<'w, 'a, S, F> where F: FnMut(char) -> usize {
         WrapIter {
             wrapper: self,
             inner: WrapIterImpl::new(self, s),
+            width_provider: p,
         }
     }
 
     /// Lazily wrap a line of text at `self.width` characters. Strings
-    /// are wrapped based on their displayed width, not their size in
-    /// bytes.
+    /// are wrapped based on their displayed width you provide through
+    /// a closure, not their size in bytes.
     ///
     /// The [`WordSplitter`] stored in [`self.splitter`] is used
     /// whenever when a word is too large to fit on the current line.
@@ -473,9 +558,12 @@ impl<'w, 'a: 'w, S: WordSplitter> Wrapper<'a, S> {
     /// ```
     /// use std::borrow::Cow;
     /// use textwrap::Wrapper;
+    /// 
+    /// // Provides utilities to measure the width of text in the terminal
+    /// use textwrap::UnicodeWidthChar;
     ///
     /// let wrap20 = Wrapper::new(20);
-    /// let mut wrap20_iter = wrap20.into_wrap_iter("Zero-cost abstractions.");
+    /// let mut wrap20_iter = wrap20.into_wrap_iter("Zero-cost abstractions.", |c| c.width().unwrap_or(0));
     /// assert_eq!(wrap20_iter.next(), Some(Cow::from("Zero-cost")));
     /// assert_eq!(wrap20_iter.next(), Some(Cow::from("abstractions.")));
     /// assert_eq!(wrap20_iter.next(), None);
@@ -485,10 +573,10 @@ impl<'w, 'a: 'w, S: WordSplitter> Wrapper<'a, S> {
     /// [`WordSplitter`]: trait.WordSplitter.html
     /// [`IntoWrapIter`]: struct.IntoWrapIter.html
     /// [`wrap_iter`]: #method.wrap_iter
-    pub fn into_wrap_iter(self, s: &'a str) -> IntoWrapIter<'a, S> {
+    pub fn into_wrap_iter<F>(self, s: &'a str, p: F) -> IntoWrapIter<'a, S, F> where F: FnMut(char) -> usize {
         let inner = WrapIterImpl::new(&self, s);
 
-        IntoWrapIter { wrapper: self, inner: inner }
+        IntoWrapIter { wrapper: self, inner: inner, width_provider: p }
     }
 }
 
@@ -503,16 +591,17 @@ impl<'w, 'a: 'w, S: WordSplitter> Wrapper<'a, S> {
 /// [`wrap_iter`]: fn.wrap_iter.html
 /// [`Wrapper::into_wrap_iter`]: struct.Wrapper.html#method.into_wrap_iter
 #[derive(Debug)]
-pub struct IntoWrapIter<'a, S: WordSplitter> {
+pub struct IntoWrapIter<'a, S: WordSplitter, F: FnMut(char) -> usize> {
     wrapper: Wrapper<'a, S>,
     inner: WrapIterImpl<'a>,
+    width_provider: F,
 }
 
-impl<'a, S: WordSplitter> Iterator for IntoWrapIter<'a, S> {
+impl<'a, S: WordSplitter, F: FnMut(char) -> usize> Iterator for IntoWrapIter<'a, S, F> {
     type Item = Cow<'a, str>;
 
     fn next(&mut self) -> Option<Cow<'a, str>> {
-        self.inner.next(&self.wrapper)
+        self.inner.next(&self.wrapper, &mut self.width_provider)
     }
 }
 
@@ -525,16 +614,17 @@ impl<'a, S: WordSplitter> Iterator for IntoWrapIter<'a, S> {
 ///
 /// [`Wrapper::wrap_iter`]: struct.Wrapper.html#method.wrap_iter
 #[derive(Debug)]
-pub struct WrapIter<'w, 'a: 'w, S: WordSplitter + 'w> {
+pub struct WrapIter<'w, 'a: 'w, S: WordSplitter + 'w, F: FnMut(char) -> usize> {
     wrapper: &'w Wrapper<'a, S>,
     inner: WrapIterImpl<'a>,
+    width_provider: F,
 }
 
-impl<'w, 'a: 'w, S: WordSplitter> Iterator for WrapIter<'w, 'a, S> {
+impl<'w, 'a: 'w, S: WordSplitter, F: FnMut(char) -> usize> Iterator for WrapIter<'w, 'a, S, F> {
     type Item = Cow<'a, str>;
 
     fn next(&mut self) -> Option<Cow<'a, str>> {
-        self.inner.next(self.wrapper)
+        self.inner.next(self.wrapper, &mut self.width_provider)
     }
 }
 
@@ -567,6 +657,11 @@ struct WrapIterImpl<'a> {
     finished: bool,
 }
 
+#[inline(always)]
+fn width_provider_str<F>(s: &str, width_provider: &mut F) -> usize where F: FnMut(char) -> usize {
+    s.chars().fold(0, |acc, ch| acc + width_provider(ch))
+}
+
 impl<'a> WrapIterImpl<'a> {
     fn new<S: WordSplitter>(wrapper: &Wrapper<'a, S>, s: &'a str) -> WrapIterImpl<'a> {
         WrapIterImpl {
@@ -590,13 +685,13 @@ impl<'a> WrapIterImpl<'a> {
         }
     }
 
-    fn next<S: WordSplitter>(&mut self, wrapper: &Wrapper<'a, S>) -> Option<Cow<'a, str>> {
+    fn next<S: WordSplitter, F>(&mut self, wrapper: &Wrapper<'a, S>, width_provider: &mut F) -> Option<Cow<'a, str>> where F: FnMut(char) -> usize {
         if self.finished {
             return None;
         }
 
         while let Some((idx, ch)) = self.char_indices.next() {
-            let char_width = ch.width().unwrap_or(0);
+            let char_width = width_provider(ch);
             let char_len = ch.len_utf8();
 
             if ch == '\n' {
@@ -639,7 +734,7 @@ impl<'a> WrapIterImpl<'a> {
                 let mut hyphen = "";
                 let splits = wrapper.splitter.split(final_word);
                 for &(head, hyp, _) in splits.iter().rev() {
-                    if self.line_width_at_split + head.width() + hyp.width() <= wrapper.width {
+                    if self.line_width_at_split + width_provider_str(head, width_provider) + width_provider_str(hyp, width_provider) <= wrapper.width {
                         // We can fit head into the current line.
                         // Advance the split point by the width of the
                         // whitespace and the head length.
@@ -780,7 +875,8 @@ pub fn wrap(s: &str, width: usize) -> Vec<Cow<str>> {
 }
 
 /// Lazily wrap a line of text at `width` characters. Strings are
-/// wrapped based on their displayed width, not their size in bytes.
+/// wrapped based on their displayed width you provide through
+/// a closure, not their size in bytes.
 ///
 /// This function creates a Wrapper on the fly with default settings.
 /// It then calls the [`into_wrap_iter`] method. Hence, the return
@@ -796,13 +892,16 @@ pub fn wrap(s: &str, width: usize) -> Vec<Cow<str>> {
 /// ```
 /// use std::borrow::Cow;
 /// use textwrap::wrap_iter;
+/// 
+/// // Provides utilities to measure the width of text in the terminal
+/// use textwrap::UnicodeWidthChar;
 ///
-/// let mut wrap20_iter = wrap_iter("Zero-cost abstractions.", 20);
+/// let mut wrap20_iter = wrap_iter("Zero-cost abstractions.", 20, |c| c.width().unwrap_or(0));
 /// assert_eq!(wrap20_iter.next(), Some(Cow::from("Zero-cost")));
 /// assert_eq!(wrap20_iter.next(), Some(Cow::from("abstractions.")));
 /// assert_eq!(wrap20_iter.next(), None);
 ///
-/// let mut wrap25_iter = wrap_iter("Zero-cost abstractions.", 25);
+/// let mut wrap25_iter = wrap_iter("Zero-cost abstractions.", 25, |c| c.width().unwrap_or(0));
 /// assert_eq!(wrap25_iter.next(), Some(Cow::from("Zero-cost abstractions.")));
 /// assert_eq!(wrap25_iter.next(), None);
 /// ```
@@ -811,8 +910,8 @@ pub fn wrap(s: &str, width: usize) -> Vec<Cow<str>> {
 /// [`into_wrap_iter`]: struct.Wrapper.html#method.into_wrap_iter
 /// [`IntoWrapIter`]: struct.IntoWrapIter.html
 /// [`WrapIter`]: struct.WrapIter.html
-pub fn wrap_iter(s: &str, width: usize) -> IntoWrapIter<HyphenSplitter> {
-    Wrapper::new(width).into_wrap_iter(s)
+pub fn wrap_iter<F>(s: &str, width: usize, width_provider: F) -> IntoWrapIter<HyphenSplitter, F> where F: FnMut(char) -> usize {
+    Wrapper::new(width).into_wrap_iter(s, width_provider)
 }
 
 /// Add prefix to each non-empty line.
@@ -1271,5 +1370,31 @@ mod tests {
         let y = vec!["\tfoo",
                      "  bar"];
         assert_eq!(dedent(&add_nl(&x)), add_nl(&y));
+    }
+
+    #[test]
+    fn fill_fat_h() {
+        let wrap = Wrapper::new(15);
+        let res = wrap.fill_dynamic("Concurrency without data races.", |c| {
+            if c == 'h' {
+                c.width().unwrap_or(0) + 4
+            } else {
+                c.width().unwrap_or(0)
+            }
+        });
+        assert_eq!(res, "Concurrency\nwithout\ndata races.");
+    }
+
+    #[test]
+    fn wrap_fat_h() {
+        let wrap = Wrapper::new(15);
+        let res = wrap.wrap_dynamic("Concurrency without data races.", |c| {
+            if c == 'h' {
+                c.width().unwrap_or(0) + 4
+            } else {
+                c.width().unwrap_or(0)
+            }
+        });
+        assert_eq!(res, vec!["Concurrency", "without", "data races."]);
     }
 }
