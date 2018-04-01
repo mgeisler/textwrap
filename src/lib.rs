@@ -529,10 +529,10 @@ impl<'w, 'a: 'w, S: WordSplitter> Wrapper<'a, S> {
     /// [`self.splitter`]: #structfield.splitter
     /// [`WordSplitter`]: trait.WordSplitter.html
     /// [`WrapIter`]: struct.WrapIter.html
-    pub fn wrap_iter<F>(&'w self, s: &'a str, p: F) -> WrapIter<'w, 'a, S, F> where F: FnMut(char) -> usize {
+    pub fn wrap_iter<F>(&'w self, s: &'a str, mut p: F) -> WrapIter<'w, 'a, S, F> where F: FnMut(char) -> usize {
         WrapIter {
             wrapper: self,
-            inner: WrapIterImpl::new(self, s),
+            inner: WrapIterImpl::new(self, s, &mut p),
             width_provider: p,
         }
     }
@@ -573,8 +573,8 @@ impl<'w, 'a: 'w, S: WordSplitter> Wrapper<'a, S> {
     /// [`WordSplitter`]: trait.WordSplitter.html
     /// [`IntoWrapIter`]: struct.IntoWrapIter.html
     /// [`wrap_iter`]: #method.wrap_iter
-    pub fn into_wrap_iter<F>(self, s: &'a str, p: F) -> IntoWrapIter<'a, S, F> where F: FnMut(char) -> usize {
-        let inner = WrapIterImpl::new(&self, s);
+    pub fn into_wrap_iter<F>(self, s: &'a str, mut p: F) -> IntoWrapIter<'a, S, F> where F: FnMut(char) -> usize {
+        let inner = WrapIterImpl::new(&self, s, &mut p);
 
         IntoWrapIter { wrapper: self, inner: inner, width_provider: p }
     }
@@ -663,15 +663,15 @@ fn width_provider_str<F>(s: &str, width_provider: &mut F) -> usize where F: FnMu
 }
 
 impl<'a> WrapIterImpl<'a> {
-    fn new<S: WordSplitter>(wrapper: &Wrapper<'a, S>, s: &'a str) -> WrapIterImpl<'a> {
+    fn new<S: WordSplitter, F>(wrapper: &Wrapper<'a, S>, s: &'a str, p: &mut F) -> WrapIterImpl<'a> where F: FnMut(char) -> usize{
         WrapIterImpl {
             source: s,
             char_indices: s.char_indices(),
             start: 0,
             split: 0,
             split_len: 0,
-            line_width: wrapper.initial_indent.width(),
-            line_width_at_split: wrapper.initial_indent.width(),
+            line_width: width_provider_str(wrapper.initial_indent, p),
+            line_width_at_split: width_provider_str(wrapper.initial_indent, p),
             in_whitespace: false,
             finished: false,
         }
