@@ -54,7 +54,6 @@ extern crate hyphenation;
 use std::borrow::Cow;
 use std::str::CharIndices;
 
-use unicode_width::UnicodeWidthStr;
 pub use unicode_width::UnicodeWidthChar;
 #[cfg(feature = "hyphenation")]
 use hyphenation::{Corpus, Hyphenation};
