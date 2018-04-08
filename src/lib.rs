@@ -1000,7 +1000,7 @@ mod tests {
     }
 
     #[test]
-    fn test_issue_99() {
+    fn issue_99() {
         // We did not reset the in_whitespace flag correctly and did
         // not handle single-character words after a line break.
         assert_eq!(wrap("aaabbbccc x yyyzzzwww", 9),
