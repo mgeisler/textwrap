@@ -1000,11 +1000,18 @@ mod tests {
     }
 
     #[test]
-    fn test_issue_99() {
+    fn issue_99() {
         // We did not reset the in_whitespace flag correctly and did
         // not handle single-character words after a line break.
         assert_eq!(wrap("aaabbbccc x yyyzzzwww", 9),
                    vec!["aaabbbccc", "x", "yyyzzzwww"]);
+    }
+
+    #[test]
+    fn issue_129() {
+        // The dash is an em-dash which takes up four bytes. We used
+        // to panic since we tried to index into the character.
+        assert_eq!(wrap("x – x", 1), vec!["x", "–", "x"]);
     }
 
     #[test]
