@@ -1008,6 +1008,13 @@ mod tests {
     }
 
     #[test]
+    fn issue_129() {
+        // The dash is an em-dash which takes up four bytes. We used
+        // to panic since we tried to index into the character.
+        assert_eq!(wrap("x – x", 1), vec!["x", "–", "x"]);
+    }
+
+    #[test]
     fn wide_character_handling() {
         assert_eq!(wrap("Hello, World!", 15), vec!["Hello, World!"]);
         assert_eq!(wrap("Ｈｅｌｌｏ, Ｗｏｒｌｄ!", 15),
