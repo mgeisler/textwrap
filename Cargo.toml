@@ -31,6 +31,6 @@ term_size = { version = "0.3.0", optional = true }
 hyphenation = { version = "0.6.1", optional = true }
 
 [dev-dependencies]
-lipsum = "0.4"
+lipsum = "0.5"
 rand = "0.4"
 version-sync = "0.5"
