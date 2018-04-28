@@ -6,7 +6,6 @@ extern crate textwrap;
 use hyphenation::Language;
 use textwrap::Wrapper;
 
-
 #[cfg(not(feature = "hyphenation"))]
 fn new_wrapper<'a>() -> Wrapper<'a, textwrap::HyphenSplitter> {
     Wrapper::new(0)

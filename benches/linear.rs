@@ -3,20 +3,20 @@
 // The benchmarks here verify that the complexity grows as O(*n*)
 // where *n* is the number of characters in the text to be wrapped.
 
-extern crate test;
-extern crate rand;
-extern crate lipsum;
-extern crate textwrap;
 #[cfg(feature = "hyphenation")]
 extern crate hyphenation;
+extern crate lipsum;
+extern crate rand;
+extern crate test;
+extern crate textwrap;
 
-use test::Bencher;
 #[cfg(feature = "hyphenation")]
 use hyphenation::Language;
+use lipsum::MarkovChain;
+use rand::XorShiftRng;
+use test::Bencher;
 #[cfg(feature = "hyphenation")]
 use textwrap::Wrapper;
-use rand::XorShiftRng;
-use lipsum::MarkovChain;
 
 const LINE_LENGTH: usize = 60;
 
@@ -59,7 +59,6 @@ fn fill_800(b: &mut Bencher) {
     b.iter(|| textwrap::fill(text, LINE_LENGTH))
 }
 
-
 #[bench]
 fn wrap_100(b: &mut Bencher) {
     let text = &lorem_ipsum(100);
@@ -83,7 +82,6 @@ fn wrap_800(b: &mut Bencher) {
     let text = &lorem_ipsum(800);
     b.iter(|| textwrap::wrap(text, LINE_LENGTH))
 }
-
 
 #[bench]
 #[cfg(feature = "hyphenation")]
