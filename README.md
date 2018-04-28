@@ -15,7 +15,7 @@ the [Python textwrap module][py-textwrap].
 Add this to your `Cargo.toml`:
 ```toml
 [dependencies]
-textwrap = "0.9"
+textwrap = "0.10"
 ```
 
 and this to your crate root:
@@ -27,7 +27,7 @@ If you would like to have automatic hyphenation, specify the
 dependency as:
 ```toml
 [dependencies]
-textwrap = { version = "0.9", features = ["hyphenation"] }
+textwrap = { version = "0.10", features = ["hyphenation"] }
 ```
 
 To conveniently wrap text at the current terminal width, enable the
@@ -35,7 +35,7 @@ To conveniently wrap text at the current terminal width, enable the
 
 ```toml
 [dependencies]
-textwrap = { version = "0.9", features = ["term_size"] }
+textwrap = { version = "0.10", features = ["term_size"] }
 ```
 
 ## Documentation
@@ -181,7 +181,7 @@ cost abstractions.
 
 This section lists the largest changes per release.
 
-### Unreleased
+### Version 0.10.0 — April 28th, 2018
 
 Due to our dependencies bumping their minimum supported version of
 Rust, the minimum version of Rust we test against is now 1.17.0.
