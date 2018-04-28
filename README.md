@@ -206,8 +206,7 @@ Added a regression test for the case where `width` is set to
 
 Issues closed:
 
-* Fixed [#101][issue-101]: Remove `term_size` as a (hard required)
-  dependency.
+* Fixed [#101][issue-101]: Make `term_size` an optional dependency.
 
 ### Version 0.8.0 — September 4th, 2017
 
