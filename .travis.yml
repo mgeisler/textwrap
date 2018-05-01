@@ -17,5 +17,14 @@ env:
   - FEATURES="hyphenation"
 
 matrix:
+  include:
+    - rust: stable
+      sudo: required
+      env: []
+      script:
+        - bash <(curl -s https://raw.githubusercontent.com/xd009642/tarpaulin/master/travis-install.sh)
+        - cargo tarpaulin --features term_size --features hyphenation --out Xml
+        - bash <(curl -s https://codecov.io/bash) -Z -f cobertura.xml
+
   allow_failures:
     - rust: nightly
