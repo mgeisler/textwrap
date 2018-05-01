@@ -21,6 +21,38 @@
 //! wrapping text.
 //! ```
 //!
+//! If you enable the `hyphenation` feature, you can get automatic
+//! hyphenation for a number of languages:
+//!
+//! ```no_run
+//! # #[cfg(feature = "hyphenation")]
+//! extern crate hyphenation;
+//! extern crate textwrap;
+//!
+//! # #[cfg(feature = "hyphenation")]
+//! use hyphenation::{Language, Load, Standard};
+//! use textwrap::Wrapper;
+//!
+//! # #[cfg(feature = "hyphenation")]
+//! fn main() {
+//!     let text = "textwrap: a small library for wrapping text.";
+//!     let dictionary = Standard::from_embedded(Language::EnglishUS).unwrap();
+//!     let wrapper = Wrapper::with_splitter(18, dictionary);
+//!     println!("{}", wrapper.fill(text));
+//! }
+//!
+//! # #[cfg(not(feature = "hyphenation"))]
+//! # fn main() { }
+//! ```
+//!
+//! The program will now output:
+//!
+//! ```text
+//! textwrap: a small
+//! library for wrap-
+//! ping text.
+//! ```
+//!
 //! # Displayed Width vs Byte Size
 //!
 //! To word wrap text, one must know the width of each word so one can
