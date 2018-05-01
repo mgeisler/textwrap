@@ -304,18 +304,18 @@ impl<'a, S: WordSplitter> Wrapper<'a, S> {
     /// # Examples
     ///
     /// ```
-    /// use std::borrow::Cow;
+    /// use std::borrow::Cow::Borrowed;
     /// use textwrap::Wrapper;
     ///
     /// let wrap20 = Wrapper::new(20);
     /// let mut wrap20_iter = wrap20.wrap_iter("Zero-cost abstractions.");
-    /// assert_eq!(wrap20_iter.next(), Some(Cow::from("Zero-cost")));
-    /// assert_eq!(wrap20_iter.next(), Some(Cow::from("abstractions.")));
+    /// assert_eq!(wrap20_iter.next(), Some(Borrowed("Zero-cost")));
+    /// assert_eq!(wrap20_iter.next(), Some(Borrowed("abstractions.")));
     /// assert_eq!(wrap20_iter.next(), None);
     ///
     /// let wrap25 = Wrapper::new(25);
     /// let mut wrap25_iter = wrap25.wrap_iter("Zero-cost abstractions.");
-    /// assert_eq!(wrap25_iter.next(), Some(Cow::from("Zero-cost abstractions.")));
+    /// assert_eq!(wrap25_iter.next(), Some(Borrowed("Zero-cost abstractions.")));
     /// assert_eq!(wrap25_iter.next(), None);
     /// ```
     ///
@@ -346,13 +346,13 @@ impl<'a, S: WordSplitter> Wrapper<'a, S> {
     /// # Examples
     ///
     /// ```
-    /// use std::borrow::Cow;
+    /// use std::borrow::Cow::Borrowed;
     /// use textwrap::Wrapper;
     ///
     /// let wrap20 = Wrapper::new(20);
     /// let mut wrap20_iter = wrap20.into_wrap_iter("Zero-cost abstractions.");
-    /// assert_eq!(wrap20_iter.next(), Some(Cow::from("Zero-cost")));
-    /// assert_eq!(wrap20_iter.next(), Some(Cow::from("abstractions.")));
+    /// assert_eq!(wrap20_iter.next(), Some(Borrowed("Zero-cost")));
+    /// assert_eq!(wrap20_iter.next(), Some(Borrowed("abstractions.")));
     /// assert_eq!(wrap20_iter.next(), None);
     /// ```
     ///
@@ -667,16 +667,16 @@ pub fn wrap(s: &str, width: usize) -> Vec<Cow<str>> {
 /// # Examples
 ///
 /// ```
-/// use std::borrow::Cow;
+/// use std::borrow::Cow::Borrowed;
 /// use textwrap::wrap_iter;
 ///
 /// let mut wrap20_iter = wrap_iter("Zero-cost abstractions.", 20);
-/// assert_eq!(wrap20_iter.next(), Some(Cow::from("Zero-cost")));
-/// assert_eq!(wrap20_iter.next(), Some(Cow::from("abstractions.")));
+/// assert_eq!(wrap20_iter.next(), Some(Borrowed("Zero-cost")));
+/// assert_eq!(wrap20_iter.next(), Some(Borrowed("abstractions.")));
 /// assert_eq!(wrap20_iter.next(), None);
 ///
 /// let mut wrap25_iter = wrap_iter("Zero-cost abstractions.", 25);
-/// assert_eq!(wrap25_iter.next(), Some(Cow::from("Zero-cost abstractions.")));
+/// assert_eq!(wrap25_iter.next(), Some(Borrowed("Zero-cost abstractions.")));
 /// assert_eq!(wrap25_iter.next(), None);
 /// ```
 ///
