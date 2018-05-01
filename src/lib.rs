@@ -6,15 +6,14 @@
 //!
 //! ```no_run
 //! extern crate textwrap;
-//! use textwrap::fill;
 //!
 //! fn main() {
 //!     let text = "textwrap: a small library for wrapping text.";
-//!     println!("{}", fill(text, 18));
+//!     println!("{}", textwrap::fill(text, 18));
 //! }
 //! ```
 //!
-//! This will display the following output:
+//! When you run this program, it will display the following output:
 //!
 //! ```text
 //! textwrap: a small
