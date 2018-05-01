@@ -24,6 +24,7 @@ all-features = true
 [badges]
 travis-ci = { repository = "mgeisler/textwrap" }
 appveyor = { repository = "mgeisler/textwrap" }
+codecov = { repository = "mgeisler/textwrap" }
 
 [dependencies]
 unicode-width = "0.1.3"
