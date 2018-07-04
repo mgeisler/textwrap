@@ -899,10 +899,9 @@ pub fn indent(s: &str, prefix: &str) -> String {
 /// ```
 pub fn dedent(s: &str) -> String {
     let mut prefix = String::new();
-    let mut lines = s.lines();
 
     // We first search for a non-empty line to find a prefix.
-    for line in &mut lines {
+    for line in s.lines() {
         let whitespace = line.chars()
             .take_while(|c| c.is_whitespace())
             .collect::<String>();
@@ -913,9 +912,12 @@ pub fn dedent(s: &str) -> String {
         }
     }
 
+    // Filter out all whitespace-only lines
+    let lines = s.lines().filter(|l| !l.chars().all(|c| c.is_whitespace()));
+
     // We then continue looking through the remaining lines to
     // possibly shorten the prefix.
-    for line in &mut lines {
+    for line in lines {
         let whitespace = line.chars()
             .zip(prefix.chars())
             .take_while(|&(a, b)| a == b)
@@ -928,14 +930,22 @@ pub fn dedent(s: &str) -> String {
     }
 
     // We now go over the lines a second time to build the result.
-    let mut result = String::new();
-    for line in s.lines() {
-        if line.starts_with(&prefix) && line.chars().any(|c| !c.is_whitespace()) {
-            let (_, tail) = line.split_at(prefix.len());
-            result.push_str(tail);
-        }
+    let mut result = s.lines()
+        .map(|line| {
+            if line.starts_with(&prefix) && line.chars().any(|c| !c.is_whitespace()) {
+                line.split_at(prefix.len()).1
+            } else {
+                ""
+            }
+        })
+        .collect::<Vec<&str>>()
+        .join("\n");
+
+    // Reappend missing newline if found
+    if s.ends_with("\n") {
         result.push('\n');
     }
+
     result
 }
 
@@ -1295,11 +1305,87 @@ mod tests {
 
     #[test]
     #[cfg_attr(rustfmt, rustfmt_skip)]
+    fn dedent_blank_line() {
+        let x = vec!["      foo",
+                     "",
+                     "        bar",
+                     "          foo",
+                     "          bar",
+                     "          baz"];
+        let y = vec!["foo",
+                     "",
+                     "  bar",
+                     "    foo",
+                     "    bar",
+                     "    baz"];
+        assert_eq!(dedent(&add_nl(&x)), add_nl(&y));
+    }
+
+    #[test]
+    #[cfg_attr(rustfmt, rustfmt_skip)]
+    fn dedent_whitespace_line() {
+        let x = vec!["      foo",
+                     " ",
+                     "        bar",
+                     "          foo",
+                     "          bar",
+                     "          baz"];
+        let y = vec!["foo",
+                     "",
+                     "  bar",
+                     "    foo",
+                     "    bar",
+                     "    baz"];
+        assert_eq!(dedent(&add_nl(&x)), add_nl(&y));
+    }
+
+    #[test]
+    #[cfg_attr(rustfmt, rustfmt_skip)]
     fn dedent_mixed_whitespace() {
         let x = vec!["\tfoo",
                      "  bar"];
         let y = vec!["\tfoo",
                      "  bar"];
         assert_eq!(dedent(&add_nl(&x)), add_nl(&y));
+    }
+
+    #[test]
+    #[cfg_attr(rustfmt, rustfmt_skip)]
+    fn dedent_tabbed_whitespace() {
+        let x = vec!["\t\tfoo",
+                     "\t\t\tbar"];
+        let y = vec!["foo",
+                     "\tbar"];
+        assert_eq!(dedent(&add_nl(&x)), add_nl(&y));
+    }
+
+    #[test]
+    #[cfg_attr(rustfmt, rustfmt_skip)]
+    fn dedent_mixed_tabbed_whitespace() {
+        let x = vec!["\t  \tfoo",
+                     "\t  \t\tbar"];
+        let y = vec!["foo",
+                     "\tbar"];
+        assert_eq!(dedent(&add_nl(&x)), add_nl(&y));
+    }
+
+    #[test]
+    #[cfg_attr(rustfmt, rustfmt_skip)]
+    fn dedent_mixed_tabbed_whitespace2() {
+        let x = vec!["\t  \tfoo",
+                     "\t    \tbar"];
+        let y = vec!["\tfoo",
+                     "  \tbar"];
+        assert_eq!(dedent(&add_nl(&x)), add_nl(&y));
+    }
+
+    #[test]
+    #[cfg_attr(rustfmt, rustfmt_skip)]
+    fn dedent_preserve_no_terminating_newline() {
+        let x = vec!["  foo",
+                     "    bar"].join("\n");
+        let y = vec!["foo",
+                     "  bar"].join("\n");
+        assert_eq!(dedent(&*x), &*y);
     }
 }
