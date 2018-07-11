@@ -1391,6 +1391,6 @@ mod tests {
                      "    bar"].join("\n");
         let y = vec!["foo",
                      "  bar"].join("\n");
-        assert_eq!(dedent(&*x), &*y);
+        assert_eq!(dedent(&x), y);
     }
 }
