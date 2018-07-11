@@ -182,6 +182,11 @@ cost abstractions.
 
 This section lists the largest changes per release.
 
+### Unreleased
+
+Due to our dependencies bumping their minimum supported version of
+Rust, the minimum version of Rust we test against is now 1.21.0.
+
 ### Version 0.10.0 — April 28th, 2018
 
 Due to our dependencies bumping their minimum supported version of
