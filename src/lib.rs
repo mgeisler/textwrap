@@ -898,18 +898,22 @@ pub fn indent(s: &str, prefix: &str) -> String {
 /// ");
 /// ```
 pub fn dedent(s: &str) -> String {
-    let mut prefix = String::new();
+    let mut prefix = "";
     let mut lines = s.lines();
 
     // We first search for a non-empty line to find a prefix.
     for line in &mut lines {
-        let whitespace = line
-            .chars()
-            .take_while(|c| c.is_whitespace())
-            .collect::<String>();
+        let mut whitespace_idx = line.len();
+        for (idx, ch) in line.char_indices() {
+            if !ch.is_whitespace() {
+                whitespace_idx = idx;
+                break;
+            }
+        }
+
         // Check if the line had anything but whitespace
-        if whitespace.len() < line.len() {
-            prefix = whitespace;
+        if whitespace_idx < line.len() {
+            prefix = &line[..whitespace_idx];
             break;
         }
     }
@@ -917,16 +921,18 @@ pub fn dedent(s: &str) -> String {
     // We then continue looking through the remaining lines to
     // possibly shorten the prefix.
     for line in &mut lines {
-        let whitespace = line
-            .chars()
-            .zip(prefix.chars())
-            .take_while(|&(a, b)| a == b)
-            .map(|(_, b)| b)
-            .collect::<String>();
+        let mut whitespace_idx = line.len();
+        for ((idx, a), b) in line.char_indices().zip(prefix.chars()) {
+            if a != b {
+                whitespace_idx = idx;
+                break;
+            }
+        }
+
         // Check if the line had anything but whitespace and if we
         // have found a shorter prefix
-        if whitespace.len() < line.len() && whitespace.len() < prefix.len() {
-            prefix = whitespace;
+        if whitespace_idx < line.len() && whitespace_idx < prefix.len() {
+            prefix = &line[..whitespace_idx];
         }
     }
 
