@@ -187,6 +187,9 @@ This section lists the largest changes per release.
 Due to our dependencies bumping their minimum supported version of
 Rust, the minimum version of Rust we test against is now 1.21.0.
 
+* Merged [#141][issue-141]: Fix `dedent` handling of empty lines and
+  trailing newlines. Thanks @bbqsrc!
+
 ### Version 0.10.0 — April 28th, 2018
 
 Due to our dependencies bumping their minimum supported version of
@@ -343,4 +346,5 @@ Contributions will be accepted under the same license.
 [issue-107]: https://github.com/mgeisler/textwrap/issues/107
 [issue-122]: https://github.com/mgeisler/textwrap/issues/122
 [issue-129]: https://github.com/mgeisler/textwrap/issues/129
+[issue-141]: https://github.com/mgeisler/textwrap/issues/141
 [mit]: LICENSE
