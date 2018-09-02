@@ -255,7 +255,7 @@ impl<'a> Wrapper<'a, HyphenSplitter> {
     }
 }
 
-impl<'w, 'a: 'w, S: WordSplitter> Wrapper<'a, S> {
+impl<'a, S: WordSplitter> Wrapper<'a, S> {
     /// Use the given [`WordSplitter`] to create a new Wrapper for
     /// wrapping at the specified width. By default, we allow words
     /// longer than `width` to be broken.
@@ -453,7 +453,7 @@ impl<'w, 'a: 'w, S: WordSplitter> Wrapper<'a, S> {
     /// [`self.splitter`]: #structfield.splitter
     /// [`WordSplitter`]: trait.WordSplitter.html
     /// [`WrapIter`]: struct.WrapIter.html
-    pub fn wrap_iter(&'w self, s: &'a str) -> WrapIter<'w, 'a, S> {
+    pub fn wrap_iter<'w>(&'w self, s: &'a str) -> WrapIter<'w, 'a, S> {
         WrapIter {
             wrapper: self,
             inner: WrapIterImpl::new(self, s),
