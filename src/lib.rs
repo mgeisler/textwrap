@@ -61,6 +61,7 @@ use unicode_width::UnicodeWidthStr;
 const NBSP: char = '\u{a0}';
 
 pub mod indentation;
+pub use indentation::bullet;
 pub use indentation::dedent;
 pub use indentation::indent;
 
