@@ -72,16 +72,16 @@ pub fn indent(s: &str, prefix: &str) -> String {
 /// ```              
 pub fn bullet(s: &str, prefix: &str) -> String {
     let mut result = String::new();
-	let prefix_len = UnicodeWidthStr::width(prefix);
-	let spaces = format!("{:w$}", "", w=prefix_len);
-	let mut line_prefix = prefix;
-	
+    let prefix_len = UnicodeWidthStr::width(prefix);
+    let spaces = format!("{:w$}", "", w = prefix_len);
+    let mut line_prefix = prefix;
+
     for line in s.lines() {
         if line.chars().any(|c| !c.is_whitespace()) {
             result.push_str(line_prefix);
             result.push_str(line);
-			
-			line_prefix = spaces.as_str();
+
+            line_prefix = spaces.as_str();
         }
         result.push('\n');
     }
