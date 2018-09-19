@@ -4,6 +4,8 @@
 //! The functions here can be used to uniformly indent or dedent
 //! (unindent) word wrapped lines of text.
 
+use unicode_width::UnicodeWidthStr;
+
 /// Add prefix to each non-empty line.
 ///
 /// ```
@@ -53,6 +55,33 @@ pub fn indent(s: &str, prefix: &str) -> String {
         if line.chars().any(|c| !c.is_whitespace()) {
             result.push_str(prefix);
             result.push_str(line);
+        }
+        result.push('\n');
+    }
+    result
+}
+
+/// To add a specific indent to just the first line, and then the same length
+/// of spaces to the remaining lines. Whitespace does not count as the first line.
+///
+/// ```
+/// use textwrap::bullet;
+///
+/// assert_eq!(bullet("The first line\nand some text\ngiving more details.", "  - "),
+///            "  - The first line\n    and some text\n    giving more details.\n");
+/// ```              
+pub fn bullet(s: &str, prefix: &str) -> String {
+    let mut result = String::new();
+    let prefix_len = UnicodeWidthStr::width(prefix);
+    let spaces = format!("{:w$}", "", w = prefix_len);
+    let mut line_prefix = prefix;
+
+    for line in s.lines() {
+        if line.chars().any(|c| !c.is_whitespace()) {
+            result.push_str(line_prefix);
+            result.push_str(line);
+
+            line_prefix = spaces.as_str();
         }
         result.push('\n');
     }
@@ -173,6 +202,37 @@ mod tests {
                      "",
                      "//  baz"];
         assert_eq!(indent(&add_nl(&x), "//"), add_nl(&y));
+    }
+
+    #[test]
+    fn bullet_empty() {
+        assert_eq!(bullet("\n", "* "), "\n");
+    }
+
+    #[test]
+    #[cfg_attr(rustfmt, rustfmt_skip)]
+    fn bullet_nonempty() {
+        let x = vec!["  foo",
+                     "bar",
+                     "  baz"];
+        let y = vec!["//  foo",
+                     "  bar",
+                     "    baz"];
+        assert_eq!(bullet(&add_nl(&x), "//"), add_nl(&y));
+    }
+
+    #[test]
+    #[cfg_attr(rustfmt, rustfmt_skip)]
+    fn bullet_empty_line() {
+        let x = vec!["  foo",
+                     "bar",
+                     "",
+                     "  baz"];
+        let y = vec!["//  foo",
+                     "  bar",
+                     "",
+                     "    baz"];
+        assert_eq!(bullet(&add_nl(&x), "//"), add_nl(&y));
     }
 
     #[test]

@@ -21,7 +21,10 @@ fn main() {
     #[cfg(feature = "hyphenation")]
     fn new_wrapper<'a>() -> (&'static str, Wrapper<'a, hyphenation::Corpus>) {
         let corpus = hyphenation::load(Language::English_US).unwrap();
-        ("with hyphenation", Wrapper::with_splitter(textwrap::termwidth(), corpus))
+        (
+            "with hyphenation",
+            Wrapper::with_splitter(textwrap::termwidth(), corpus),
+        )
     }
 
     let example = "Memory safety without garbage collection. \
