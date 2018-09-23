@@ -93,8 +93,8 @@ pub struct Wrapper<'a, S: WordSplitter> {
     /// `self.width`.
     pub break_words: bool,
     /// The method for splitting words. If the `hyphenation` feature
-    /// is enabled, you can use a `hyphenation::language::Corpus` here
-    /// to get language-aware hyphenation.
+    /// is enabled, you can use a `hyphenation::Standard` dictionary
+    /// here to get language-aware hyphenation.
     pub splitter: S,
 }
 
@@ -706,7 +706,7 @@ mod tests {
 
     use super::*;
     #[cfg(feature = "hyphenation")]
-    use hyphenation::Language;
+    use hyphenation::{Language, Load, Standard};
 
     #[test]
     fn no_wrap() {
@@ -874,14 +874,14 @@ mod tests {
     #[test]
     #[cfg(feature = "hyphenation")]
     fn auto_hyphenation() {
-        let corpus = hyphenation::load(Language::English_US).unwrap();
+        let dictionary = Standard::from_embedded(Language::EnglishUS).unwrap();
         let wrapper = Wrapper::new(10);
         assert_eq!(
             wrapper.wrap("Internationalization"),
             vec!["Internatio", "nalization"]
         );
 
-        let wrapper = Wrapper::with_splitter(10, corpus);
+        let wrapper = Wrapper::with_splitter(10, dictionary);
         assert_eq!(
             wrapper.wrap("Internationalization"),
             vec!["Interna-", "tionaliza-", "tion"]
@@ -893,8 +893,8 @@ mod tests {
     fn split_len_hyphenation() {
         // Test that hyphenation takes the width of the wihtespace
         // into account.
-        let corpus = hyphenation::load(Language::English_US).unwrap();
-        let wrapper = Wrapper::with_splitter(15, corpus);
+        let dictionary = Standard::from_embedded(Language::EnglishUS).unwrap();
+        let wrapper = Wrapper::with_splitter(15, dictionary);
         assert_eq!(
             wrapper.wrap("garbage   collection"),
             vec!["garbage   col-", "lection"]
@@ -907,8 +907,8 @@ mod tests {
         // Lines that end with an extra hyphen are owned, the final
         // line is borrowed.
         use std::borrow::Cow::{Borrowed, Owned};
-        let corpus = hyphenation::load(Language::English_US).unwrap();
-        let wrapper = Wrapper::with_splitter(10, corpus);
+        let dictionary = Standard::from_embedded(Language::EnglishUS).unwrap();
+        let wrapper = Wrapper::with_splitter(10, dictionary);
         let lines = wrapper.wrap("Internationalization");
         if let Borrowed(s) = lines[0] {
             assert!(false, "should not have been borrowed: {:?}", s);
@@ -924,11 +924,11 @@ mod tests {
     #[test]
     #[cfg(feature = "hyphenation")]
     fn auto_hyphenation_with_hyphen() {
-        let corpus = hyphenation::load(Language::English_US).unwrap();
+        let dictionary = Standard::from_embedded(Language::EnglishUS).unwrap();
         let wrapper = Wrapper::new(8).break_words(false);
         assert_eq!(wrapper.wrap("over-caffinated"), vec!["over-", "caffinated"]);
 
-        let wrapper = Wrapper::with_splitter(8, corpus).break_words(false);
+        let wrapper = Wrapper::with_splitter(8, dictionary).break_words(false);
         assert_eq!(
             wrapper.wrap("over-caffinated"),
             vec!["over-", "caffi-", "nated"]

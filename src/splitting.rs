@@ -6,7 +6,7 @@
 //! this treat: it will simply split words on existing hyphens.
 
 #[cfg(feature = "hyphenation")]
-use hyphenation::{Corpus, Hyphenation};
+use hyphenation::{Hyphenator, Standard};
 
 /// An interface for splitting words.
 ///
@@ -119,14 +119,14 @@ impl WordSplitter for HyphenSplitter {
     }
 }
 
-/// A hyphenation Corpus can be used to do language-specific
+/// A hyphenation dictionary can be used to do language-specific
 /// hyphenation using patterns from the hyphenation crate.
 #[cfg(feature = "hyphenation")]
-impl WordSplitter for Corpus {
+impl WordSplitter for Standard {
     fn split<'w>(&self, word: &'w str) -> Vec<(&'w str, &'w str, &'w str)> {
-        // Find splits based on language corpus.
+        // Find splits based on language dictionary.
         let mut triples = Vec::new();
-        for n in word.opportunities(self) {
+        for n in self.hyphenate(word).breaks {
             let (head, tail) = word.split_at(n);
             let hyphen = if head.ends_with('-') { "" } else { "-" };
             triples.push((head, hyphen, tail));
