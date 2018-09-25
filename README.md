@@ -69,12 +69,12 @@ configure the hyphenation patterns to use:
 extern crate hyphenation;
 extern crate textwrap;
 
-use hyphenation::Language;
+use hyphenation::{Language, Load, Standard};
 use textwrap::Wrapper;
 
 fn main() {
-    let corpus = hyphenation::load(Language::English_US).unwrap();
-    let wrapper = Wrapper::with_splitter(18, corpus);
+    let hyphenator = Standard::from_embedded(Language::EnglishUS).unwrap();
+    let wrapper = Wrapper::with_splitter(18, hyphenator);
     let text = "textwrap: a small library for wrapping text.";
     println!("{}", wrapper.fill(text))
 }

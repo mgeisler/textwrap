@@ -11,7 +11,7 @@ extern crate test;
 extern crate textwrap;
 
 #[cfg(feature = "hyphenation")]
-use hyphenation::Language;
+use hyphenation::{Language, Load, Standard};
 use lipsum::MarkovChain;
 use rand::XorShiftRng;
 use test::Bencher;
@@ -87,8 +87,8 @@ fn wrap_800(b: &mut Bencher) {
 #[cfg(feature = "hyphenation")]
 fn hyphenation_fill_100(b: &mut Bencher) {
     let text = &lorem_ipsum(100);
-    let corpus = hyphenation::load(Language::Latin).unwrap();
-    let wrapper = Wrapper::with_splitter(LINE_LENGTH, corpus);
+    let dictionary = Standard::from_embedded(Language::Latin).unwrap();
+    let wrapper = Wrapper::with_splitter(LINE_LENGTH, dictionary);
     b.iter(|| wrapper.fill(text))
 }
 
@@ -96,8 +96,8 @@ fn hyphenation_fill_100(b: &mut Bencher) {
 #[cfg(feature = "hyphenation")]
 fn hyphenation_fill_200(b: &mut Bencher) {
     let text = &lorem_ipsum(200);
-    let corpus = hyphenation::load(Language::Latin).unwrap();
-    let wrapper = Wrapper::with_splitter(LINE_LENGTH, corpus);
+    let dictionary = Standard::from_embedded(Language::Latin).unwrap();
+    let wrapper = Wrapper::with_splitter(LINE_LENGTH, dictionary);
     b.iter(|| wrapper.fill(text))
 }
 
@@ -105,8 +105,8 @@ fn hyphenation_fill_200(b: &mut Bencher) {
 #[cfg(feature = "hyphenation")]
 fn hyphenation_fill_400(b: &mut Bencher) {
     let text = &lorem_ipsum(400);
-    let corpus = hyphenation::load(Language::Latin).unwrap();
-    let wrapper = Wrapper::with_splitter(LINE_LENGTH, corpus);
+    let dictionary = Standard::from_embedded(Language::Latin).unwrap();
+    let wrapper = Wrapper::with_splitter(LINE_LENGTH, dictionary);
     b.iter(|| wrapper.fill(text))
 }
 
@@ -114,7 +114,7 @@ fn hyphenation_fill_400(b: &mut Bencher) {
 #[cfg(feature = "hyphenation")]
 fn hyphenation_fill_800(b: &mut Bencher) {
     let text = &lorem_ipsum(800);
-    let corpus = hyphenation::load(Language::Latin).unwrap();
-    let wrapper = Wrapper::with_splitter(LINE_LENGTH, corpus);
+    let dictionary = Standard::from_embedded(Language::Latin).unwrap();
+    let wrapper = Wrapper::with_splitter(LINE_LENGTH, dictionary);
     b.iter(|| wrapper.fill(text))
 }
