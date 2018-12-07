@@ -7,13 +7,15 @@
 extern crate hyphenation;
 extern crate lipsum;
 extern crate rand;
+extern crate rand_xorshift;
 extern crate test;
 extern crate textwrap;
 
 #[cfg(feature = "hyphenation")]
 use hyphenation::{Language, Load, Standard};
 use lipsum::MarkovChain;
-use rand::XorShiftRng;
+use rand::SeedableRng;
+use rand_xorshift::XorShiftRng;
 use test::Bencher;
 #[cfg(feature = "hyphenation")]
 use textwrap::Wrapper;
@@ -25,7 +27,7 @@ fn lorem_ipsum(length: usize) -> String {
     // The average word length in the lorem ipsum text is somewhere
     // between 6 and 7. So we conservatively divide by 5 to have a
     // long enough text that we can truncate below.
-    let rng = XorShiftRng::new_unseeded();
+    let rng = XorShiftRng::seed_from_u64(0);
     let mut chain = MarkovChain::new_with_rng(rng);
     chain.learn(lipsum::LOREM_IPSUM);
     chain.learn(lipsum::LIBER_PRIMUS);
