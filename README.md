@@ -185,7 +185,7 @@ This section lists the largest changes per release.
 ### Unreleased
 
 Due to our dependencies bumping their minimum supported version of
-Rust, the minimum version of Rust we test against is now 1.21.0.
+Rust, the minimum version of Rust we test against is now 1.22.0.
 
 * Merged [#141][issue-141]: Fix `dedent` handling of empty lines and
   trailing newlines. Thanks @bbqsrc!
