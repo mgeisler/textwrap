@@ -7,7 +7,7 @@ jobs:
       - checkout
       - run:
           name: Generate coverage report
-          command: cargo tarpaulin --out Xml --features 'term_size hyphenation'
+          command: cargo tarpaulin --out Xml --all-features
       - run:
           name: Upload to codecov.io
           command: bash <(curl -s https://codecov.io/bash) -Z -f cobertura.xml
