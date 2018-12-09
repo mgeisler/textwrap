@@ -4,6 +4,7 @@ extern crate textwrap;
 
 #[cfg(feature = "hyphenation")]
 use hyphenation::{Language, Load, Standard};
+#[cfg(feature = "term_size")]
 use textwrap::Wrapper;
 
 #[cfg(not(feature = "term_size"))]
@@ -21,7 +22,10 @@ fn main() {
     #[cfg(feature = "hyphenation")]
     fn new_wrapper<'a>() -> (&'static str, Wrapper<'a, Standard>) {
         let dictionary = Standard::from_embedded(Language::EnglishUS).unwrap();
-        ("with hyphenation", Wrapper::with_splitter(textwrap::termwidth(), dictionary))
+        (
+            "with hyphenation",
+            Wrapper::with_splitter(textwrap::termwidth(), dictionary),
+        )
     }
 
     let example = "Memory safety without garbage collection. \
