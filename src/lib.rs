@@ -60,11 +60,11 @@ use unicode_width::UnicodeWidthStr;
 /// A non-breaking space.
 const NBSP: char = '\u{a0}';
 
-pub mod indentation;
+mod indentation;
 pub use indentation::dedent;
 pub use indentation::indent;
 
-pub mod splitting;
+mod splitting;
 pub use splitting::{HyphenSplitter, NoHyphenation, WordSplitter};
 
 /// A Wrapper holds settings for wrapping and filling text. Use it
