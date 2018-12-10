@@ -5,6 +5,7 @@
 [![](https://travis-ci.org/mgeisler/textwrap.svg?branch=master)][travis-ci]
 [![](https://ci.appveyor.com/api/projects/status/github/mgeisler/textwrap?branch=master&svg=true)][appveyor]
 [![](https://codecov.io/gh/mgeisler/textwrap/branch/master/graph/badge.svg)][codecov]
+![](https://img.shields.io/badge/rustc-v1.22.0%2B-4d76ae.svg)
 
 Textwrap is a small Rust crate for word wrapping text. You can use it
 to format strings for display in commandline applications. The crate
