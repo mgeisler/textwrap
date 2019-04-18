@@ -530,6 +530,7 @@ impl<'a> WrapIterImpl<'a> {
                         // whitespace and the head length.
                         self.split += self.split_len + head.len();
                         self.split_len = 0;
+                        self.line_width_at_split += head.width() + hyp.width();
                         hyphen = hyp;
                         break;
                     }
@@ -560,6 +561,7 @@ impl<'a> WrapIterImpl<'a> {
                     self.line_width += wrapper.subsequent_indent.width();
                     self.line_width -= self.line_width_at_split;
                     self.line_width += char_width;
+                    self.line_width_at_split = wrapper.subsequent_indent.width();
 
                     return Some(line);
                 }
@@ -885,6 +887,23 @@ mod tests {
         assert_eq!(
             wrapper.wrap("Internationalization"),
             vec!["Interna-", "tionaliza-", "tion"]
+        );
+    }
+
+    #[test]
+    #[cfg(feature = "hyphenation")]
+    fn auto_hyphenation_issue_158() {
+        let dictionary = Standard::from_embedded(Language::EnglishUS).unwrap();
+        let wrapper = Wrapper::new(10);
+        assert_eq!(
+            wrapper.wrap("participation is the key to success"),
+            vec!["participat", "ion is the", "key to", "success"]
+        );
+
+        let wrapper = Wrapper::with_splitter(10, dictionary);
+        assert_eq!(
+            wrapper.wrap("participation is the key to success"),
+            vec!["participa-", "tion is the", "key to", "success"]
         );
     }
 
