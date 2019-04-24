@@ -6,20 +6,51 @@
 //!
 //! ```no_run
 //! extern crate textwrap;
-//! use textwrap::fill;
 //!
 //! fn main() {
 //!     let text = "textwrap: a small library for wrapping text.";
-//!     println!("{}", fill(text, 18));
+//!     println!("{}", textwrap::fill(text, 18));
 //! }
 //! ```
 //!
-//! This will display the following output:
+//! When you run this program, it will display the following output:
 //!
 //! ```text
 //! textwrap: a small
 //! library for
 //! wrapping text.
+//! ```
+//!
+//! If you enable the `hyphenation` feature, you can get automatic
+//! hyphenation for a number of languages:
+//!
+//! ```no_run
+//! # #[cfg(feature = "hyphenation")]
+//! extern crate hyphenation;
+//! extern crate textwrap;
+//!
+//! # #[cfg(feature = "hyphenation")]
+//! use hyphenation::{Language, Load, Standard};
+//! use textwrap::Wrapper;
+//!
+//! # #[cfg(feature = "hyphenation")]
+//! fn main() {
+//!     let text = "textwrap: a small library for wrapping text.";
+//!     let dictionary = Standard::from_embedded(Language::EnglishUS).unwrap();
+//!     let wrapper = Wrapper::with_splitter(18, dictionary);
+//!     println!("{}", wrapper.fill(text));
+//! }
+//!
+//! # #[cfg(not(feature = "hyphenation"))]
+//! # fn main() { }
+//! ```
+//!
+//! The program will now output:
+//!
+//! ```text
+//! textwrap: a small
+//! library for wrap-
+//! ping text.
 //! ```
 //!
 //! # Displayed Width vs Byte Size
@@ -206,9 +237,7 @@ impl<'a, S: WordSplitter> Wrapper<'a, S> {
         }
     }
 
-    /// Fill a line of text at `self.width` characters. Strings are
-    /// wrapped based on their displayed width, not their size in
-    /// bytes.
+    /// Fill a line of text at `self.width` characters.
     ///
     /// The result is a string with newlines between each line. Use
     /// the `wrap` method if you need access to the individual lines.
@@ -243,9 +272,7 @@ impl<'a, S: WordSplitter> Wrapper<'a, S> {
         result
     }
 
-    /// Wrap a line of text at `self.width` characters. Strings are
-    /// wrapped based on their displayed width, not their size in
-    /// bytes.
+    /// Wrap a line of text at `self.width` characters.
     ///
     /// # Complexities
     ///
@@ -286,9 +313,7 @@ impl<'a, S: WordSplitter> Wrapper<'a, S> {
         self.wrap_iter(s).collect::<Vec<_>>()
     }
 
-    /// Lazily wrap a line of text at `self.width` characters. Strings
-    /// are wrapped based on their displayed width, not their size in
-    /// bytes.
+    /// Lazily wrap a line of text at `self.width` characters.
     ///
     /// The [`WordSplitter`] stored in [`self.splitter`] is used
     /// whenever when a word is too large to fit on the current line.
@@ -310,18 +335,18 @@ impl<'a, S: WordSplitter> Wrapper<'a, S> {
     /// # Examples
     ///
     /// ```
-    /// use std::borrow::Cow;
+    /// use std::borrow::Cow::Borrowed;
     /// use textwrap::Wrapper;
     ///
     /// let wrap20 = Wrapper::new(20);
     /// let mut wrap20_iter = wrap20.wrap_iter("Zero-cost abstractions.");
-    /// assert_eq!(wrap20_iter.next(), Some(Cow::from("Zero-cost")));
-    /// assert_eq!(wrap20_iter.next(), Some(Cow::from("abstractions.")));
+    /// assert_eq!(wrap20_iter.next(), Some(Borrowed("Zero-cost")));
+    /// assert_eq!(wrap20_iter.next(), Some(Borrowed("abstractions.")));
     /// assert_eq!(wrap20_iter.next(), None);
     ///
     /// let wrap25 = Wrapper::new(25);
     /// let mut wrap25_iter = wrap25.wrap_iter("Zero-cost abstractions.");
-    /// assert_eq!(wrap25_iter.next(), Some(Cow::from("Zero-cost abstractions.")));
+    /// assert_eq!(wrap25_iter.next(), Some(Borrowed("Zero-cost abstractions.")));
     /// assert_eq!(wrap25_iter.next(), None);
     /// ```
     ///
@@ -335,9 +360,7 @@ impl<'a, S: WordSplitter> Wrapper<'a, S> {
         }
     }
 
-    /// Lazily wrap a line of text at `self.width` characters. Strings
-    /// are wrapped based on their displayed width, not their size in
-    /// bytes.
+    /// Lazily wrap a line of text at `self.width` characters.
     ///
     /// The [`WordSplitter`] stored in [`self.splitter`] is used
     /// whenever when a word is too large to fit on the current line.
@@ -354,13 +377,13 @@ impl<'a, S: WordSplitter> Wrapper<'a, S> {
     /// # Examples
     ///
     /// ```
-    /// use std::borrow::Cow;
+    /// use std::borrow::Cow::Borrowed;
     /// use textwrap::Wrapper;
     ///
     /// let wrap20 = Wrapper::new(20);
     /// let mut wrap20_iter = wrap20.into_wrap_iter("Zero-cost abstractions.");
-    /// assert_eq!(wrap20_iter.next(), Some(Cow::from("Zero-cost")));
-    /// assert_eq!(wrap20_iter.next(), Some(Cow::from("abstractions.")));
+    /// assert_eq!(wrap20_iter.next(), Some(Borrowed("Zero-cost")));
+    /// assert_eq!(wrap20_iter.next(), Some(Borrowed("abstractions.")));
     /// assert_eq!(wrap20_iter.next(), None);
     /// ```
     ///
@@ -605,8 +628,7 @@ pub fn termwidth() -> usize {
     term_size::dimensions_stdout().map_or(80, |(w, _)| w)
 }
 
-/// Fill a line of text at `width` characters. Strings are wrapped
-/// based on their displayed width, not their size in bytes.
+/// Fill a line of text at `width` characters.
 ///
 /// The result is a string with newlines between each line. Use
 /// [`wrap`] if you need access to the individual lines or
@@ -631,8 +653,7 @@ pub fn fill(s: &str, width: usize) -> String {
     Wrapper::new(width).fill(s)
 }
 
-/// Wrap a line of text at `width` characters. Strings are wrapped
-/// based on their displayed width, not their size in bytes.
+/// Wrap a line of text at `width` characters.
 ///
 /// This function creates a Wrapper on the fly with default settings.
 /// If you need to set a language corpus for automatic hyphenation, or
@@ -663,8 +684,7 @@ pub fn wrap(s: &str, width: usize) -> Vec<Cow<str>> {
     Wrapper::new(width).wrap(s)
 }
 
-/// Lazily wrap a line of text at `width` characters. Strings are
-/// wrapped based on their displayed width, not their size in bytes.
+/// Lazily wrap a line of text at `width` characters.
 ///
 /// This function creates a Wrapper on the fly with default settings.
 /// It then calls the [`into_wrap_iter`] method. Hence, the return
@@ -678,16 +698,16 @@ pub fn wrap(s: &str, width: usize) -> Vec<Cow<str>> {
 /// # Examples
 ///
 /// ```
-/// use std::borrow::Cow;
+/// use std::borrow::Cow::Borrowed;
 /// use textwrap::wrap_iter;
 ///
 /// let mut wrap20_iter = wrap_iter("Zero-cost abstractions.", 20);
-/// assert_eq!(wrap20_iter.next(), Some(Cow::from("Zero-cost")));
-/// assert_eq!(wrap20_iter.next(), Some(Cow::from("abstractions.")));
+/// assert_eq!(wrap20_iter.next(), Some(Borrowed("Zero-cost")));
+/// assert_eq!(wrap20_iter.next(), Some(Borrowed("abstractions.")));
 /// assert_eq!(wrap20_iter.next(), None);
 ///
 /// let mut wrap25_iter = wrap_iter("Zero-cost abstractions.", 25);
-/// assert_eq!(wrap25_iter.next(), Some(Cow::from("Zero-cost abstractions.")));
+/// assert_eq!(wrap25_iter.next(), Some(Borrowed("Zero-cost abstractions.")));
 /// assert_eq!(wrap25_iter.next(), None);
 /// ```
 ///
