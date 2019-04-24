@@ -41,7 +41,7 @@ fn test_readme_rustc_min_version() {
         .last()
         .expect("No minimum Rust version found");
 
-    let pattern = "https://img.shields.io/badge/rustc-v{version}%2B-4d76ae.svg";
+    let pattern = "https://img.shields.io/badge/rustc-{version}-4d76ae.svg";
     version_sync::check_contains_regex("README.md", pattern, "", min_rust_version)
         .expect("Minimum Rust version not found");
 }
