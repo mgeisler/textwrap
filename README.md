@@ -5,7 +5,7 @@
 [![](https://codecov.io/gh/mgeisler/textwrap/branch/master/graph/badge.svg)][codecov]
 [![](https://img.shields.io/crates/v/textwrap.svg)][crates-io]
 [![](https://docs.rs/textwrap/badge.svg)][api-docs]
-![](https://img.shields.io/badge/rustc-v1.23.0%2B-4d76ae.svg)
+[![](https://img.shields.io/badge/rustc-v1.23.0%2B-4d76ae.svg)][rust-1.23]
 
 Textwrap is a small Rust crate for word wrapping text. You can use it
 to format strings for display in commandline applications. The crate
@@ -320,6 +320,7 @@ Contributions will be accepted under the same license.
 [py-textwrap]: https://docs.python.org/library/textwrap
 [patterns]: https://github.com/tapeinosyne/hyphenation/tree/master/patterns-tex
 [api-docs]: https://docs.rs/textwrap/
+[rust-1.23]: https://github.com/rust-lang/rust/blob/master/RELEASES.md#version-1230-2018-01-04
 [issue-13]: https://github.com/mgeisler/textwrap/issues/13
 [issue-14]: https://github.com/mgeisler/textwrap/issues/14
 [issue-19]: https://github.com/mgeisler/textwrap/issues/19
