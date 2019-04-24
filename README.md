@@ -5,7 +5,7 @@
 [![](https://codecov.io/gh/mgeisler/textwrap/branch/master/graph/badge.svg)][codecov]
 [![](https://img.shields.io/crates/v/textwrap.svg)][crates-io]
 [![](https://docs.rs/textwrap/badge.svg)][api-docs]
-![](https://img.shields.io/badge/rustc-v1.22.0%2B-4d76ae.svg)
+![](https://img.shields.io/badge/rustc-v1.23.0%2B-4d76ae.svg)
 
 Textwrap is a small Rust crate for word wrapping text. You can use it
 to format strings for display in commandline applications. The crate
@@ -182,6 +182,10 @@ cost abstractions.
 ## Release History
 
 This section lists the largest changes per release.
+
+### Unreleased ###
+
+The the minimum version of Rust we test against is now 1.23.0.
 
 ### Version 0.11.0 — December 9th, 2018
 
