@@ -4,7 +4,7 @@ rust:
   - stable
   - beta
   - nightly
-  - 1.23.0
+  - 1.31.0  # Rust 2018
 
 cache: cargo
 

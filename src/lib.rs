@@ -76,12 +76,6 @@
 #![deny(missing_docs)]
 #![deny(missing_debug_implementations)]
 
-#[cfg(feature = "hyphenation")]
-extern crate hyphenation;
-#[cfg(feature = "term_size")]
-extern crate term_size;
-extern crate unicode_width;
-
 use std::borrow::Cow;
 use std::str::CharIndices;
 
@@ -92,11 +86,11 @@ use unicode_width::UnicodeWidthStr;
 const NBSP: char = '\u{a0}';
 
 mod indentation;
-pub use indentation::dedent;
-pub use indentation::indent;
+pub use crate::indentation::dedent;
+pub use crate::indentation::indent;
 
 mod splitting;
-pub use splitting::{HyphenSplitter, NoHyphenation, WordSplitter};
+pub use crate::splitting::{HyphenSplitter, NoHyphenation, WordSplitter};
 
 /// A Wrapper holds settings for wrapping and filling text. Use it
 /// when the convenience [`wrap_iter`], [`wrap`] and [`fill`] functions
@@ -433,7 +427,7 @@ impl<'a, S: WordSplitter> Iterator for IntoWrapIter<'a, S> {
 ///
 /// [`Wrapper::wrap_iter`]: struct.Wrapper.html#method.wrap_iter
 #[derive(Debug)]
-pub struct WrapIter<'w, 'a: 'w, S: WordSplitter + 'w> {
+pub struct WrapIter<'w, 'a: 'w, S: WordSplitter> {
     wrapper: &'w Wrapper<'a, S>,
     inner: WrapIterImpl<'a>,
 }
@@ -682,7 +676,7 @@ pub fn fill(s: &str, width: usize) -> String {
 ///
 /// [`wrap_iter`]: fn.wrap_iter.html
 /// [`wrap` method]: struct.Wrapper.html#method.wrap
-pub fn wrap(s: &str, width: usize) -> Vec<Cow<str>> {
+pub fn wrap(s: &str, width: usize) -> Vec<Cow<'_, str>> {
     Wrapper::new(width).wrap(s)
 }
 
@@ -717,7 +711,7 @@ pub fn wrap(s: &str, width: usize) -> Vec<Cow<str>> {
 /// [`into_wrap_iter`]: struct.Wrapper.html#method.into_wrap_iter
 /// [`IntoWrapIter`]: struct.IntoWrapIter.html
 /// [`WrapIter`]: struct.WrapIter.html
-pub fn wrap_iter(s: &str, width: usize) -> IntoWrapIter<HyphenSplitter> {
+pub fn wrap_iter(s: &str, width: usize) -> IntoWrapIter<'_, HyphenSplitter> {
     Wrapper::new(width).into_wrap_iter(s)
 }
 

@@ -3,13 +3,7 @@
 // The benchmarks here verify that the complexity grows as O(*n*)
 // where *n* is the number of characters in the text to be wrapped.
 
-#[cfg(feature = "hyphenation")]
-extern crate hyphenation;
-extern crate lipsum;
-extern crate rand;
-extern crate rand_xorshift;
 extern crate test;
-extern crate textwrap;
 
 #[cfg(feature = "hyphenation")]
 use hyphenation::{Language, Load, Standard};
@@ -17,8 +11,6 @@ use lipsum::MarkovChain;
 use rand::SeedableRng;
 use rand_xorshift::XorShiftRng;
 use test::Bencher;
-#[cfg(feature = "hyphenation")]
-use textwrap::Wrapper;
 
 const LINE_LENGTH: usize = 60;
 
@@ -90,7 +82,7 @@ fn wrap_800(b: &mut Bencher) {
 fn hyphenation_fill_100(b: &mut Bencher) {
     let text = &lorem_ipsum(100);
     let dictionary = Standard::from_embedded(Language::Latin).unwrap();
-    let wrapper = Wrapper::with_splitter(LINE_LENGTH, dictionary);
+    let wrapper = textwrap::Wrapper::with_splitter(LINE_LENGTH, dictionary);
     b.iter(|| wrapper.fill(text))
 }
 
@@ -99,7 +91,7 @@ fn hyphenation_fill_100(b: &mut Bencher) {
 fn hyphenation_fill_200(b: &mut Bencher) {
     let text = &lorem_ipsum(200);
     let dictionary = Standard::from_embedded(Language::Latin).unwrap();
-    let wrapper = Wrapper::with_splitter(LINE_LENGTH, dictionary);
+    let wrapper = textwrap::Wrapper::with_splitter(LINE_LENGTH, dictionary);
     b.iter(|| wrapper.fill(text))
 }
 
@@ -108,7 +100,7 @@ fn hyphenation_fill_200(b: &mut Bencher) {
 fn hyphenation_fill_400(b: &mut Bencher) {
     let text = &lorem_ipsum(400);
     let dictionary = Standard::from_embedded(Language::Latin).unwrap();
-    let wrapper = Wrapper::with_splitter(LINE_LENGTH, dictionary);
+    let wrapper = textwrap::Wrapper::with_splitter(LINE_LENGTH, dictionary);
     b.iter(|| wrapper.fill(text))
 }
 
@@ -117,6 +109,6 @@ fn hyphenation_fill_400(b: &mut Bencher) {
 fn hyphenation_fill_800(b: &mut Bencher) {
     let text = &lorem_ipsum(800);
     let dictionary = Standard::from_embedded(Language::Latin).unwrap();
-    let wrapper = Wrapper::with_splitter(LINE_LENGTH, dictionary);
+    let wrapper = textwrap::Wrapper::with_splitter(LINE_LENGTH, dictionary);
     b.iter(|| wrapper.fill(text))
 }
