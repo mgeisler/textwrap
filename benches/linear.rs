@@ -3,13 +3,7 @@
 // The benchmarks here verify that the complexity grows as O(*n*)
 // where *n* is the number of characters in the text to be wrapped.
 
-#[cfg(feature = "hyphenation")]
-extern crate hyphenation;
-extern crate lipsum;
-extern crate rand;
-extern crate rand_xorshift;
 extern crate test;
-extern crate textwrap;
 
 #[cfg(feature = "hyphenation")]
 use hyphenation::{Language, Load, Standard};

@@ -1,8 +1,4 @@
 #[cfg(feature = "hyphenation")]
-extern crate hyphenation;
-extern crate textwrap;
-
-#[cfg(feature = "hyphenation")]
 use hyphenation::{Language, Load, Standard};
 #[cfg(feature = "hyphenation")]
 use textwrap::Wrapper;
