@@ -5,7 +5,7 @@
 [![](https://codecov.io/gh/mgeisler/textwrap/branch/master/graph/badge.svg)][codecov]
 [![](https://img.shields.io/crates/v/textwrap.svg)][crates-io]
 [![](https://docs.rs/textwrap/badge.svg)][api-docs]
-[![](https://img.shields.io/badge/rustc-1.23.0-4d76ae.svg)][rust-1.23]
+[![](https://img.shields.io/badge/rustc-1.31.0-4d76ae.svg)][rust-1.31]
 
 Textwrap is a small Rust crate for word wrapping text. You can use it
 to format strings for display in commandline applications. The crate
@@ -185,7 +185,8 @@ This section lists the largest changes per release.
 
 ### Unreleased ###
 
-The the minimum version of Rust we test against is now 1.23.0.
+We now require the [Rust 2018 edition][rust-1.31]. This will be a
+stable baseline going forward.
 
 ### Version 0.11.0 — December 9th, 2018
 
@@ -320,7 +321,7 @@ Contributions will be accepted under the same license.
 [py-textwrap]: https://docs.python.org/library/textwrap
 [patterns]: https://github.com/tapeinosyne/hyphenation/tree/master/patterns-tex
 [api-docs]: https://docs.rs/textwrap/
-[rust-1.23]: https://github.com/rust-lang/rust/blob/master/RELEASES.md#version-1230-2018-01-04
+[rust-1.31]: https://github.com/rust-lang/rust/blob/master/RELEASES.md#version-1310-2018-12-06
 [issue-13]: https://github.com/mgeisler/textwrap/issues/13
 [issue-14]: https://github.com/mgeisler/textwrap/issues/14
 [issue-19]: https://github.com/mgeisler/textwrap/issues/19
