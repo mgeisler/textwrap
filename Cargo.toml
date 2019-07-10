@@ -33,7 +33,7 @@ hyphenation = { version = "0.7.1", optional = true, features = ["embed_all"] }
 
 [dev-dependencies]
 lipsum = "0.6"
-rand = "0.6"
+rand = "0.7"
 rand_xorshift = "0.2"
 version-sync = "0.6"
 yaml-rust = "0.4"
