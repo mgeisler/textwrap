@@ -11,7 +11,4 @@ cache: cargo
 script:
   - cargo build --verbose --all-features
   - cargo test --verbose --all-features
-
-matrix:
-  allow_failures:
-    - rust: nightly
+  - if [[ $TRAVIS_RUST_VERSION == "nightly" ]]; then cargo build --benches; fi
