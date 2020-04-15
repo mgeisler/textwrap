@@ -85,6 +85,13 @@ use unicode_width::UnicodeWidthStr;
 /// A non-breaking space.
 const NBSP: char = '\u{a0}';
 
+/// The CSI or "Control Sequence Introducer" introduces an ANSI escape
+/// sequence. This is typically used for colored text and will be
+/// ignored when computing the text width.
+const CSI: (char, char) = ('\u{1b}', '[');
+/// The final bytes of an ANSI escape sequence must be in this range.
+const ANSI_FINAL_BYTE: std::ops::RangeInclusive<char> = '\x40'..='\x7e';
+
 mod indentation;
 pub use crate::indentation::dedent;
 pub use crate::indentation::indent;
@@ -498,9 +505,23 @@ impl<'a> WrapIterImpl<'a> {
         }
 
         while let Some((idx, ch)) = self.char_indices.next() {
+            if ch == CSI.0 && self.char_indices.next().map(|(_, ch)| ch) == Some(CSI.1) {
+                // We have found the start of an ANSI escape code,
+                // typically used for colored text. We ignore all
+                // characters until we find a "final byte" in the
+                // range 0x40–0x7E.
+                while let Some((_, ch)) = self.char_indices.next() {
+                    if ANSI_FINAL_BYTE.contains(&ch) {
+                        break;
+                    }
+                }
+                // Done with the escape sequence, we continue with
+                // next character in the outer loop.
+                continue;
+            }
+
             let char_width = ch.width().unwrap_or(0);
             let char_len = ch.len_utf8();
-
             if ch == '\n' {
                 self.split = idx;
                 self.split_len = char_len;
@@ -1016,5 +1037,17 @@ mod tests {
     #[test]
     fn fill_simple() {
         assert_eq!(fill("foo bar baz", 10), "foo bar\nbaz");
+    }
+
+    #[test]
+    fn fill_colored_text() {
+        // The words are much longer than 6 bytes, but they remain
+        // intact after filling the text.
+        let green_hello = "\u{1b}[0m\u{1b}[32mHello\u{1b}[0m";
+        let blue_world = "\u{1b}[0m\u{1b}[34mWorld!\u{1b}[0m";
+        assert_eq!(
+            fill(&(String::from(green_hello) + " " + &blue_world), 6),
+            String::from(green_hello) + "\n" + &blue_world
+        );
     }
 }
