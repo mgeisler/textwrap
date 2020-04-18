@@ -3,7 +3,6 @@ language: rust
 rust:
   - stable
   - nightly
-  - 1.31.0  # Rust 2018
 
 cache: cargo
 
