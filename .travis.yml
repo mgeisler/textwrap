@@ -3,11 +3,10 @@ language: rust
 rust:
   - stable
   - nightly
-  - 1.31.0  # Rust 2018
 
-cache: cargo
+install:
+  - cargo build --all-features
 
 script:
-  - cargo build --verbose --all-features
-  - cargo test --verbose --all-features
+  - cargo test --all-features
   - if [[ $TRAVIS_RUST_VERSION == "nightly" ]]; then cargo build --benches; fi
