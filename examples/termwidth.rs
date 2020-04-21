@@ -1,14 +1,14 @@
 #[cfg(feature = "hyphenation")]
 use hyphenation::{Language, Load, Standard};
-#[cfg(feature = "term_size")]
+#[cfg(feature = "terminal_size")]
 use textwrap::Wrapper;
 
-#[cfg(not(feature = "term_size"))]
+#[cfg(not(feature = "terminal_size"))]
 fn main() {
-    println!("Please enable the term_size feature to run this example.");
+    println!("Please enable the terminal_size feature to run this example.");
 }
 
-#[cfg(feature = "term_size")]
+#[cfg(feature = "terminal_size")]
 fn main() {
     #[cfg(not(feature = "hyphenation"))]
     fn new_wrapper<'a>() -> (&'static str, Wrapper<'a, textwrap::HyphenSplitter>) {

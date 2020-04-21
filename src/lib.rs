@@ -149,7 +149,7 @@ impl<'a> Wrapper<'a, HyphenSplitter> {
     ///
     /// let wrapper = Wrapper::new(termwidth());
     /// ```
-    #[cfg(feature = "term_size")]
+    #[cfg(feature = "terminal_size")]
     pub fn with_termwidth() -> Wrapper<'a, HyphenSplitter> {
         Wrapper::new(termwidth())
     }
@@ -619,9 +619,9 @@ impl<'a> WrapIterImpl<'a> {
 ///     .initial_indent("  ")
 ///     .subsequent_indent("  ");
 /// ```
-#[cfg(feature = "term_size")]
+#[cfg(feature = "terminal_size")]
 pub fn termwidth() -> usize {
-    term_size::dimensions_stdout().map_or(80, |(w, _)| w)
+    terminal_size::terminal_size().map_or(80, |(terminal_size::Width(w), _)| w.into())
 }
 
 /// Fill a line of text at `width` characters.
