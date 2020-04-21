@@ -13,15 +13,10 @@ the [Python textwrap module][py-textwrap].
 
 ## Usage
 
-Add this to your `Cargo.toml`:
+To use `textwrap`, add this to your `Cargo.toml` file:
 ```toml
 [dependencies]
 textwrap = "0.11"
-```
-
-and this to your crate root:
-```rust
-extern crate textwrap;
 ```
 
 If you would like to have automatic hyphenation, specify the
@@ -47,12 +42,9 @@ textwrap = { version = "0.11", features = ["terminal_size"] }
 
 Word wrapping single strings is easy using the `fill` function:
 ```rust
-extern crate textwrap;
-use textwrap::fill;
-
 fn main() {
     let text = "textwrap: a small library for wrapping text.";
-    println!("{}", fill(text, 18));
+    println!("{}", textwrap::fill(text, 18));
 }
 ```
 The output is
@@ -66,9 +58,6 @@ With the `hyphenation` feature, you can get automatic hyphenation
 for [about 70 languages][patterns]. Your program must load and
 configure the hyphenation patterns to use:
 ```rust
-extern crate hyphenation;
-extern crate textwrap;
-
 use hyphenation::{Language, Load, Standard};
 use textwrap::Wrapper;
 
@@ -196,6 +185,8 @@ latest stable version of Rust from now on.
 
 The `term_size` feature has been replaced by `terminal_size`. The API
 is unchanged, it is just the name of the Cargo feature that changed.
+
+* Fixed [#177][issue-177]: Update examples to the 2018 edition.
 
 ### Version 0.11.0 — December 9th, 2018
 
@@ -350,4 +341,5 @@ Contributions will be accepted under the same license.
 [issue-129]: https://github.com/mgeisler/textwrap/issues/129
 [issue-141]: https://github.com/mgeisler/textwrap/issues/141
 [issue-151]: https://github.com/mgeisler/textwrap/issues/151
+[issue-177]: https://github.com/mgeisler/textwrap/issues/177
 [mit]: LICENSE
