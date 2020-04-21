@@ -28,7 +28,7 @@ codecov = { repository = "mgeisler/textwrap" }
 
 [dependencies]
 unicode-width = "0.1.3"
-term_size = { version = "1.0.0-beta1", optional = true }
+terminal_size = { version = "0.1.11", optional = true }
 hyphenation = { version = "0.7.1", optional = true, features = ["embed_all"] }
 
 [dev-dependencies]

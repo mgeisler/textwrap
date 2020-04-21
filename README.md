@@ -32,11 +32,11 @@ textwrap = { version = "0.11", features = ["hyphenation"] }
 ```
 
 To conveniently wrap text at the current terminal width, enable the
-`term_size` feature:
+`terminal_size` feature:
 
 ```toml
 [dependencies]
-textwrap = { version = "0.11", features = ["term_size"] }
+textwrap = { version = "0.11", features = ["terminal_size"] }
 ```
 
 ## Documentation
@@ -194,6 +194,8 @@ The build failures makes it infeasible to keep `textwrap` compatible
 with any particular version of Rust. We will therefore track the
 latest stable version of Rust from now on.
 
+The `term_size` feature has been replaced by `terminal_size`. The API
+is unchanged, it is just the name of the Cargo feature that changed.
 
 ### Version 0.11.0 — December 9th, 2018
 
