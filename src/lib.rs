@@ -5,8 +5,6 @@
 //! terminal. A quick example:
 //!
 //! ```no_run
-//! extern crate textwrap;
-//!
 //! fn main() {
 //!     let text = "textwrap: a small library for wrapping text.";
 //!     println!("{}", textwrap::fill(text, 18));
@@ -25,10 +23,6 @@
 //! hyphenation for a number of languages:
 //!
 //! ```no_run
-//! # #[cfg(feature = "hyphenation")]
-//! extern crate hyphenation;
-//! extern crate textwrap;
-//!
 //! # #[cfg(feature = "hyphenation")]
 //! use hyphenation::{Language, Load, Standard};
 //! use textwrap::Wrapper;
@@ -738,9 +732,6 @@ pub fn wrap_iter(s: &str, width: usize) -> IntoWrapIter<'_, HyphenSplitter> {
 
 #[cfg(test)]
 mod tests {
-    #[cfg(feature = "hyphenation")]
-    extern crate hyphenation;
-
     use super::*;
     #[cfg(feature = "hyphenation")]
     use hyphenation::{Language, Load, Standard};
