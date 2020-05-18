@@ -32,8 +32,8 @@ enable the `hyphenation` feature:
 textwrap = { version = "0.11", features = ["hyphenation"] }
 ```
 
-Please see the [`hyphenation` example][hyphenation-example] for how to
-load the hyphenation patterns for your language.
+Please see the [`hyphenation` example] for how to load the hyphenation
+patterns for your language.
 
 ### `terminal_size`
 
@@ -45,8 +45,7 @@ To conveniently wrap text at the current terminal width, enable the
 textwrap = { version = "0.11", features = ["terminal_size"] }
 ```
 
-Please see the [`termwidth` example][termwidth-example] for how to use
-this feature.
+Please see the [`termwidth` example] for how to use this feature.
 
 ## Documentation
 
@@ -333,8 +332,8 @@ Contributions will be accepted under the same license.
 [appveyor]: https://ci.appveyor.com/project/mgeisler/textwrap
 [codecov]: https://codecov.io/gh/mgeisler/textwrap
 [py-textwrap]: https://docs.python.org/library/textwrap
-[hyphenation-example]: https://github.com/mgeisler/textwrap/blob/master/examples/hyphenation.rs
-[termwidth-example]: https://github.com/mgeisler/textwrap/blob/master/examples/termwidth.rs
+[`hyphenation` example]: https://github.com/mgeisler/textwrap/blob/master/examples/hyphenation.rs
+[`termwidth` example]: https://github.com/mgeisler/textwrap/blob/master/examples/termwidth.rs
 [patterns]: https://github.com/tapeinosyne/hyphenation/tree/master/patterns-tex
 [api-docs]: https://docs.rs/textwrap/
 [rust-2018]: https://doc.rust-lang.org/edition-guide/rust-2018/
