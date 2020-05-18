@@ -150,6 +150,9 @@ impl<'a> Wrapper<'a, HyphenSplitter> {
     ///
     /// let wrapper = Wrapper::new(termwidth());
     /// ```
+    ///
+    /// **Note:** Only available when the `terminal_size` feature is
+    /// enabled.
     #[cfg(feature = "terminal_size")]
     pub fn with_termwidth() -> Wrapper<'a, HyphenSplitter> {
         Wrapper::new(termwidth())
@@ -634,6 +637,9 @@ impl<'a> WrapIterImpl<'a> {
 ///     .initial_indent("  ")
 ///     .subsequent_indent("  ");
 /// ```
+///
+/// **Note:** Only available when the `terminal_size` feature is
+/// enabled.
 #[cfg(feature = "terminal_size")]
 pub fn termwidth() -> usize {
     terminal_size::terminal_size().map_or(80, |(terminal_size::Width(w), _)| w.into())
