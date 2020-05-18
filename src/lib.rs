@@ -64,7 +64,23 @@
 //! byte count when computing line lengths. All functions in this
 //! library handle Unicode characters like this.
 //!
+//! # Cargo Features
+//!
+//! The library has two optional features:
+//!
+//! * `terminal_size`: enables automatic detection of the terminal
+//!   width via the [terminal_size][] crate. See the
+//!   [`Wrapper::with_termwidth`] constructor for details.
+//!
+//! * `hyphenation`: enables language-sentive hyphenation via the
+//!   [hyphenation][] crate. See the [`WordSplitter`] trait for
+//!   details.
+//!
 //! [unicode-width]: https://docs.rs/unicode-width/
+//! [terminal_size]: https://crates.io/crates/terminal_size
+//! [hyphenation]: https://crates.io/crates/hyphenation
+//! [`Wrapper::with_termwidth`]: struct.Wrapper.html#method.with_termwidth
+//! [`WordSplitter`]: trait.WordSplitter.html
 
 #![doc(html_root_url = "https://docs.rs/textwrap/0.11.0")]
 #![deny(missing_docs)]
@@ -150,6 +166,9 @@ impl<'a> Wrapper<'a, HyphenSplitter> {
     ///
     /// let wrapper = Wrapper::new(termwidth());
     /// ```
+    ///
+    /// **Note:** Only available when the `terminal_size` feature is
+    /// enabled.
     #[cfg(feature = "terminal_size")]
     pub fn with_termwidth() -> Wrapper<'a, HyphenSplitter> {
         Wrapper::new(termwidth())
@@ -634,6 +653,9 @@ impl<'a> WrapIterImpl<'a> {
 ///     .initial_indent("  ")
 ///     .subsequent_indent("  ");
 /// ```
+///
+/// **Note:** Only available when the `terminal_size` feature is
+/// enabled.
 #[cfg(feature = "terminal_size")]
 pub fn termwidth() -> usize {
     terminal_size::terminal_size().map_or(80, |(terminal_size::Width(w), _)| w.into())

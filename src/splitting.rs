@@ -121,6 +121,9 @@ impl WordSplitter for HyphenSplitter {
 
 /// A hyphenation dictionary can be used to do language-specific
 /// hyphenation using patterns from the hyphenation crate.
+///
+/// **Note:** Only available when the `hyphenation` feature is
+/// enabled.
 #[cfg(feature = "hyphenation")]
 impl WordSplitter for Standard {
     fn split<'w>(&self, word: &'w str) -> Vec<(&'w str, &'w str, &'w str)> {
