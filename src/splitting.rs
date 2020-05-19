@@ -18,7 +18,7 @@ use hyphenation::{Hyphenator, Standard};
 ///
 /// If the `textwrap` crate has been compiled with the `hyphenation`
 /// feature enabled, you will find an implementation of `WordSplitter`
-/// by the `hyphenation::language::Corpus` struct. Use this struct for
+/// by the `hyphenation::Standard` struct. Use this struct for
 /// language-aware hyphenation. See the [`hyphenation` documentation]
 /// for details.
 ///
