@@ -5,9 +5,6 @@
 //! functionality. [`HyphenSplitter`] is the default implementation of
 //! this treat: it will simply split words on existing hyphens.
 
-#[cfg(feature = "hyphenation")]
-use hyphenation::{Hyphenator, Standard};
-
 /// An interface for splitting words.
 ///
 /// When the [`wrap_iter`] method will try to fit text into a line, it
@@ -125,8 +122,9 @@ impl WordSplitter for HyphenSplitter {
 /// **Note:** Only available when the `hyphenation` feature is
 /// enabled.
 #[cfg(feature = "hyphenation")]
-impl WordSplitter for Standard {
+impl WordSplitter for hyphenation::Standard {
     fn split<'w>(&self, word: &'w str) -> Vec<(&'w str, &'w str, &'w str)> {
+        use hyphenation::Hyphenator;
         // Find splits based on language dictionary.
         let mut triples = Vec::new();
         for n in self.hyphenate(word).breaks {
