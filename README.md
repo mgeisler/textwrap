@@ -32,8 +32,10 @@ enable the `hyphenation` feature:
 textwrap = { version = "0.11", features = ["hyphenation"] }
 ```
 
-Please see the [`hyphenation` example] for how to load the hyphenation
-patterns for your language.
+This gives you hyphenation support for US English. Please see the
+[`hyphenation` example] for an executable demo. Read the Getting
+Started section below to see how to load the hyphenation patterns for
+other languages.
 
 ### `terminal_size`
 
@@ -67,9 +69,13 @@ library for
 wrapping text.
 ```
 
-With the `hyphenation` feature, you can get automatic hyphenation
-for [about 70 languages][patterns]. Your program must load and
-configure the hyphenation patterns to use:
+If you enable the `hyphenation` feature, you get support for automatic
+hyphenation for [about 70 languages][patterns] via high-quality TeX
+hyphenation patterns.
+
+Your program must load the hyphenation pattern and call
+`Wrapper::with_splitter` to use it:
+
 ```rust
 use hyphenation::{Language, Load, Standard};
 use textwrap::Wrapper;
@@ -89,7 +95,12 @@ library for wrap-
 ping text.
 ```
 
-The hyphenation uses high-quality TeX hyphenation patterns.
+The US-English hyphenation patterns are embedded when you enable the
+`hyphenation` feature. They are licensed under a [permissive
+license][en-us license] and take up about 88 KB of space in your
+application. If you need hyphenation for other languages, you need to
+download a [precompiled `.bincode` file][bincode] and load it
+yourself. Please see the [`hyphenation` documentation] for details.
 
 ## Examples
 
@@ -198,6 +209,9 @@ latest stable version of Rust from now on.
 
 The `term_size` feature has been replaced by `terminal_size`. The API
 is unchanged, it is just the name of the Cargo feature that changed.
+
+The `hyphenation` feature now only embeds the hyphenation patterns for
+US-English. This slims down the dependency.
 
 * Fixed [#177][issue-177]: Update examples to the 2018 edition.
 
@@ -335,6 +349,9 @@ Contributions will be accepted under the same license.
 [`hyphenation` example]: https://github.com/mgeisler/textwrap/blob/master/examples/hyphenation.rs
 [`termwidth` example]: https://github.com/mgeisler/textwrap/blob/master/examples/termwidth.rs
 [patterns]: https://github.com/tapeinosyne/hyphenation/tree/master/patterns-tex
+[en-us license]: https://github.com/hyphenation/tex-hyphen/blob/master/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-en-us.tex
+[bincode]: https://github.com/tapeinosyne/hyphenation/tree/master/dictionaries
+[`hyphenation` documentation]: http://docs.rs/hyphenation
 [api-docs]: https://docs.rs/textwrap/
 [rust-2018]: https://doc.rust-lang.org/edition-guide/rust-2018/
 [issue-13]: https://github.com/mgeisler/textwrap/issues/13
