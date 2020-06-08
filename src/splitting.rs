@@ -24,9 +24,9 @@
 /// [`hyphenation` documentation]: https://docs.rs/hyphenation/
 pub trait WordSplitter {
     /// Return all possible splits of word. Each split is a triple
-    /// with a head, a hyphen, and a tail where `head + &hyphen +
-    /// &tail == word`. The hyphen can be empty if there is already a
-    /// hyphen in the head.
+    /// with a head, a hyphen, and a tail where `head + &tail == word`.
+    /// The hyphen can be empty if there is already a hyphen in the
+    /// head.
     ///
     /// The splits should go from smallest to longest and should
     /// include no split at all. So the word "technology" could be
