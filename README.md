@@ -197,15 +197,11 @@ This section lists the largest changes per release.
 
 ### Unreleased ###
 
-We now require the [Rust 2018 edition][rust-2018]. Over the years,
-we’ve repeatedly seen build failures in our CI, even when nothing
-changed in `textwrap`. The failures happened because we tested against
-a fixed version of Rust, but our dependencies kept releasing new patch
-it has versions that would push up the minimum required Rust version.
-
-The build failures makes it infeasible to keep `textwrap` compatible
-with any particular version of Rust. We will therefore track the
-latest stable version of Rust from now on.
+The code has been updated to the [Rust 2018 edition][rust-2018] and
+each new release of `textwrap` will only support the latest stable
+version of Rust. Trying to support older Rust versions is a fool's
+errand: our dependencies keep releasing new patch versions that
+require newer and newer versions of Rust.
 
 The `term_size` feature has been replaced by `terminal_size`. The API
 is unchanged, it is just the name of the Cargo feature that changed.
@@ -213,6 +209,8 @@ is unchanged, it is just the name of the Cargo feature that changed.
 The `hyphenation` feature now only embeds the hyphenation patterns for
 US-English. This slims down the dependency.
 
+* Fixed [#140][issue-140]: Ignore ANSI escape sequences.
+* Fixed [#158][issue-158]: Unintended wrapping when using external splitter.
 * Fixed [#177][issue-177]: Update examples to the 2018 edition.
 
 ### Version 0.11.0 — December 9th, 2018
@@ -371,7 +369,9 @@ Contributions will be accepted under the same license.
 [issue-107]: https://github.com/mgeisler/textwrap/issues/107
 [issue-122]: https://github.com/mgeisler/textwrap/issues/122
 [issue-129]: https://github.com/mgeisler/textwrap/issues/129
+[issue-140]: https://github.com/mgeisler/textwrap/issues/140
 [issue-141]: https://github.com/mgeisler/textwrap/issues/141
 [issue-151]: https://github.com/mgeisler/textwrap/issues/151
+[issue-158]: https://github.com/mgeisler/textwrap/issues/158
 [issue-177]: https://github.com/mgeisler/textwrap/issues/177
 [mit]: LICENSE
