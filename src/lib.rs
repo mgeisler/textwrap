@@ -82,7 +82,7 @@
 //! [`Wrapper::with_termwidth`]: struct.Wrapper.html#method.with_termwidth
 //! [`WordSplitter`]: trait.WordSplitter.html
 
-#![doc(html_root_url = "https://docs.rs/textwrap/0.11.0")]
+#![doc(html_root_url = "https://docs.rs/textwrap/0.12.0")]
 #![deny(missing_docs)]
 #![deny(missing_debug_implementations)]
 

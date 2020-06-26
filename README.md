@@ -16,7 +16,7 @@ the [Python textwrap module][py-textwrap].
 To use `textwrap`, add this to your `Cargo.toml` file:
 ```toml
 [dependencies]
-textwrap = "0.11"
+textwrap = "0.12"
 ```
 
 This gives you the text wrapping without of the optional features
@@ -29,7 +29,7 @@ enable the `hyphenation` feature:
 
 ```toml
 [dependencies]
-textwrap = { version = "0.11", features = ["hyphenation"] }
+textwrap = { version = "0.12", features = ["hyphenation"] }
 ```
 
 This gives you hyphenation support for US English. Please see the
@@ -44,7 +44,7 @@ To conveniently wrap text at the current terminal width, enable the
 
 ```toml
 [dependencies]
-textwrap = { version = "0.11", features = ["terminal_size"] }
+textwrap = { version = "0.12", features = ["terminal_size"] }
 ```
 
 Please see the [`termwidth` example] for how to use this feature.
@@ -195,7 +195,7 @@ cost abstractions.
 
 This section lists the largest changes per release.
 
-### Unreleased ###
+### Version 0.12.0 — June 26th, 2020
 
 The code has been updated to the [Rust 2018 edition][rust-2018] and
 each new release of `textwrap` will only support the latest stable
