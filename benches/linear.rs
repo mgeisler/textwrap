@@ -1,14 +1,11 @@
-#![feature(test)]
+use criterion::BenchmarkId;
+use criterion::Criterion;
+use criterion::{criterion_group, criterion_main};
 
 // The benchmarks here verify that the complexity grows as O(*n*)
 // where *n* is the number of characters in the text to be wrapped.
 
-extern crate test;
-
-#[cfg(feature = "hyphenation")]
-use hyphenation::{Language, Load, Standard};
 use lipsum::lipsum_words_from_seed;
-use test::Bencher;
 
 const LINE_LENGTH: usize = 60;
 
@@ -22,86 +19,32 @@ fn lorem_ipsum(length: usize) -> String {
     text
 }
 
-#[bench]
-fn fill_100(b: &mut Bencher) {
-    let text = &lorem_ipsum(100);
-    b.iter(|| textwrap::fill(text, LINE_LENGTH))
+pub fn benchmark(c: &mut Criterion) {
+    let mut group = c.benchmark_group("String lengths");
+    for length in [100, 160, 220, 280, 340, 400].iter() {
+        let text = lorem_ipsum(*length);
+        group.bench_with_input(BenchmarkId::new("fill", length), &text, |b, text| {
+            b.iter(|| textwrap::fill(text, LINE_LENGTH));
+        });
+        group.bench_with_input(BenchmarkId::new("wrap", length), &text, |b, text| {
+            b.iter(|| textwrap::wrap(text, LINE_LENGTH));
+        });
+
+        #[cfg(feature = "hyphenation")]
+        {
+            use hyphenation::{Language, Load, Standard};
+            let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("benches")
+                .join("la.standard.bincode");
+            let dictionary = Standard::from_path(Language::Latin, &path).unwrap();
+            let wrapper = textwrap::Wrapper::with_splitter(LINE_LENGTH, dictionary);
+            group.bench_with_input(BenchmarkId::new("hyphenation", length), &text, |b, text| {
+                b.iter(|| wrapper.fill(text));
+            });
+        }
+    }
+    group.finish();
 }
 
-#[bench]
-fn fill_200(b: &mut Bencher) {
-    let text = &lorem_ipsum(200);
-    b.iter(|| textwrap::fill(text, LINE_LENGTH))
-}
-
-#[bench]
-fn fill_400(b: &mut Bencher) {
-    let text = &lorem_ipsum(400);
-    b.iter(|| textwrap::fill(text, LINE_LENGTH))
-}
-
-#[bench]
-fn fill_800(b: &mut Bencher) {
-    let text = &lorem_ipsum(800);
-    b.iter(|| textwrap::fill(text, LINE_LENGTH))
-}
-
-#[bench]
-fn wrap_100(b: &mut Bencher) {
-    let text = &lorem_ipsum(100);
-    b.iter(|| textwrap::wrap(text, LINE_LENGTH))
-}
-
-#[bench]
-fn wrap_200(b: &mut Bencher) {
-    let text = &lorem_ipsum(200);
-    b.iter(|| textwrap::wrap(text, LINE_LENGTH))
-}
-
-#[bench]
-fn wrap_400(b: &mut Bencher) {
-    let text = &lorem_ipsum(400);
-    b.iter(|| textwrap::wrap(text, LINE_LENGTH))
-}
-
-#[bench]
-fn wrap_800(b: &mut Bencher) {
-    let text = &lorem_ipsum(800);
-    b.iter(|| textwrap::wrap(text, LINE_LENGTH))
-}
-
-#[bench]
-#[cfg(feature = "hyphenation")]
-fn hyphenation_fill_100(b: &mut Bencher) {
-    let text = &lorem_ipsum(100);
-    let dictionary = Standard::from_embedded(Language::Latin).unwrap();
-    let wrapper = textwrap::Wrapper::with_splitter(LINE_LENGTH, dictionary);
-    b.iter(|| wrapper.fill(text))
-}
-
-#[bench]
-#[cfg(feature = "hyphenation")]
-fn hyphenation_fill_200(b: &mut Bencher) {
-    let text = &lorem_ipsum(200);
-    let dictionary = Standard::from_embedded(Language::Latin).unwrap();
-    let wrapper = textwrap::Wrapper::with_splitter(LINE_LENGTH, dictionary);
-    b.iter(|| wrapper.fill(text))
-}
-
-#[bench]
-#[cfg(feature = "hyphenation")]
-fn hyphenation_fill_400(b: &mut Bencher) {
-    let text = &lorem_ipsum(400);
-    let dictionary = Standard::from_embedded(Language::Latin).unwrap();
-    let wrapper = textwrap::Wrapper::with_splitter(LINE_LENGTH, dictionary);
-    b.iter(|| wrapper.fill(text))
-}
-
-#[bench]
-#[cfg(feature = "hyphenation")]
-fn hyphenation_fill_800(b: &mut Bencher) {
-    let text = &lorem_ipsum(800);
-    let dictionary = Standard::from_embedded(Language::Latin).unwrap();
-    let wrapper = textwrap::Wrapper::with_splitter(LINE_LENGTH, dictionary);
-    b.iter(|| wrapper.fill(text))
-}
+criterion_group!(benches, benchmark);
+criterion_main!(benches);
