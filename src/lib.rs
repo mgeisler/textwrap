@@ -47,6 +47,11 @@
 //! ping text.
 //! ```
 //!
+//! # Wrapping Strings at Compile Time
+//!
+//! If your strings are known at compile time, please take a look at
+//! the procedural macros from the [`textwrap-macros` crate].
+//!
 //! # Displayed Width vs Byte Size
 //!
 //! To word wrap text, one must know the width of each word so one can
@@ -76,6 +81,7 @@
 //!   [hyphenation][] crate. See the [`WordSplitter`] trait for
 //!   details.
 //!
+//! [`textwrap-macros` crate]: https://crates.io/crates/textwrap-macros
 //! [unicode-width]: https://docs.rs/unicode-width/
 //! [terminal_size]: https://crates.io/crates/terminal_size
 //! [hyphenation]: https://crates.io/crates/hyphenation

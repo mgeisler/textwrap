@@ -3,6 +3,11 @@
 This file lists the most important changes made in each release of
 `textwrap`.
 
+## Unreleased
+
+* Fixed [#176][issue-176]: Compile-time wrapping via the
+  [`textwrap-macros` crate].
+
 ## Version 0.12.0 — June 26th, 2020
 
 The code has been updated to the [Rust 2018 edition][rust-2018] and
@@ -143,6 +148,8 @@ Introduced `Wrapper` struct. Added support for wrapping on hyphens.
 First public release with support for wrapping strings on whitespace.
 
 [rust-2018]: https://doc.rust-lang.org/edition-guide/rust-2018/
+[`textwrap-macros` crate]: https://crates.io/crates/textwrap-macros
+
 [issue-13]: https://github.com/mgeisler/textwrap/issues/13
 [issue-14]: https://github.com/mgeisler/textwrap/issues/14
 [issue-19]: https://github.com/mgeisler/textwrap/issues/19
