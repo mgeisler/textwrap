@@ -4,10 +4,10 @@ fn test_readme_deps() {
 }
 
 #[test]
-fn test_readme_changelog() {
+fn test_changelog() {
     version_sync::assert_contains_regex!(
-        "README.md",
-        r"^### Version {version} — .* \d\d?.., 20\d\d$"
+        "CHANGELOG.md",
+        r"^## Version {version} — .* \d\d?.., 20\d\d$"
     );
 }
 
