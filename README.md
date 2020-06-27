@@ -102,6 +102,12 @@ application. If you need hyphenation for other languages, you need to
 download a [precompiled `.bincode` file][bincode] and load it
 yourself. Please see the [`hyphenation` documentation] for details.
 
+## Wrapping Strings at Compile Time
+
+If your strings are known at compile time, please take a look at the
+procedural macros from the [`textwrap-macros` crate].
+
+
 ## Examples
 
 The library comes with some small example programs that shows various
@@ -206,6 +212,7 @@ Contributions will be accepted under the same license.
 [appveyor]: https://ci.appveyor.com/project/mgeisler/textwrap
 [codecov]: https://codecov.io/gh/mgeisler/textwrap
 [py-textwrap]: https://docs.python.org/library/textwrap
+[`textwrap-macros` crate]: https://crates.io/crates/textwrap-macros
 [`hyphenation` example]: https://github.com/mgeisler/textwrap/blob/master/examples/hyphenation.rs
 [`termwidth` example]: https://github.com/mgeisler/textwrap/blob/master/examples/termwidth.rs
 [patterns]: https://github.com/tapeinosyne/hyphenation/tree/master/patterns-tex
