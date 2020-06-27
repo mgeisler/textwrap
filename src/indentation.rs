@@ -150,7 +150,7 @@ mod tests {
     }
 
     #[test]
-    #[cfg_attr(rustfmt, rustfmt_skip)]
+    #[rustfmt::skip]
     fn indent_nonempty() {
         let x = vec!["  foo",
                      "bar",
@@ -162,7 +162,7 @@ mod tests {
     }
 
     #[test]
-    #[cfg_attr(rustfmt, rustfmt_skip)]
+    #[rustfmt::skip]
     fn indent_empty_line() {
         let x = vec!["  foo",
                      "bar",
@@ -181,7 +181,7 @@ mod tests {
     }
 
     #[test]
-    #[cfg_attr(rustfmt, rustfmt_skip)]
+    #[rustfmt::skip]
     fn dedent_multi_line() {
         let x = vec!["    foo",
                      "  bar",
@@ -193,7 +193,7 @@ mod tests {
     }
 
     #[test]
-    #[cfg_attr(rustfmt, rustfmt_skip)]
+    #[rustfmt::skip]
     fn dedent_empty_line() {
         let x = vec!["    foo",
                      "  bar",
@@ -207,7 +207,7 @@ mod tests {
     }
 
     #[test]
-    #[cfg_attr(rustfmt, rustfmt_skip)]
+    #[rustfmt::skip]
     fn dedent_blank_line() {
         let x = vec!["      foo",
                      "",
@@ -225,7 +225,7 @@ mod tests {
     }
 
     #[test]
-    #[cfg_attr(rustfmt, rustfmt_skip)]
+    #[rustfmt::skip]
     fn dedent_whitespace_line() {
         let x = vec!["      foo",
                      " ",
@@ -243,7 +243,7 @@ mod tests {
     }
 
     #[test]
-    #[cfg_attr(rustfmt, rustfmt_skip)]
+    #[rustfmt::skip]
     fn dedent_mixed_whitespace() {
         let x = vec!["\tfoo",
                      "  bar"];
@@ -253,7 +253,7 @@ mod tests {
     }
 
     #[test]
-    #[cfg_attr(rustfmt, rustfmt_skip)]
+    #[rustfmt::skip]
     fn dedent_tabbed_whitespace() {
         let x = vec!["\t\tfoo",
                      "\t\t\tbar"];
@@ -263,7 +263,7 @@ mod tests {
     }
 
     #[test]
-    #[cfg_attr(rustfmt, rustfmt_skip)]
+    #[rustfmt::skip]
     fn dedent_mixed_tabbed_whitespace() {
         let x = vec!["\t  \tfoo",
                      "\t  \t\tbar"];
@@ -273,7 +273,7 @@ mod tests {
     }
 
     #[test]
-    #[cfg_attr(rustfmt, rustfmt_skip)]
+    #[rustfmt::skip]
     fn dedent_mixed_tabbed_whitespace2() {
         let x = vec!["\t  \tfoo",
                      "\t    \tbar"];
@@ -283,7 +283,7 @@ mod tests {
     }
 
     #[test]
-    #[cfg_attr(rustfmt, rustfmt_skip)]
+    #[rustfmt::skip]
     fn dedent_preserve_no_terminating_newline() {
         let x = vec!["  foo",
                      "    bar"].join("\n");
