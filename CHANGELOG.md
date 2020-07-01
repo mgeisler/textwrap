@@ -7,6 +7,7 @@ This file lists the most important changes made in each release of
 
 * Fixed [#176][issue-176]: Compile-time wrapping via the
   [`textwrap-macros` crate].
+* Fixed [#193][issue-193]: Non breaking words is broken.
 
 ## Version 0.12.0 — June 26th, 2020
 
@@ -172,3 +173,4 @@ First public release with support for wrapping strings on whitespace.
 [issue-151]: https://github.com/mgeisler/textwrap/issues/151
 [issue-158]: https://github.com/mgeisler/textwrap/issues/158
 [issue-177]: https://github.com/mgeisler/textwrap/issues/177
+[issue-193]: https://github.com/mgeisler/textwrap/issues/193

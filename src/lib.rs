@@ -595,8 +595,7 @@ impl<'a> WrapIterImpl<'a> {
                 }
 
                 if self.start >= self.split {
-                    // The word is too big to fit on a single line, so we
-                    // need to split it at the current index.
+                    // The word is too big to fit on a single line.
                     if wrapper.break_words {
                         // Break work at current index.
                         self.split = idx;
@@ -604,8 +603,14 @@ impl<'a> WrapIterImpl<'a> {
                         self.line_width_at_split = self.line_width;
                     } else {
                         // Add smallest split.
-                        self.split = self.start + splits[0].0.len();
-                        self.split_len = 0;
+                        self.split += self.split_len + splits[0].0.len();
+                        // The new `split_len` is equal to the stretch
+                        // of whitespace following the smallest split.
+                        self.split_len = remaining_text[splits[0].0.len()..]
+                            .char_indices()
+                            .skip_while(|(_, ch)| is_whitespace(*ch))
+                            .next()
+                            .map_or(0, |(idx, _)| idx);
                         self.line_width_at_split = self.line_width;
                     }
                 }
@@ -920,6 +925,19 @@ mod tests {
     fn forced_split() {
         let wrapper = Wrapper::new(5).break_words(false);
         assert_eq!(wrapper.wrap("foobar-baz"), vec!["foobar-", "baz"]);
+    }
+
+    #[test]
+    fn multiple_unbroken_words_issue_193() {
+        let wrapper = Wrapper::new(3).break_words(false);
+        assert_eq!(
+            wrapper.wrap("small large tiny"),
+            vec!["small", "large", "tiny"]
+        );
+        assert_eq!(
+            wrapper.wrap("small  large   tiny"),
+            vec!["small", "large", "tiny"]
+        );
     }
 
     #[test]
