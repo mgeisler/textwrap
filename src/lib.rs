@@ -587,7 +587,13 @@ impl<'a> WrapIterImpl<'a> {
                         // Advance the split point by the width of the
                         // whitespace and the head length.
                         self.split += self.split_len + head.len();
-                        self.split_len = 0;
+                        // The new `split_len` is equal to the stretch
+                        // of whitespace following the split.
+                        self.split_len = remaining_text[head.len()..]
+                            .char_indices()
+                            .skip_while(|(_, ch)| is_whitespace(*ch))
+                            .next()
+                            .map_or(0, |(idx, _)| idx);
                         self.line_width_at_split += head.width() + hyp.width();
                         hyphen = hyp;
                         break;
@@ -938,6 +944,13 @@ mod tests {
             wrapper.wrap("small  large   tiny"),
             vec!["small", "large", "tiny"]
         );
+    }
+
+    #[test]
+    fn very_narrow_lines_issue_193() {
+        let wrapper = Wrapper::new(1).break_words(false);
+        assert_eq!(wrapper.wrap("fooo x y"), vec!["fooo", "x", "y"]);
+        assert_eq!(wrapper.wrap("fooo   x     y"), vec!["fooo", "x", "y"]);
     }
 
     #[test]
