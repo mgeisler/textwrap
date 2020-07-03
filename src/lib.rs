@@ -88,7 +88,7 @@
 //! [`Wrapper::with_termwidth`]: struct.Wrapper.html#method.with_termwidth
 //! [`WordSplitter`]: trait.WordSplitter.html
 
-#![doc(html_root_url = "https://docs.rs/textwrap/0.12.0")]
+#![doc(html_root_url = "https://docs.rs/textwrap/0.12.1")]
 #![deny(missing_docs)]
 #![deny(missing_debug_implementations)]
 #![allow(clippy::redundant_field_names)]
