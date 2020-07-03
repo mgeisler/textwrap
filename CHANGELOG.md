@@ -3,11 +3,15 @@
 This file lists the most important changes made in each release of
 `textwrap`.
 
-## Unreleased
+## Version 0.12.1 — July 3rd, 2020
 
-* Fixed [#176][issue-176]: Compile-time wrapping via the
-  [`textwrap-macros` crate].
-* Fixed [#193][issue-193]: Non breaking words is broken.
+This is a bugfix release.
+
+* Fixed [#176][issue-176]: Mention compile-time wrapping by linking to
+  the [`textwrap-macros` crate].
+* Fixed [#193][issue-193]: Wrapping with `break_words(false)` was
+  broken and would cause extra whitespace to be inserted when words
+  were longer than the line width.
 
 ## Version 0.12.0 — June 26th, 2020
 
