@@ -1,7 +1,6 @@
 # Textwrap
 
-[![](https://travis-ci.org/mgeisler/textwrap.svg?branch=master)][travis-ci]
-[![](https://ci.appveyor.com/api/projects/status/github/mgeisler/textwrap?branch=master&svg=true)][appveyor]
+[![](https://github.com/mgeisler/textwrap/workflows/build/badge.svg)][build-status]
 [![](https://codecov.io/gh/mgeisler/textwrap/branch/master/graph/badge.svg)][codecov]
 [![](https://img.shields.io/crates/v/textwrap.svg)][crates-io]
 [![](https://docs.rs/textwrap/badge.svg)][api-docs]
@@ -208,8 +207,7 @@ Textwrap can be distributed according to the [MIT license][mit].
 Contributions will be accepted under the same license.
 
 [crates-io]: https://crates.io/crates/textwrap
-[travis-ci]: https://travis-ci.org/mgeisler/textwrap
-[appveyor]: https://ci.appveyor.com/project/mgeisler/textwrap
+[build-status]: https://github.com/mgeisler/textwrap/actions?query=workflow%3Abuild+branch%3Amaster
 [codecov]: https://codecov.io/gh/mgeisler/textwrap
 [py-textwrap]: https://docs.python.org/library/textwrap
 [`textwrap-macros` crate]: https://crates.io/crates/textwrap-macros
