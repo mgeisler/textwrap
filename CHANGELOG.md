@@ -176,5 +176,6 @@ First public release with support for wrapping strings on whitespace.
 [issue-141]: https://github.com/mgeisler/textwrap/issues/141
 [issue-151]: https://github.com/mgeisler/textwrap/issues/151
 [issue-158]: https://github.com/mgeisler/textwrap/issues/158
+[issue-176]: https://github.com/mgeisler/textwrap/issues/176
 [issue-177]: https://github.com/mgeisler/textwrap/issues/177
 [issue-193]: https://github.com/mgeisler/textwrap/issues/193
