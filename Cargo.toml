@@ -32,7 +32,5 @@ terminal_size = { version = "0.1", optional = true }
 hyphenation = { version = "0.8", optional = true, features = ["embed_en-us"] }
 
 [dev-dependencies]
-lipsum = "0.6"
-rand = "0.6"
-rand_xorshift = "0.1"
+lipsum = "0.7"
 version-sync = "0.9"
