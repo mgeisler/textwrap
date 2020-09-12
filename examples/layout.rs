@@ -1,4 +1,4 @@
-use textwrap::Wrapper;
+use textwrap::{wrap, Options};
 
 fn main() {
     let example = "Memory safety without garbage collection. \
@@ -6,18 +6,18 @@ fn main() {
                    Zero-cost abstractions.";
     let mut prev_lines = vec![];
 
-    let mut wrapper = Wrapper::new(0);
+    let mut options = Options::new(0);
     #[cfg(feature = "hyphenation")]
     {
         use hyphenation::Load;
         let language = hyphenation::Language::EnglishUS;
         let dictionary = hyphenation::Standard::from_embedded(language).unwrap();
-        wrapper.splitter = Box::new(dictionary);
+        options.splitter = Box::new(dictionary);
     }
 
     for width in 15..60 {
-        wrapper.width = width;
-        let lines = wrapper.wrap(example).collect::<Vec<_>>();
+        options.width = width;
+        let lines = wrap(example, &options).collect::<Vec<_>>();
         if lines != prev_lines {
             let title = format!(" Width: {} ", width);
             println!(".{:-^1$}.", title, width + 2);

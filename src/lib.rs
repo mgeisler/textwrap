@@ -25,14 +25,14 @@
 //! ```no_run
 //! # #[cfg(feature = "hyphenation")]
 //! use hyphenation::{Language, Load, Standard};
-//! use textwrap::Wrapper;
+//! use textwrap::{Options, fill};
 //!
 //! # #[cfg(feature = "hyphenation")]
 //! fn main() {
 //!     let text = "textwrap: a small library for wrapping text.";
 //!     let dictionary = Standard::from_embedded(Language::EnglishUS).unwrap();
-//!     let wrapper = Wrapper::new(18).splitter(Box::new(dictionary));
-//!     println!("{}", wrapper.fill(text));
+//!     let options = Options::new(18).splitter(Box::new(dictionary));
+//!     println!("{}", fill(text, &options));
 //! }
 //!
 //! # #[cfg(not(feature = "hyphenation"))]
@@ -75,7 +75,7 @@
 //!
 //! * `terminal_size`: enables automatic detection of the terminal
 //!   width via the [terminal_size][] crate. See the
-//!   [`Wrapper::with_termwidth`] constructor for details.
+//!   [`Options::with_termwidth`] constructor for details.
 //!
 //! * `hyphenation`: enables language-sentive hyphenation via the
 //!   [hyphenation][] crate. See the [`WordSplitter`] trait for
@@ -85,7 +85,7 @@
 //! [unicode-width]: https://docs.rs/unicode-width/
 //! [terminal_size]: https://crates.io/crates/terminal_size
 //! [hyphenation]: https://crates.io/crates/hyphenation
-//! [`Wrapper::with_termwidth`]: struct.Wrapper.html#method.with_termwidth
+//! [`Options::with_termwidth`]: struct.Options.html#method.with_termwidth
 //! [`WordSplitter`]: trait.WordSplitter.html
 
 #![doc(html_root_url = "https://docs.rs/textwrap/0.12.1")]
@@ -116,20 +116,28 @@ pub use crate::indentation::indent;
 mod splitting;
 pub use crate::splitting::{HyphenSplitter, NoHyphenation, WordSplitter};
 
-/// A Wrapper holds settings for wrapping and filling text. Use it
-/// when the convenience [`wrap`] and [`fill`] functions are not
-/// flexible enough.
+/// Options for wrapping and filling text. Used with the [`wrap`] and
+/// [`fill`] functions.
 ///
 /// [`wrap`]: fn.wrap.html
 /// [`fill`]: fn.fill.html
-///
-/// The algorithm used by the iterator returned from the `wrap`
-/// method works by doing successive partial scans over words in the
-/// input string (where each single scan yields a single line) so that
-/// the overall time and memory complexity is O(*n*) where *n* is the
-/// length of the input string.
+pub trait WrapOptions {
+    /// The width in columns at which the text will be wrapped.
+    fn width(&self) -> usize;
+    /// Indentation used for the first line of output.
+    fn initial_indent(&self) -> &str;
+    /// Indentation used for subsequent lines of output.
+    fn subsequent_indent(&self) -> &str;
+    /// Allow long words to be broken if they cannot fit on a line.
+    /// When set to `false`, some lines may be longer than `width`.
+    fn break_words(&self) -> bool;
+    /// Split word as with `WordSplitter::split`.
+    fn split<'w>(&self, word: &'w str) -> Vec<(&'w str, &'w str, &'w str)>;
+}
+
+/// Holds settings for wrapping and filling text.
 #[derive(Debug)]
-pub struct Wrapper<'a> {
+pub struct Options<'a> {
     /// The width in columns at which the text will be wrapped.
     pub width: usize,
     /// Indentation used for the first line of output.
@@ -146,21 +154,106 @@ pub struct Wrapper<'a> {
     pub splitter: Box<dyn WordSplitter>,
 }
 
-/// # Builder Functionality.
+/// Allows using an `Options` with [`wrap`] and [`fill`]:
 ///
-/// The methods here make it easy to construct a `Wrapper` using
-/// chained method calls. Start with `Wrapper::new` and override
-/// settings as you like.
-impl<'a> Wrapper<'a> {
-    /// Create a new Wrapper for wrapping at the specified width. By
-    /// default, we allow words longer than `width` to be broken. A
-    /// [`HyphenSplitter`] will be used by default for splitting
-    /// words. See the [`WordSplitter`] trait for other options.
+/// ```
+/// use textwrap::{fill, Options};
+///
+/// let options = Options::new(15).initial_indent("> ");
+/// assert_eq!(fill("Wrapping with options!", &options),
+///            "> Wrapping with\noptions!");
+/// ```
+///
+/// The integer specifes the wrapping width. This is equivalent to
+/// passing `Options::new(15)`.
+///
+/// [`wrap`]: fn.wrap.html
+/// [`fill`]: fn.fill.html
+impl WrapOptions for &Options<'_> {
+    #[inline]
+    fn width(&self) -> usize {
+        self.width
+    }
+    #[inline]
+    fn initial_indent(&self) -> &str {
+        self.initial_indent
+    }
+    #[inline]
+    fn subsequent_indent(&self) -> &str {
+        self.subsequent_indent
+    }
+    #[inline]
+    fn break_words(&self) -> bool {
+        self.break_words
+    }
+    #[inline]
+    fn split<'w>(&self, word: &'w str) -> Vec<(&'w str, &'w str, &'w str)> {
+        self.splitter.split(word)
+    }
+}
+
+/// Allows using an `usize` directly as options for [`wrap`] and
+/// [`fill`]:
+///
+/// ```
+/// use textwrap::fill;
+///
+/// assert_eq!(fill("Quick and easy wrapping!", 15),
+///            "Quick and easy\nwrapping!");
+/// ```
+///
+/// The integer specifes the wrapping width. This is equivalent to
+/// passing `Options::new(15)`.
+///
+/// [`wrap`]: fn.wrap.html
+/// [`fill`]: fn.fill.html
+impl WrapOptions for usize {
+    #[inline]
+    fn width(&self) -> usize {
+        *self
+    }
+    #[inline]
+    fn initial_indent(&self) -> &str {
+        ""
+    }
+    #[inline]
+    fn subsequent_indent(&self) -> &str {
+        ""
+    }
+    #[inline]
+    fn break_words(&self) -> bool {
+        true
+    }
+    #[inline]
+    fn split<'w>(&self, word: &'w str) -> Vec<(&'w str, &'w str, &'w str)> {
+        HyphenSplitter.split(word)
+    }
+}
+
+impl<'a> Options<'a> {
+    /// Creates a new `Options` with the specified width. Equivalent
+    /// to
     ///
-    /// [`HyphenSplitter`]: struct.HyphenSplitter.html
-    /// [`WordSplitter`]: trait.WordSplitter.html
-    pub fn new(width: usize) -> Wrapper<'a> {
-        Wrapper {
+    /// ```
+    /// # use textwrap::{Options, HyphenSplitter};
+    /// # let width = 80;
+    /// # let actual = Options::new(width);
+    /// # let expected =
+    /// Options {
+    ///     width: width,
+    ///     initial_indent: "",
+    ///     subsequent_indent: "",
+    ///     break_words: true,
+    ///     splitter: Box::new(HyphenSplitter),
+    /// }
+    /// # ;
+    /// # assert_eq!(actual.width, expected.width);
+    /// # assert_eq!(actual.initial_indent, expected.initial_indent);
+    /// # assert_eq!(actual.subsequent_indent, expected.subsequent_indent);
+    /// # assert_eq!(actual.break_words, expected.break_words);
+    /// ```
+    pub fn new(width: usize) -> Options<'static> {
+        Options {
             width: width,
             initial_indent: "",
             subsequent_indent: "",
@@ -169,26 +262,26 @@ impl<'a> Wrapper<'a> {
         }
     }
 
-    /// Create a new Wrapper for wrapping text at the current terminal
-    /// width. If the terminal width cannot be determined (typically
-    /// because the standard input and output is not connected to a
-    /// terminal), a width of 80 characters will be used. Other
-    /// settings use the same defaults as `Wrapper::new`.
+    /// Creates a new `Options` with `width` set to the current
+    /// terminal width. If the terminal width cannot be determined
+    /// (typically because the standard input and output is not
+    /// connected to a terminal), a width of 80 characters will be
+    /// used. Other settings use the same defaults as `Options::new`.
     ///
     /// Equivalent to:
     ///
     /// ```no_run
     /// # #![allow(unused_variables)]
-    /// use textwrap::{Wrapper, termwidth};
+    /// use textwrap::{Options, termwidth};
     ///
-    /// let wrapper = Wrapper::new(termwidth());
+    /// let options = Options::new(termwidth());
     /// ```
     ///
     /// **Note:** Only available when the `terminal_size` feature is
     /// enabled.
     #[cfg(feature = "terminal_size")]
-    pub fn with_termwidth() -> Wrapper<'a> {
-        Wrapper::new(termwidth())
+    pub fn with_termwidth() -> Options<'static> {
+        Options::new(termwidth())
     }
 
     /// Change [`self.initial_indent`]. The initial indentation is
@@ -201,14 +294,14 @@ impl<'a> Wrapper<'a> {
     ///
     /// ```no_run
     /// # #![allow(unused_variables)]
-    /// use textwrap::Wrapper;
+    /// use textwrap::Options;
     ///
-    /// let wrapper = Wrapper::new(15).initial_indent("    ");
+    /// let options = Options::new(15).initial_indent("    ");
     /// ```
     ///
     /// [`self.initial_indent`]: #structfield.initial_indent
-    pub fn initial_indent(self, indent: &'a str) -> Wrapper<'a> {
-        Wrapper {
+    pub fn initial_indent(self, indent: &'a str) -> Options<'a> {
+        Options {
             initial_indent: indent,
             ..self
         }
@@ -224,16 +317,16 @@ impl<'a> Wrapper<'a> {
     ///
     /// ```no_run
     /// # #![allow(unused_variables)]
-    /// use textwrap::Wrapper;
+    /// use textwrap::Options;
     ///
-    /// let wrapper = Wrapper::new(15)
+    /// let options = Options::new(15)
     ///     .initial_indent("* ")
     ///     .subsequent_indent("  ");
     /// ```
     ///
     /// [`self.subsequent_indent`]: #structfield.subsequent_indent
-    pub fn subsequent_indent(self, indent: &'a str) -> Wrapper<'a> {
-        Wrapper {
+    pub fn subsequent_indent(self, indent: &'a str) -> Options<'a> {
+        Options {
             subsequent_indent: indent,
             ..self
         }
@@ -244,8 +337,8 @@ impl<'a> Wrapper<'a> {
     /// sticking out into the right margin.
     ///
     /// [`self.break_words`]: #structfield.break_words
-    pub fn break_words(self, setting: bool) -> Wrapper<'a> {
-        Wrapper {
+    pub fn break_words(self, setting: bool) -> Options<'a> {
+        Options {
             break_words: setting,
             ..self
         }
@@ -256,128 +349,11 @@ impl<'a> Wrapper<'a> {
     ///
     /// [`self.splitter`]: #structfield.splitter
     /// [`WordSplitter`]: trait.WordSplitter.html
-    pub fn splitter(self, splitter: Box<dyn WordSplitter>) -> Wrapper<'a> {
-        Wrapper {
+    pub fn splitter(self, splitter: Box<dyn WordSplitter>) -> Options<'a> {
+        Options {
             splitter: splitter,
             ..self
         }
-    }
-}
-
-/// # Wrapping Functionality.
-///
-/// The methods here are the real meat: they take strings as input and
-/// give you word-wrapped strings as output.
-impl<'a> Wrapper<'a> {
-    /// Fill a line of text at `self.width` characters.
-    ///
-    /// The result is a string with newlines between each line. Use
-    /// the `wrap` method if you need access to the individual lines.
-    ///
-    /// # Complexities
-    ///
-    /// This method simply joins the lines produced by `wrap`. As
-    /// such, it inherits the O(*n*) time and memory complexity where
-    /// *n* is the input string length.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use textwrap::Wrapper;
-    ///
-    /// let wrapper = Wrapper::new(15);
-    /// assert_eq!(wrapper.fill("Memory safety without garbage collection."),
-    ///            "Memory safety\nwithout garbage\ncollection.");
-    /// ```
-    pub fn fill(&self, s: &str) -> String {
-        // This will avoid reallocation in simple cases (no
-        // indentation, no hyphenation).
-        let mut result = String::with_capacity(s.len());
-
-        for (i, line) in self.wrap(s).enumerate() {
-            if i > 0 {
-                result.push('\n');
-            }
-            result.push_str(&line);
-        }
-
-        result
-    }
-
-    /// Lazily wrap a line of text at `self.width` characters.
-    ///
-    /// The [`WordSplitter`] stored in [`self.splitter`] is used
-    /// whenever when a word is too large to fit on the current line.
-    /// By changing the field, different hyphenation strategies can be
-    /// implemented.
-    ///
-    /// # Complexities
-    ///
-    /// This method returns an iterator which borrows this `Wrapper`.
-    /// The algorithm used has a linear complexity, so getting the
-    /// next line from the iterator will take O(*w*) time, where *w*
-    /// is the wrapping width. Fully processing the iterator will take
-    /// O(*n*) time for an input string of length *n*.
-    ///
-    /// When no indentation is used, each line returned is a slice of
-    /// the input string and the memory overhead is thus constant.
-    /// Otherwise new memory is allocated for each line returned.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use std::borrow::Cow::Borrowed;
-    /// use textwrap::Wrapper;
-    ///
-    /// let wrap20 = Wrapper::new(20);
-    /// let mut wrap20_iter = wrap20.wrap("Zero-cost abstractions.");
-    /// assert_eq!(wrap20_iter.next(), Some(Borrowed("Zero-cost")));
-    /// assert_eq!(wrap20_iter.next(), Some(Borrowed("abstractions.")));
-    /// assert_eq!(wrap20_iter.next(), None);
-    ///
-    /// let wrap25 = Wrapper::new(25);
-    /// let mut wrap25_iter = wrap25.wrap("Zero-cost abstractions.");
-    /// assert_eq!(wrap25_iter.next(), Some(Borrowed("Zero-cost abstractions.")));
-    /// assert_eq!(wrap25_iter.next(), None);
-    /// ```
-    ///
-    /// [`self.splitter`]: #structfield.splitter
-    /// [`WordSplitter`]: trait.WordSplitter.html
-    pub fn wrap<'w>(&'w self, s: &'a str) -> impl Iterator<Item = Cow<'a, str>> + 'w {
-        WrapIter {
-            wrapper: self,
-            inner: WrapIterImpl::new(self, s),
-        }
-    }
-}
-
-/// An iterator owns a `Wrapper`.
-#[derive(Debug)]
-struct IntoWrapIter<'a> {
-    wrapper: Wrapper<'a>,
-    inner: WrapIterImpl<'a>,
-}
-
-impl<'a> Iterator for IntoWrapIter<'a> {
-    type Item = Cow<'a, str>;
-
-    fn next(&mut self) -> Option<Cow<'a, str>> {
-        self.inner.next(&self.wrapper)
-    }
-}
-
-/// An iterator which borrows a `Wrapper`.
-#[derive(Debug)]
-struct WrapIter<'w, 'a: 'w> {
-    wrapper: &'w Wrapper<'a>,
-    inner: WrapIterImpl<'a>,
-}
-
-impl<'w, 'a: 'w> Iterator for WrapIter<'w, 'a> {
-    type Item = Cow<'a, str>;
-
-    fn next(&mut self) -> Option<Cow<'a, str>> {
-        self.inner.next(self.wrapper)
     }
 }
 
@@ -387,13 +363,14 @@ fn is_whitespace(ch: char) -> bool {
     ch.is_whitespace() && ch != NBSP
 }
 
-/// Common implementation details for `WrapIter` and `IntoWrapIter`.
 #[derive(Debug)]
-struct WrapIterImpl<'a> {
+struct WrapIter<'input, T: WrapOptions> {
+    options: T,
+
     // String to wrap.
-    source: &'a str,
+    source: &'input str,
     // CharIndices iterator over self.source.
-    char_indices: CharIndices<'a>,
+    char_indices: CharIndices<'input>,
     // Byte index where the current line starts.
     start: usize,
     // Byte index of the last place where the string can be split.
@@ -410,30 +387,46 @@ struct WrapIterImpl<'a> {
     finished: bool,
 }
 
-impl<'a> WrapIterImpl<'a> {
-    fn new(wrapper: &Wrapper<'a>, s: &'a str) -> WrapIterImpl<'a> {
-        WrapIterImpl {
+impl<T: WrapOptions> WrapIter<'_, T> {
+    fn new(options: T, s: &str) -> WrapIter<'_, T> {
+        let initial_indent_width = options.initial_indent().width();
+
+        WrapIter {
+            options: options,
             source: s,
             char_indices: s.char_indices(),
             start: 0,
             split: 0,
             split_len: 0,
-            line_width: wrapper.initial_indent.width(),
-            line_width_at_split: wrapper.initial_indent.width(),
+            line_width: initial_indent_width,
+            line_width_at_split: initial_indent_width,
             in_whitespace: false,
             finished: false,
         }
     }
 
-    fn create_result_line(&self, wrapper: &Wrapper<'a>) -> Cow<'a, str> {
-        if self.start == 0 {
-            Cow::from(wrapper.initial_indent)
+    fn create_result_line(&self) -> Cow<'static, str> {
+        let indent = if self.start == 0 {
+            self.options.initial_indent()
         } else {
-            Cow::from(wrapper.subsequent_indent)
+            self.options.subsequent_indent()
+        };
+        if indent.is_empty() {
+            Cow::Borrowed("") // return Cow<'static, str>
+        } else {
+            // This removes the link between the lifetime of the
+            // indentation and the input string. The non-empty
+            // indentation will force us to create an owned `String`
+            // in any case.
+            Cow::Owned(String::from(indent))
         }
     }
+}
 
-    fn next(&mut self, wrapper: &Wrapper<'a>) -> Option<Cow<'a, str>> {
+impl<'input, T: WrapOptions> Iterator for WrapIter<'input, T> {
+    type Item = Cow<'input, str>;
+
+    fn next(&mut self) -> Option<Cow<'input, str>> {
         if self.finished {
             return None;
         }
@@ -465,11 +458,11 @@ impl<'a> WrapIterImpl<'a> {
                 // If this is not the final line, return the current line. Otherwise,
                 // we will return the line with its line break after exiting the loop
                 if self.split + self.split_len < self.source.len() {
-                    let mut line = self.create_result_line(wrapper);
+                    let mut line = self.create_result_line();
                     line += &self.source[self.start..self.split];
 
                     self.start = self.split + self.split_len;
-                    self.line_width = wrapper.subsequent_indent.width();
+                    self.line_width = self.options.subsequent_indent().width();
 
                     return Some(line);
                 }
@@ -483,7 +476,7 @@ impl<'a> WrapIterImpl<'a> {
                 }
                 self.line_width_at_split = self.line_width + char_width;
                 self.in_whitespace = true;
-            } else if self.line_width + char_width > wrapper.width {
+            } else if self.line_width + char_width > self.options.width() {
                 // There is no room for this character on the current
                 // line. Try to split the final word.
                 self.in_whitespace = false;
@@ -494,9 +487,10 @@ impl<'a> WrapIterImpl<'a> {
                 };
 
                 let mut hyphen = "";
-                let splits = wrapper.splitter.split(final_word);
+                let splits = self.options.split(final_word);
                 for &(head, hyp, _) in splits.iter().rev() {
-                    if self.line_width_at_split + head.width() + hyp.width() <= wrapper.width {
+                    if self.line_width_at_split + head.width() + hyp.width() <= self.options.width()
+                    {
                         // We can fit head into the current line.
                         // Advance the split point by the width of the
                         // whitespace and the head length.
@@ -516,7 +510,7 @@ impl<'a> WrapIterImpl<'a> {
 
                 if self.start >= self.split {
                     // The word is too big to fit on a single line.
-                    if wrapper.break_words {
+                    if self.options.break_words() {
                         // Break work at current index.
                         self.split = idx;
                         self.split_len = 0;
@@ -536,15 +530,15 @@ impl<'a> WrapIterImpl<'a> {
                 }
 
                 if self.start < self.split {
-                    let mut line = self.create_result_line(wrapper);
+                    let mut line = self.create_result_line();
                     line += &self.source[self.start..self.split];
                     line += hyphen;
 
                     self.start = self.split + self.split_len;
-                    self.line_width += wrapper.subsequent_indent.width();
+                    self.line_width += self.options.subsequent_indent().width();
                     self.line_width -= self.line_width_at_split;
                     self.line_width += char_width;
-                    self.line_width_at_split = wrapper.subsequent_indent.width();
+                    self.line_width_at_split = self.options.subsequent_indent().width();
 
                     return Some(line);
                 }
@@ -558,7 +552,7 @@ impl<'a> WrapIterImpl<'a> {
 
         // Add final line.
         if self.start < self.source.len() {
-            let mut line = self.create_result_line(wrapper);
+            let mut line = self.create_result_line();
             line += &self.source[self.start..];
             return Some(line);
         }
@@ -573,15 +567,15 @@ impl<'a> WrapIterImpl<'a> {
 ///
 /// # Examples
 ///
-/// Create a `Wrapper` for the current terminal with a two column
-/// margin:
+/// Create an `Options` for wrapping at the current terminal width
+/// with a two column margin to the left and the right:
 ///
 /// ```no_run
 /// # #![allow(unused_variables)]
-/// use textwrap::{Wrapper, NoHyphenation, termwidth};
+/// use textwrap::{Options, NoHyphenation, termwidth};
 ///
 /// let width = termwidth() - 4; // Two columns on each side.
-/// let wrapper = Wrapper::new(width)
+/// let options = Options::new(width)
 ///     .splitter(Box::new(NoHyphenation))
 ///     .initial_indent("  ")
 ///     .subsequent_indent("  ");
@@ -596,8 +590,12 @@ pub fn termwidth() -> usize {
 
 /// Fill a line of text at `width` characters.
 ///
-/// The result is a string with newlines between each line. Use
-/// [`wrap`] if you need access to the individual lines.
+/// The result is a `String`, complete with newlines between each
+/// line. Use the [`wrap`] function if you need access to the
+/// individual lines.
+///
+/// The easiest way to use this function is to pass an integer for
+/// `options`:
 ///
 /// ```
 /// use textwrap::fill;
@@ -606,45 +604,83 @@ pub fn termwidth() -> usize {
 ///            "Memory safety\nwithout garbage\ncollection.");
 /// ```
 ///
-/// This function creates a Wrapper on the fly with default settings.
-/// If you need to set a language corpus for automatic hyphenation, or
-/// need to fill many strings, then it is suggested to create a Wrapper
-/// and call its [`fill` method].
+/// If you need to customize the wrapping, you can pass an [`Options`]
+/// instead of an `usize`:
+///
+/// ```
+/// use textwrap::{fill, Options};
+///
+/// let options = Options::new(15).initial_indent("- ").subsequent_indent("  ");
+/// assert_eq!(fill("Memory safety without garbage collection.", &options),
+///            "- Memory safety\n  without\n  garbage\n  collection.");
+/// ```
 ///
 /// [`wrap`]: fn.wrap.html
-/// [`fill` method]: struct.Wrapper.html#method.fill
-pub fn fill(s: &str, width: usize) -> String {
-    Wrapper::new(width).fill(s)
+pub fn fill<T: WrapOptions>(text: &str, options: T) -> String {
+    // This will avoid reallocation in simple cases (no
+    // indentation, no hyphenation).
+    let mut result = String::with_capacity(text.len());
+
+    for (i, line) in wrap(text, options).enumerate() {
+        if i > 0 {
+            result.push('\n');
+        }
+        result.push_str(&line);
+    }
+
+    result
 }
 
-/// Lazily wrap a line of text at `width` characters.
+/// The easiest way to use this function is to pass an integer for
+/// `options`:
+/// let lines = wrap("Memory safety without garbage collection.", 15);
+/// assert_eq!(lines.collect::<Vec<_>>(), &[
+///     "Memory safety",
+///     "without garbage",
+///     "collection.",
+/// ]);
+/// If you need to customize the wrapping, you can pass an [`Options`]
+/// instead of an `usize`:
 ///
-/// This function creates a Wrapper on the fly with default settings.
-/// If you need to set a language corpus for automatic hyphenation, or
-/// need to wrap many strings, then it is suggested to create a
-/// Wrapper and call its [`wrap`] method.
+/// ```
+/// use textwrap::{wrap, Options};
+///
+/// let options = Options::new(15).initial_indent("- ").subsequent_indent("  ");
+/// let lines = wrap("Memory safety without garbage collection.", &options);
+/// assert_eq!(lines.collect::<Vec<_>>(), &[
+///     "- Memory safety",
+///     "  without",
+///     "  garbage",
+///     "  collection.",
+/// ]);
+/// ```
 ///
 /// # Examples
 ///
+/// The returned iterator yields lines of type `Cow<'_, str>`. If
+/// possible, the wrapped lines will borrow borrow from the input
+/// string. As an example, a hanging indentation, the first line can
+/// borrow from the input, but the subsequent lines become owned
+/// strings:
+///
 /// ```
-/// use std::borrow::Cow::Borrowed;
-/// use textwrap::wrap;
+/// use std::borrow::Cow::{Borrowed, Owned};
+/// use textwrap::{wrap, Options};
 ///
-/// let mut wrap20_iter = wrap("Zero-cost abstractions.", 20);
-/// assert_eq!(wrap20_iter.next(), Some(Borrowed("Zero-cost")));
-/// assert_eq!(wrap20_iter.next(), Some(Borrowed("abstractions.")));
-/// assert_eq!(wrap20_iter.next(), None);
-///
-/// let mut wrap25_iter = wrap("Zero-cost abstractions.", 25);
-/// assert_eq!(wrap25_iter.next(), Some(Borrowed("Zero-cost abstractions.")));
-/// assert_eq!(wrap25_iter.next(), None);
+/// let options = Options::new(15).subsequent_indent("....");
+/// let lines = wrap("Wrapping text all day long.", &options);
+/// let annotated = lines.map(|line| match line {
+///     Borrowed(text) => format!("[Borrowed] {}", text),
+///     Owned(text)    => format!("[Owned]    {}", text),
+/// }).collect::<Vec<_>>();
+/// assert_eq!(annotated, &[
+///     "[Borrowed] Wrapping text",
+///     "[Owned]    ....all day",
+///     "[Owned]    ....long.",
+/// ]);
 /// ```
-///
-/// [`wrap`]: struct.Wrapper.html#method.wrap
-pub fn wrap(s: &str, width: usize) -> impl Iterator<Item = Cow<'_, str>> {
-    let wrapper = Wrapper::new(width);
-    let inner = WrapIterImpl::new(&wrapper, s);
-    IntoWrapIter { wrapper, inner }
+pub fn wrap<T: WrapOptions>(text: &str, options: T) -> impl Iterator<Item = Cow<'_, str>> {
+    WrapIter::new(options, text)
 }
 
 #[cfg(test)]
@@ -657,6 +693,24 @@ mod tests {
         ($left:expr, $right:expr) => {
             assert_eq!($left.collect::<Vec<_>>(), $right);
         };
+    }
+
+    #[test]
+    fn options_agree_with_usize() {
+        let opt_usize: &dyn WrapOptions = &42;
+        let opt_options: &dyn WrapOptions = &&Options::new(42);
+
+        assert_eq!(opt_usize.width(), opt_options.width());
+        assert_eq!(opt_usize.initial_indent(), opt_options.initial_indent());
+        assert_eq!(
+            opt_usize.subsequent_indent(),
+            opt_options.subsequent_indent()
+        );
+        assert_eq!(opt_usize.break_words(), opt_options.break_words());
+        assert_eq!(
+            opt_usize.split("hello-world"),
+            opt_options.split("hello-world")
+        );
     }
 
     #[test]
@@ -741,26 +795,29 @@ mod tests {
 
     #[test]
     fn empty_input_not_indented() {
-        let wrapper = Wrapper::new(10).initial_indent("!!!");
-        assert_eq!(wrapper.fill(""), "");
+        let options = Options::new(10).initial_indent("!!!");
+        assert_eq!(fill("", &options), "");
     }
 
     #[test]
     fn indent_single_line() {
-        let wrapper = Wrapper::new(10).initial_indent(">>>"); // No trailing space
-        assert_eq!(wrapper.fill("foo"), ">>>foo");
+        let options = Options::new(10).initial_indent(">>>"); // No trailing space
+        assert_eq!(fill("foo", &options), ">>>foo");
     }
 
     #[test]
     fn indent_multiple_lines() {
-        let wrapper = Wrapper::new(6).initial_indent("* ").subsequent_indent("  ");
-        assert_iter_eq!(wrapper.wrap("foo bar baz"), vec!["* foo", "  bar", "  baz"]);
+        let options = Options::new(6).initial_indent("* ").subsequent_indent("  ");
+        assert_iter_eq!(
+            wrap("foo bar baz", &options),
+            vec!["* foo", "  bar", "  baz"]
+        );
     }
 
     #[test]
     fn indent_break_words() {
-        let wrapper = Wrapper::new(5).initial_indent("* ").subsequent_indent("  ");
-        assert_iter_eq!(wrapper.wrap("foobarbaz"), vec!["* foo", "  bar", "  baz"]);
+        let options = Options::new(5).initial_indent("* ").subsequent_indent("  ");
+        assert_iter_eq!(wrap("foobarbaz", &options), vec!["* foo", "  bar", "  baz"]);
     }
 
     #[test]
@@ -770,8 +827,8 @@ mod tests {
 
     #[test]
     fn trailing_hyphen() {
-        let wrapper = Wrapper::new(5).break_words(false);
-        assert_iter_eq!(wrapper.wrap("foobar-"), vec!["foobar-"]);
+        let options = Options::new(5).break_words(false);
+        assert_iter_eq!(wrap("foobar-", &options), vec!["foobar-"]);
     }
 
     #[test]
@@ -781,17 +838,17 @@ mod tests {
 
     #[test]
     fn hyphens_flag() {
-        let wrapper = Wrapper::new(5).break_words(false);
+        let options = Options::new(5).break_words(false);
         assert_iter_eq!(
-            wrapper.wrap("The --foo-bar flag."),
+            wrap("The --foo-bar flag.", &options),
             vec!["The", "--foo-", "bar", "flag."]
         );
     }
 
     #[test]
     fn repeated_hyphens() {
-        let wrapper = Wrapper::new(4).break_words(false);
-        assert_iter_eq!(wrapper.wrap("foo--bar"), vec!["foo--bar"]);
+        let options = Options::new(4).break_words(false);
+        assert_iter_eq!(wrap("foo--bar", &options), vec!["foo--bar"]);
     }
 
     #[test]
@@ -801,8 +858,8 @@ mod tests {
 
     #[test]
     fn hyphens_non_alphanumeric() {
-        let wrapper = Wrapper::new(5).break_words(false);
-        assert_iter_eq!(wrapper.wrap("foo(-)bar"), vec!["foo(-)bar"]);
+        let options = Options::new(5).break_words(false);
+        assert_iter_eq!(wrap("foo(-)bar", &options), vec!["foo(-)bar"]);
     }
 
     #[test]
@@ -812,49 +869,49 @@ mod tests {
 
     #[test]
     fn forced_split() {
-        let wrapper = Wrapper::new(5).break_words(false);
-        assert_iter_eq!(wrapper.wrap("foobar-baz"), vec!["foobar-", "baz"]);
+        let options = Options::new(5).break_words(false);
+        assert_iter_eq!(wrap("foobar-baz", &options), vec!["foobar-", "baz"]);
     }
 
     #[test]
     fn multiple_unbroken_words_issue_193() {
-        let wrapper = Wrapper::new(3).break_words(false);
+        let options = Options::new(3).break_words(false);
         assert_iter_eq!(
-            wrapper.wrap("small large tiny"),
+            wrap("small large tiny", &options),
             vec!["small", "large", "tiny"]
         );
         assert_iter_eq!(
-            wrapper.wrap("small  large   tiny"),
+            wrap("small  large   tiny", &options),
             vec!["small", "large", "tiny"]
         );
     }
 
     #[test]
     fn very_narrow_lines_issue_193() {
-        let wrapper = Wrapper::new(1).break_words(false);
-        assert_iter_eq!(wrapper.wrap("fooo x y"), vec!["fooo", "x", "y"]);
-        assert_iter_eq!(wrapper.wrap("fooo   x     y"), vec!["fooo", "x", "y"]);
+        let options = Options::new(1).break_words(false);
+        assert_iter_eq!(wrap("fooo x y", &options), vec!["fooo", "x", "y"]);
+        assert_iter_eq!(wrap("fooo   x     y", &options), vec!["fooo", "x", "y"]);
     }
 
     #[test]
     fn no_hyphenation() {
-        let wrapper = Wrapper::new(8).splitter(Box::new(NoHyphenation));
-        assert_iter_eq!(wrapper.wrap("foo bar-baz"), vec!["foo", "bar-baz"]);
+        let options = Options::new(8).splitter(Box::new(NoHyphenation));
+        assert_iter_eq!(wrap("foo bar-baz", &options), vec!["foo", "bar-baz"]);
     }
 
     #[test]
     #[cfg(feature = "hyphenation")]
     fn auto_hyphenation() {
         let dictionary = Standard::from_embedded(Language::EnglishUS).unwrap();
-        let wrapper = Wrapper::new(10);
+        let options = Options::new(10);
         assert_iter_eq!(
-            wrapper.wrap("Internationalization"),
+            wrap("Internationalization", &options),
             vec!["Internatio", "nalization"]
         );
 
-        let wrapper = Wrapper::new(10).splitter(Box::new(dictionary));
+        let options = Options::new(10).splitter(Box::new(dictionary));
         assert_iter_eq!(
-            wrapper.wrap("Internationalization"),
+            wrap("Internationalization", &options),
             vec!["Interna-", "tionaliza-", "tion"]
         );
     }
@@ -863,15 +920,15 @@ mod tests {
     #[cfg(feature = "hyphenation")]
     fn auto_hyphenation_issue_158() {
         let dictionary = Standard::from_embedded(Language::EnglishUS).unwrap();
-        let wrapper = Wrapper::new(10);
+        let options = Options::new(10);
         assert_iter_eq!(
-            wrapper.wrap("participation is the key to success"),
+            wrap("participation is the key to success", &options),
             vec!["participat", "ion is the", "key to", "success"]
         );
 
-        let wrapper = Wrapper::new(10).splitter(Box::new(dictionary));
+        let options = Options::new(10).splitter(Box::new(dictionary));
         assert_iter_eq!(
-            wrapper.wrap("participation is the key to success"),
+            wrap("participation is the key to success", &options),
             vec!["participa-", "tion is the", "key to", "success"]
         );
     }
@@ -882,9 +939,9 @@ mod tests {
         // Test that hyphenation takes the width of the wihtespace
         // into account.
         let dictionary = Standard::from_embedded(Language::EnglishUS).unwrap();
-        let wrapper = Wrapper::new(15).splitter(Box::new(dictionary));
+        let options = Options::new(15).splitter(Box::new(dictionary));
         assert_iter_eq!(
-            wrapper.wrap("garbage   collection"),
+            wrap("garbage   collection", &options),
             vec!["garbage   col-", "lection"]
         );
     }
@@ -896,8 +953,8 @@ mod tests {
         // line is borrowed.
         use std::borrow::Cow::{Borrowed, Owned};
         let dictionary = Standard::from_embedded(Language::EnglishUS).unwrap();
-        let wrapper = Wrapper::new(10).splitter(Box::new(dictionary));
-        let lines = wrapper.wrap("Internationalization").collect::<Vec<_>>();
+        let options = Options::new(10).splitter(Box::new(dictionary));
+        let lines = wrap("Internationalization", &options).collect::<Vec<_>>();
         if let Borrowed(s) = lines[0] {
             assert!(false, "should not have been borrowed: {:?}", s);
         }
@@ -913,12 +970,15 @@ mod tests {
     #[cfg(feature = "hyphenation")]
     fn auto_hyphenation_with_hyphen() {
         let dictionary = Standard::from_embedded(Language::EnglishUS).unwrap();
-        let wrapper = Wrapper::new(8).break_words(false);
-        assert_iter_eq!(wrapper.wrap("over-caffinated"), vec!["over-", "caffinated"]);
-
-        let wrapper = wrapper.splitter(Box::new(dictionary));
+        let options = Options::new(8).break_words(false);
         assert_iter_eq!(
-            wrapper.wrap("over-caffinated"),
+            wrap("over-caffinated", &options),
+            vec!["over-", "caffinated"]
+        );
+
+        let options = options.splitter(Box::new(dictionary));
+        assert_iter_eq!(
+            wrap("over-caffinated", &options),
             vec!["over-", "caffi-", "nated"]
         );
     }
@@ -958,14 +1018,14 @@ mod tests {
 
     #[test]
     fn non_breaking_space() {
-        let wrapper = Wrapper::new(5).break_words(false);
-        assert_eq!(wrapper.fill("foo bar baz"), "foo bar baz");
+        let options = Options::new(5).break_words(false);
+        assert_eq!(fill("foo bar baz", &options), "foo bar baz");
     }
 
     #[test]
     fn non_breaking_hyphen() {
-        let wrapper = Wrapper::new(5).break_words(false);
-        assert_eq!(wrapper.fill("foo‑bar‑baz"), "foo‑bar‑baz");
+        let options = Options::new(5).break_words(false);
+        assert_eq!(fill("foo‑bar‑baz", &options), "foo‑bar‑baz");
     }
 
     #[test]
