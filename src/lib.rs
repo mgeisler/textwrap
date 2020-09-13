@@ -124,11 +124,11 @@ pub use crate::splitting::{HyphenSplitter, NoHyphenation, WordSplitter};
 /// [`wrap`]: fn.wrap.html
 /// [`fill`]: fn.fill.html
 ///
-/// The algorithm used by the `WrapIter` iterator (returned from the
-/// `wrap_iter` method)  works by doing successive partial scans over
-/// words in the input string (where each single scan yields a single
-/// line) so that the overall time and memory complexity is O(*n*) where
-/// *n* is the length of the input string.
+/// The algorithm used by the iterator returned from the `wrap_iter`
+/// method works by doing successive partial scans over words in the
+/// input string (where each single scan yields a single line) so that
+/// the overall time and memory complexity is O(*n*) where *n* is the
+/// length of the input string.
 #[derive(Clone, Debug)]
 pub struct Wrapper<'a, S: WordSplitter> {
     /// The width in columns at which the text will be wrapped.
@@ -343,11 +343,11 @@ impl<'a, S: WordSplitter> Wrapper<'a, S> {
     ///
     /// # Complexities
     ///
-    /// This method returns a [`WrapIter`] iterator which borrows this
-    /// `Wrapper`. The algorithm used has a linear complexity, so
-    /// getting the next line from the iterator will take O(*w*) time,
-    /// where *w* is the wrapping width. Fully processing the iterator
-    /// will take O(*n*) time for an input string of length *n*.
+    /// This method returns an iterator which borrows this `Wrapper`.
+    /// The algorithm used has a linear complexity, so getting the
+    /// next line from the iterator will take O(*w*) time, where *w*
+    /// is the wrapping width. Fully processing the iterator will take
+    /// O(*n*) time for an input string of length *n*.
     ///
     /// When no indentation is used, each line returned is a slice of
     /// the input string and the memory overhead is thus constant.
@@ -373,8 +373,7 @@ impl<'a, S: WordSplitter> Wrapper<'a, S> {
     ///
     /// [`self.splitter`]: #structfield.splitter
     /// [`WordSplitter`]: trait.WordSplitter.html
-    /// [`WrapIter`]: struct.WrapIter.html
-    pub fn wrap_iter<'w>(&'w self, s: &'a str) -> WrapIter<'w, 'a, S> {
+    pub fn wrap_iter<'w>(&'w self, s: &'a str) -> impl Iterator<Item = Cow<'a, str>> + 'w {
         WrapIter {
             wrapper: self,
             inner: WrapIterImpl::new(self, s),
@@ -390,10 +389,10 @@ impl<'a, S: WordSplitter> Wrapper<'a, S> {
     ///
     /// # Complexities
     ///
-    /// This method consumes the `Wrapper` and returns a
-    /// [`IntoWrapIter`] iterator. Fully processing the iterator has
-    /// the same O(*n*) time complexity as [`wrap_iter`], where *n* is
-    /// the length of the input string.
+    /// This method consumes the `Wrapper` and returns an iterator.
+    /// Fully processing the iterator has the same O(*n*) time
+    /// complexity as [`wrap_iter`], where *n* is the length of the
+    /// input string.
     ///
     /// # Examples
     ///
@@ -410,9 +409,8 @@ impl<'a, S: WordSplitter> Wrapper<'a, S> {
     ///
     /// [`self.splitter`]: #structfield.splitter
     /// [`WordSplitter`]: trait.WordSplitter.html
-    /// [`IntoWrapIter`]: struct.IntoWrapIter.html
     /// [`wrap_iter`]: #method.wrap_iter
-    pub fn into_wrap_iter(self, s: &'a str) -> IntoWrapIter<'a, S> {
+    pub fn into_wrap_iter(self, s: &'a str) -> impl Iterator<Item = Cow<'a, str>> {
         let inner = WrapIterImpl::new(&self, s);
 
         IntoWrapIter {
@@ -422,17 +420,9 @@ impl<'a, S: WordSplitter> Wrapper<'a, S> {
     }
 }
 
-/// An iterator over the lines of the input string which owns a
-/// `Wrapper`. An instance of `IntoWrapIter` is typically obtained
-/// through either [`wrap_iter`] or [`Wrapper::into_wrap_iter`].
-///
-/// Each call of `.next()` method yields a line wrapped in `Some` if the
-/// input hasn't been fully processed yet. Otherwise it returns `None`.
-///
-/// [`wrap_iter`]: fn.wrap_iter.html
-/// [`Wrapper::into_wrap_iter`]: struct.Wrapper.html#method.into_wrap_iter
+/// An iterator owns a `Wrapper`.
 #[derive(Debug)]
-pub struct IntoWrapIter<'a, S: WordSplitter> {
+struct IntoWrapIter<'a, S: WordSplitter> {
     wrapper: Wrapper<'a, S>,
     inner: WrapIterImpl<'a>,
 }
@@ -445,16 +435,9 @@ impl<'a, S: WordSplitter> Iterator for IntoWrapIter<'a, S> {
     }
 }
 
-/// An iterator over the lines of the input string which borrows a
-/// `Wrapper`. An instance of `WrapIter` is typically obtained
-/// through the [`Wrapper::wrap_iter`] method.
-///
-/// Each call of `.next()` method yields a line wrapped in `Some` if the
-/// input hasn't been fully processed yet. Otherwise it returns `None`.
-///
-/// [`Wrapper::wrap_iter`]: struct.Wrapper.html#method.wrap_iter
+/// An iterator which borrows a `Wrapper`.
 #[derive(Debug)]
-pub struct WrapIter<'w, 'a: 'w, S: WordSplitter> {
+struct WrapIter<'w, 'a: 'w, S: WordSplitter> {
     wrapper: &'w Wrapper<'a, S>,
     inner: WrapIterImpl<'a>,
 }
@@ -738,13 +721,9 @@ pub fn wrap(s: &str, width: usize) -> Vec<Cow<'_, str>> {
 /// Lazily wrap a line of text at `width` characters.
 ///
 /// This function creates a Wrapper on the fly with default settings.
-/// It then calls the [`into_wrap_iter`] method. Hence, the return
-/// value is an [`IntoWrapIter`], not a [`WrapIter`] as the function
-/// name would otherwise suggest.
-///
 /// If you need to set a language corpus for automatic hyphenation, or
-/// need to wrap many strings, then it is suggested to create a Wrapper
-/// and call its [`wrap_iter`] or [`into_wrap_iter`] methods.
+/// need to wrap many strings, then it is suggested to create a
+/// Wrapper and call its [`wrap_iter`] or [`into_wrap_iter`] methods.
 ///
 /// # Examples
 ///
@@ -764,9 +743,7 @@ pub fn wrap(s: &str, width: usize) -> Vec<Cow<'_, str>> {
 ///
 /// [`wrap_iter`]: struct.Wrapper.html#method.wrap_iter
 /// [`into_wrap_iter`]: struct.Wrapper.html#method.into_wrap_iter
-/// [`IntoWrapIter`]: struct.IntoWrapIter.html
-/// [`WrapIter`]: struct.WrapIter.html
-pub fn wrap_iter(s: &str, width: usize) -> IntoWrapIter<'_, HyphenSplitter> {
+pub fn wrap_iter(s: &str, width: usize) -> impl Iterator<Item = Cow<'_, str>> {
     Wrapper::new(width).into_wrap_iter(s)
 }
 
