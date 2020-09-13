@@ -26,6 +26,10 @@ travis-ci = { repository = "mgeisler/textwrap" }
 appveyor = { repository = "mgeisler/textwrap" }
 codecov = { repository = "mgeisler/textwrap" }
 
+[[bench]]
+name = "linear"
+harness = false
+
 [dependencies]
 unicode-width = "0.1"
 terminal_size = { version = "0.1", optional = true }
@@ -34,3 +38,4 @@ hyphenation = { version = "0.8", optional = true, features = ["embed_en-us"] }
 [dev-dependencies]
 lipsum = "0.7"
 version-sync = "0.9"
+criterion = "0.3"
