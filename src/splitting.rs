@@ -22,7 +22,7 @@
 /// [`wrap_iter`]: ../struct.Wrapper.html#method.wrap_iter
 /// [`split`]: #tymethod.split
 /// [`hyphenation` documentation]: https://docs.rs/hyphenation/
-pub trait WordSplitter {
+pub trait WordSplitter: std::fmt::Debug {
     /// Return all possible splits of word. Each split is a triple
     /// with a head, a hyphen, and a tail where `head + &tail == word`.
     /// The hyphen can be empty if there is already a hyphen in the
@@ -47,7 +47,7 @@ pub trait WordSplitter {
 /// ```
 /// use textwrap::{Wrapper, NoHyphenation};
 ///
-/// let wrapper = Wrapper::with_splitter(8, NoHyphenation);
+/// let wrapper = Wrapper::new(8).splitter(Box::new(NoHyphenation));
 /// assert_eq!(wrapper.wrap("foo bar-baz"), vec!["foo", "bar-baz"]);
 /// ```
 ///

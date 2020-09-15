@@ -72,8 +72,8 @@ If you enable the `hyphenation` feature, you get support for automatic
 hyphenation for [about 70 languages][patterns] via high-quality TeX
 hyphenation patterns.
 
-Your program must load the hyphenation pattern and call
-`Wrapper::with_splitter` to use it:
+Your program must load the hyphenation pattern and configure
+`Wrapper::splitter` to use it:
 
 ```rust
 use hyphenation::{Language, Load, Standard};
@@ -81,7 +81,7 @@ use textwrap::Wrapper;
 
 fn main() {
     let hyphenator = Standard::from_embedded(Language::EnglishUS).unwrap();
-    let wrapper = Wrapper::with_splitter(18, hyphenator);
+    let wrapper = Wrapper::new(18).splitter(Box::new(hyphenator));
     let text = "textwrap: a small library for wrapping text.";
     println!("{}", wrapper.fill(text))
 }
