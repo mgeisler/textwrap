@@ -1,24 +1,20 @@
-#[cfg(feature = "hyphenation")]
-use hyphenation::{Language, Load};
 use textwrap::Wrapper;
-
-#[cfg(not(feature = "hyphenation"))]
-fn new_wrapper<'a>() -> Wrapper<'a, textwrap::HyphenSplitter> {
-    Wrapper::new(0)
-}
-
-#[cfg(feature = "hyphenation")]
-fn new_wrapper<'a>() -> Wrapper<'a, hyphenation::Standard> {
-    let dictionary = hyphenation::Standard::from_embedded(Language::EnglishUS).unwrap();
-    Wrapper::with_splitter(0, dictionary)
-}
 
 fn main() {
     let example = "Memory safety without garbage collection. \
                    Concurrency without data races. \
                    Zero-cost abstractions.";
     let mut prev_lines = vec![];
-    let mut wrapper = new_wrapper();
+
+    let mut wrapper = Wrapper::new(0);
+    #[cfg(feature = "hyphenation")]
+    {
+        use hyphenation::Load;
+        let language = hyphenation::Language::EnglishUS;
+        let dictionary = hyphenation::Standard::from_embedded(language).unwrap();
+        wrapper.splitter = Box::new(dictionary);
+    }
+
     for width in 15..60 {
         wrapper.width = width;
         let lines = wrapper.wrap(example);

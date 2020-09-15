@@ -31,7 +31,7 @@
 //! fn main() {
 //!     let text = "textwrap: a small library for wrapping text.";
 //!     let dictionary = Standard::from_embedded(Language::EnglishUS).unwrap();
-//!     let wrapper = Wrapper::with_splitter(18, dictionary);
+//!     let wrapper = Wrapper::new(18).splitter(Box::new(dictionary));
 //!     println!("{}", wrapper.fill(text));
 //! }
 //!
@@ -129,8 +129,8 @@ pub use crate::splitting::{HyphenSplitter, NoHyphenation, WordSplitter};
 /// input string (where each single scan yields a single line) so that
 /// the overall time and memory complexity is O(*n*) where *n* is the
 /// length of the input string.
-#[derive(Clone, Debug)]
-pub struct Wrapper<'a, S: WordSplitter> {
+#[derive(Debug)]
+pub struct Wrapper<'a> {
     /// The width in columns at which the text will be wrapped.
     pub width: usize,
     /// Indentation used for the first line of output.
@@ -144,10 +144,15 @@ pub struct Wrapper<'a, S: WordSplitter> {
     /// The method for splitting words. If the `hyphenation` feature
     /// is enabled, you can use a `hyphenation::Standard` dictionary
     /// here to get language-aware hyphenation.
-    pub splitter: S,
+    pub splitter: Box<dyn WordSplitter>,
 }
 
-impl<'a> Wrapper<'a, HyphenSplitter> {
+/// # Builder Functionality.
+///
+/// The methods here make it easy to construct a `Wrapper` using
+/// chained method calls. Start with `Wrapper::new` and override
+/// settings as you like.
+impl<'a> Wrapper<'a> {
     /// Create a new Wrapper for wrapping at the specified width. By
     /// default, we allow words longer than `width` to be broken. A
     /// [`HyphenSplitter`] will be used by default for splitting
@@ -155,8 +160,14 @@ impl<'a> Wrapper<'a, HyphenSplitter> {
     ///
     /// [`HyphenSplitter`]: struct.HyphenSplitter.html
     /// [`WordSplitter`]: trait.WordSplitter.html
-    pub fn new(width: usize) -> Wrapper<'a, HyphenSplitter> {
-        Wrapper::with_splitter(width, HyphenSplitter)
+    pub fn new(width: usize) -> Wrapper<'a> {
+        Wrapper {
+            width: width,
+            initial_indent: "",
+            subsequent_indent: "",
+            break_words: true,
+            splitter: Box::new(HyphenSplitter),
+        }
     }
 
     /// Create a new Wrapper for wrapping text at the current terminal
@@ -177,25 +188,8 @@ impl<'a> Wrapper<'a, HyphenSplitter> {
     /// **Note:** Only available when the `terminal_size` feature is
     /// enabled.
     #[cfg(feature = "terminal_size")]
-    pub fn with_termwidth() -> Wrapper<'a, HyphenSplitter> {
+    pub fn with_termwidth() -> Wrapper<'a> {
         Wrapper::new(termwidth())
-    }
-}
-
-impl<'a, S: WordSplitter> Wrapper<'a, S> {
-    /// Use the given [`WordSplitter`] to create a new Wrapper for
-    /// wrapping at the specified width. By default, we allow words
-    /// longer than `width` to be broken.
-    ///
-    /// [`WordSplitter`]: trait.WordSplitter.html
-    pub fn with_splitter(width: usize, splitter: S) -> Wrapper<'a, S> {
-        Wrapper {
-            width: width,
-            initial_indent: "",
-            subsequent_indent: "",
-            break_words: true,
-            splitter: splitter,
-        }
     }
 
     /// Change [`self.initial_indent`]. The initial indentation is
@@ -214,7 +208,7 @@ impl<'a, S: WordSplitter> Wrapper<'a, S> {
     /// ```
     ///
     /// [`self.initial_indent`]: #structfield.initial_indent
-    pub fn initial_indent(self, indent: &'a str) -> Wrapper<'a, S> {
+    pub fn initial_indent(self, indent: &'a str) -> Wrapper<'a> {
         Wrapper {
             initial_indent: indent,
             ..self
@@ -239,7 +233,7 @@ impl<'a, S: WordSplitter> Wrapper<'a, S> {
     /// ```
     ///
     /// [`self.subsequent_indent`]: #structfield.subsequent_indent
-    pub fn subsequent_indent(self, indent: &'a str) -> Wrapper<'a, S> {
+    pub fn subsequent_indent(self, indent: &'a str) -> Wrapper<'a> {
         Wrapper {
             subsequent_indent: indent,
             ..self
@@ -251,13 +245,31 @@ impl<'a, S: WordSplitter> Wrapper<'a, S> {
     /// sticking out into the right margin.
     ///
     /// [`self.break_words`]: #structfield.break_words
-    pub fn break_words(self, setting: bool) -> Wrapper<'a, S> {
+    pub fn break_words(self, setting: bool) -> Wrapper<'a> {
         Wrapper {
             break_words: setting,
             ..self
         }
     }
 
+    /// Change [`self.splitter`]. The [`WordSplitter`] is used to fit
+    /// part of a word into the current line when wrapping text.
+    ///
+    /// [`self.splitter`]: #structfield.splitter
+    /// [`WordSplitter`]: trait.WordSplitter.html
+    pub fn splitter(self, splitter: Box<dyn WordSplitter>) -> Wrapper<'a> {
+        Wrapper {
+            splitter: splitter,
+            ..self
+        }
+    }
+}
+
+/// # Wrapping Functionality.
+///
+/// The methods here are the real meat: they take strings as input and
+/// give you word-wrapped strings as output.
+impl<'a> Wrapper<'a> {
     /// Fill a line of text at `self.width` characters.
     ///
     /// The result is a string with newlines between each line. Use
@@ -422,12 +434,12 @@ impl<'a, S: WordSplitter> Wrapper<'a, S> {
 
 /// An iterator owns a `Wrapper`.
 #[derive(Debug)]
-struct IntoWrapIter<'a, S: WordSplitter> {
-    wrapper: Wrapper<'a, S>,
+struct IntoWrapIter<'a> {
+    wrapper: Wrapper<'a>,
     inner: WrapIterImpl<'a>,
 }
 
-impl<'a, S: WordSplitter> Iterator for IntoWrapIter<'a, S> {
+impl<'a> Iterator for IntoWrapIter<'a> {
     type Item = Cow<'a, str>;
 
     fn next(&mut self) -> Option<Cow<'a, str>> {
@@ -437,12 +449,12 @@ impl<'a, S: WordSplitter> Iterator for IntoWrapIter<'a, S> {
 
 /// An iterator which borrows a `Wrapper`.
 #[derive(Debug)]
-struct WrapIter<'w, 'a: 'w, S: WordSplitter> {
-    wrapper: &'w Wrapper<'a, S>,
+struct WrapIter<'w, 'a: 'w> {
+    wrapper: &'w Wrapper<'a>,
     inner: WrapIterImpl<'a>,
 }
 
-impl<'w, 'a: 'w, S: WordSplitter> Iterator for WrapIter<'w, 'a, S> {
+impl<'w, 'a: 'w> Iterator for WrapIter<'w, 'a> {
     type Item = Cow<'a, str>;
 
     fn next(&mut self) -> Option<Cow<'a, str>> {
@@ -480,7 +492,7 @@ struct WrapIterImpl<'a> {
 }
 
 impl<'a> WrapIterImpl<'a> {
-    fn new<S: WordSplitter>(wrapper: &Wrapper<'a, S>, s: &'a str) -> WrapIterImpl<'a> {
+    fn new(wrapper: &Wrapper<'a>, s: &'a str) -> WrapIterImpl<'a> {
         WrapIterImpl {
             source: s,
             char_indices: s.char_indices(),
@@ -494,7 +506,7 @@ impl<'a> WrapIterImpl<'a> {
         }
     }
 
-    fn create_result_line<S: WordSplitter>(&self, wrapper: &Wrapper<'a, S>) -> Cow<'a, str> {
+    fn create_result_line(&self, wrapper: &Wrapper<'a>) -> Cow<'a, str> {
         if self.start == 0 {
             Cow::from(wrapper.initial_indent)
         } else {
@@ -502,7 +514,7 @@ impl<'a> WrapIterImpl<'a> {
         }
     }
 
-    fn next<S: WordSplitter>(&mut self, wrapper: &Wrapper<'a, S>) -> Option<Cow<'a, str>> {
+    fn next(&mut self, wrapper: &Wrapper<'a>) -> Option<Cow<'a, str>> {
         if self.finished {
             return None;
         }
@@ -650,7 +662,8 @@ impl<'a> WrapIterImpl<'a> {
 /// use textwrap::{Wrapper, NoHyphenation, termwidth};
 ///
 /// let width = termwidth() - 4; // Two columns on each side.
-/// let wrapper = Wrapper::with_splitter(width, NoHyphenation)
+/// let wrapper = Wrapper::new(width)
+///     .splitter(Box::new(NoHyphenation))
 ///     .initial_indent("  ")
 ///     .subsequent_indent("  ");
 /// ```
@@ -932,7 +945,7 @@ mod tests {
 
     #[test]
     fn no_hyphenation() {
-        let wrapper = Wrapper::with_splitter(8, NoHyphenation);
+        let wrapper = Wrapper::new(8).splitter(Box::new(NoHyphenation));
         assert_eq!(wrapper.wrap("foo bar-baz"), vec!["foo", "bar-baz"]);
     }
 
@@ -946,7 +959,7 @@ mod tests {
             vec!["Internatio", "nalization"]
         );
 
-        let wrapper = Wrapper::with_splitter(10, dictionary);
+        let wrapper = Wrapper::new(10).splitter(Box::new(dictionary));
         assert_eq!(
             wrapper.wrap("Internationalization"),
             vec!["Interna-", "tionaliza-", "tion"]
@@ -963,7 +976,7 @@ mod tests {
             vec!["participat", "ion is the", "key to", "success"]
         );
 
-        let wrapper = Wrapper::with_splitter(10, dictionary);
+        let wrapper = Wrapper::new(10).splitter(Box::new(dictionary));
         assert_eq!(
             wrapper.wrap("participation is the key to success"),
             vec!["participa-", "tion is the", "key to", "success"]
@@ -976,7 +989,7 @@ mod tests {
         // Test that hyphenation takes the width of the wihtespace
         // into account.
         let dictionary = Standard::from_embedded(Language::EnglishUS).unwrap();
-        let wrapper = Wrapper::with_splitter(15, dictionary);
+        let wrapper = Wrapper::new(15).splitter(Box::new(dictionary));
         assert_eq!(
             wrapper.wrap("garbage   collection"),
             vec!["garbage   col-", "lection"]
@@ -990,7 +1003,7 @@ mod tests {
         // line is borrowed.
         use std::borrow::Cow::{Borrowed, Owned};
         let dictionary = Standard::from_embedded(Language::EnglishUS).unwrap();
-        let wrapper = Wrapper::with_splitter(10, dictionary);
+        let wrapper = Wrapper::new(10).splitter(Box::new(dictionary));
         let lines = wrapper.wrap("Internationalization");
         if let Borrowed(s) = lines[0] {
             assert!(false, "should not have been borrowed: {:?}", s);
@@ -1010,7 +1023,7 @@ mod tests {
         let wrapper = Wrapper::new(8).break_words(false);
         assert_eq!(wrapper.wrap("over-caffinated"), vec!["over-", "caffinated"]);
 
-        let wrapper = Wrapper::with_splitter(8, dictionary).break_words(false);
+        let wrapper = wrapper.splitter(Box::new(dictionary));
         assert_eq!(
             wrapper.wrap("over-caffinated"),
             vec!["over-", "caffi-", "nated"]
