@@ -21,7 +21,7 @@ fn lorem_ipsum(length: usize) -> String {
 
 pub fn benchmark(c: &mut Criterion) {
     let mut group = c.benchmark_group("String lengths");
-    for length in [100, 160, 220, 280, 340, 400].iter() {
+    for length in [100, 200, 400, 800, 1600].iter() {
         let text = lorem_ipsum(*length);
         group.bench_with_input(BenchmarkId::new("fill", length), &text, |b, text| {
             b.iter(|| textwrap::fill(text, LINE_LENGTH));
