@@ -349,45 +349,6 @@ impl<'a> Wrapper<'a> {
             inner: WrapIterImpl::new(self, s),
         }
     }
-
-    /// Lazily wrap a line of text at `self.width` characters.
-    ///
-    /// The [`WordSplitter`] stored in [`self.splitter`] is used
-    /// whenever when a word is too large to fit on the current line.
-    /// By changing the field, different hyphenation strategies can be
-    /// implemented.
-    ///
-    /// # Complexities
-    ///
-    /// This method consumes the `Wrapper` and returns an iterator.
-    /// Fully processing the iterator has the same O(*n*) time
-    /// complexity as [`wrap`], where *n* is the length of the
-    /// input string.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use std::borrow::Cow::Borrowed;
-    /// use textwrap::Wrapper;
-    ///
-    /// let wrap20 = Wrapper::new(20);
-    /// let mut wrap20_iter = wrap20.into_wrap_iter("Zero-cost abstractions.");
-    /// assert_eq!(wrap20_iter.next(), Some(Borrowed("Zero-cost")));
-    /// assert_eq!(wrap20_iter.next(), Some(Borrowed("abstractions.")));
-    /// assert_eq!(wrap20_iter.next(), None);
-    /// ```
-    ///
-    /// [`self.splitter`]: #structfield.splitter
-    /// [`WordSplitter`]: trait.WordSplitter.html
-    /// [`wrap`]: #method.wrap
-    pub fn into_wrap_iter(self, s: &'a str) -> impl Iterator<Item = Cow<'a, str>> {
-        let inner = WrapIterImpl::new(&self, s);
-
-        IntoWrapIter {
-            wrapper: self,
-            inner: inner,
-        }
-    }
 }
 
 /// An iterator owns a `Wrapper`.
@@ -661,7 +622,7 @@ pub fn fill(s: &str, width: usize) -> String {
 /// This function creates a Wrapper on the fly with default settings.
 /// If you need to set a language corpus for automatic hyphenation, or
 /// need to wrap many strings, then it is suggested to create a
-/// Wrapper and call its [`wrap`] or [`into_wrap_iter`] methods.
+/// Wrapper and call its [`wrap`] method.
 ///
 /// # Examples
 ///
@@ -680,9 +641,10 @@ pub fn fill(s: &str, width: usize) -> String {
 /// ```
 ///
 /// [`wrap`]: struct.Wrapper.html#method.wrap
-/// [`into_wrap_iter`]: struct.Wrapper.html#method.into_wrap_iter
 pub fn wrap(s: &str, width: usize) -> impl Iterator<Item = Cow<'_, str>> {
-    Wrapper::new(width).into_wrap_iter(s)
+    let wrapper = Wrapper::new(width);
+    let inner = WrapIterImpl::new(&wrapper, s);
+    IntoWrapIter { wrapper, inner }
 }
 
 #[cfg(test)]
