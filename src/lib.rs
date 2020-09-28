@@ -117,14 +117,13 @@ mod splitting;
 pub use crate::splitting::{HyphenSplitter, NoHyphenation, WordSplitter};
 
 /// A Wrapper holds settings for wrapping and filling text. Use it
-/// when the convenience [`wrap_iter`], [`wrap`] and [`fill`] functions
-/// are not flexible enough.
+/// when the convenience [`wrap`] and [`fill`] functions are not
+/// flexible enough.
 ///
-/// [`wrap_iter`]: fn.wrap_iter.html
 /// [`wrap`]: fn.wrap.html
 /// [`fill`]: fn.fill.html
 ///
-/// The algorithm used by the iterator returned from the `wrap_iter`
+/// The algorithm used by the iterator returned from the `wrap`
 /// method works by doing successive partial scans over words in the
 /// input string (where each single scan yields a single line) so that
 /// the overall time and memory complexity is O(*n*) where *n* is the
@@ -277,7 +276,7 @@ impl<'a> Wrapper<'a> {
     ///
     /// # Complexities
     ///
-    /// This method simply joins the lines produced by `wrap_iter`. As
+    /// This method simply joins the lines produced by `wrap`. As
     /// such, it inherits the O(*n*) time and memory complexity where
     /// *n* is the input string length.
     ///
@@ -295,7 +294,7 @@ impl<'a> Wrapper<'a> {
         // indentation, no hyphenation).
         let mut result = String::with_capacity(s.len());
 
-        for (i, line) in self.wrap_iter(s).enumerate() {
+        for (i, line) in self.wrap(s).enumerate() {
             if i > 0 {
                 result.push('\n');
             }
@@ -303,47 +302,6 @@ impl<'a> Wrapper<'a> {
         }
 
         result
-    }
-
-    /// Wrap a line of text at `self.width` characters.
-    ///
-    /// # Complexities
-    ///
-    /// This method simply collects the lines produced by `wrap_iter`.
-    /// As such, it inherits the O(*n*) overall time and memory
-    /// complexity where *n* is the input string length.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use textwrap::Wrapper;
-    ///
-    /// let wrap15 = Wrapper::new(15);
-    /// assert_eq!(wrap15.wrap("Concurrency without data races."),
-    ///            vec!["Concurrency",
-    ///                 "without data",
-    ///                 "races."]);
-    ///
-    /// let wrap20 = Wrapper::new(20);
-    /// assert_eq!(wrap20.wrap("Concurrency without data races."),
-    ///            vec!["Concurrency without",
-    ///                 "data races."]);
-    /// ```
-    ///
-    /// Notice that newlines in the input are preserved. This means
-    /// that they force a line break, regardless of how long the
-    /// current line is:
-    ///
-    /// ```
-    /// use textwrap::Wrapper;
-    ///
-    /// let wrapper = Wrapper::new(40);
-    /// assert_eq!(wrapper.wrap("First line.\nSecond line."),
-    ///            vec!["First line.", "Second line."]);
-    /// ```
-    ///
-    pub fn wrap(&self, s: &'a str) -> Vec<Cow<'a, str>> {
-        self.wrap_iter(s).collect::<Vec<_>>()
     }
 
     /// Lazily wrap a line of text at `self.width` characters.
@@ -372,20 +330,20 @@ impl<'a> Wrapper<'a> {
     /// use textwrap::Wrapper;
     ///
     /// let wrap20 = Wrapper::new(20);
-    /// let mut wrap20_iter = wrap20.wrap_iter("Zero-cost abstractions.");
+    /// let mut wrap20_iter = wrap20.wrap("Zero-cost abstractions.");
     /// assert_eq!(wrap20_iter.next(), Some(Borrowed("Zero-cost")));
     /// assert_eq!(wrap20_iter.next(), Some(Borrowed("abstractions.")));
     /// assert_eq!(wrap20_iter.next(), None);
     ///
     /// let wrap25 = Wrapper::new(25);
-    /// let mut wrap25_iter = wrap25.wrap_iter("Zero-cost abstractions.");
+    /// let mut wrap25_iter = wrap25.wrap("Zero-cost abstractions.");
     /// assert_eq!(wrap25_iter.next(), Some(Borrowed("Zero-cost abstractions.")));
     /// assert_eq!(wrap25_iter.next(), None);
     /// ```
     ///
     /// [`self.splitter`]: #structfield.splitter
     /// [`WordSplitter`]: trait.WordSplitter.html
-    pub fn wrap_iter<'w>(&'w self, s: &'a str) -> impl Iterator<Item = Cow<'a, str>> + 'w {
+    pub fn wrap<'w>(&'w self, s: &'a str) -> impl Iterator<Item = Cow<'a, str>> + 'w {
         WrapIter {
             wrapper: self,
             inner: WrapIterImpl::new(self, s),
@@ -403,7 +361,7 @@ impl<'a> Wrapper<'a> {
     ///
     /// This method consumes the `Wrapper` and returns an iterator.
     /// Fully processing the iterator has the same O(*n*) time
-    /// complexity as [`wrap_iter`], where *n* is the length of the
+    /// complexity as [`wrap`], where *n* is the length of the
     /// input string.
     ///
     /// # Examples
@@ -421,7 +379,7 @@ impl<'a> Wrapper<'a> {
     ///
     /// [`self.splitter`]: #structfield.splitter
     /// [`WordSplitter`]: trait.WordSplitter.html
-    /// [`wrap_iter`]: #method.wrap_iter
+    /// [`wrap`]: #method.wrap
     pub fn into_wrap_iter(self, s: &'a str) -> impl Iterator<Item = Cow<'a, str>> {
         let inner = WrapIterImpl::new(&self, s);
 
@@ -678,8 +636,7 @@ pub fn termwidth() -> usize {
 /// Fill a line of text at `width` characters.
 ///
 /// The result is a string with newlines between each line. Use
-/// [`wrap`] if you need access to the individual lines or
-/// [`wrap_iter`] for its iterator counterpart.
+/// [`wrap`] if you need access to the individual lines.
 ///
 /// ```
 /// use textwrap::fill;
@@ -694,41 +651,9 @@ pub fn termwidth() -> usize {
 /// and call its [`fill` method].
 ///
 /// [`wrap`]: fn.wrap.html
-/// [`wrap_iter`]: fn.wrap_iter.html
 /// [`fill` method]: struct.Wrapper.html#method.fill
 pub fn fill(s: &str, width: usize) -> String {
     Wrapper::new(width).fill(s)
-}
-
-/// Wrap a line of text at `width` characters.
-///
-/// This function creates a Wrapper on the fly with default settings.
-/// If you need to set a language corpus for automatic hyphenation, or
-/// need to wrap many strings, then it is suggested to create a Wrapper
-/// and call its [`wrap` method].
-///
-/// The result is a vector of strings. Use [`wrap_iter`] if you need an
-/// iterator version.
-///
-/// # Examples
-///
-/// ```
-/// use textwrap::wrap;
-///
-/// assert_eq!(wrap("Concurrency without data races.", 15),
-///            vec!["Concurrency",
-///                 "without data",
-///                 "races."]);
-///
-/// assert_eq!(wrap("Concurrency without data races.", 20),
-///            vec!["Concurrency without",
-///                 "data races."]);
-/// ```
-///
-/// [`wrap_iter`]: fn.wrap_iter.html
-/// [`wrap` method]: struct.Wrapper.html#method.wrap
-pub fn wrap(s: &str, width: usize) -> Vec<Cow<'_, str>> {
-    Wrapper::new(width).wrap(s)
 }
 
 /// Lazily wrap a line of text at `width` characters.
@@ -736,27 +661,27 @@ pub fn wrap(s: &str, width: usize) -> Vec<Cow<'_, str>> {
 /// This function creates a Wrapper on the fly with default settings.
 /// If you need to set a language corpus for automatic hyphenation, or
 /// need to wrap many strings, then it is suggested to create a
-/// Wrapper and call its [`wrap_iter`] or [`into_wrap_iter`] methods.
+/// Wrapper and call its [`wrap`] or [`into_wrap_iter`] methods.
 ///
 /// # Examples
 ///
 /// ```
 /// use std::borrow::Cow::Borrowed;
-/// use textwrap::wrap_iter;
+/// use textwrap::wrap;
 ///
-/// let mut wrap20_iter = wrap_iter("Zero-cost abstractions.", 20);
+/// let mut wrap20_iter = wrap("Zero-cost abstractions.", 20);
 /// assert_eq!(wrap20_iter.next(), Some(Borrowed("Zero-cost")));
 /// assert_eq!(wrap20_iter.next(), Some(Borrowed("abstractions.")));
 /// assert_eq!(wrap20_iter.next(), None);
 ///
-/// let mut wrap25_iter = wrap_iter("Zero-cost abstractions.", 25);
+/// let mut wrap25_iter = wrap("Zero-cost abstractions.", 25);
 /// assert_eq!(wrap25_iter.next(), Some(Borrowed("Zero-cost abstractions.")));
 /// assert_eq!(wrap25_iter.next(), None);
 /// ```
 ///
-/// [`wrap_iter`]: struct.Wrapper.html#method.wrap_iter
+/// [`wrap`]: struct.Wrapper.html#method.wrap
 /// [`into_wrap_iter`]: struct.Wrapper.html#method.into_wrap_iter
-pub fn wrap_iter(s: &str, width: usize) -> impl Iterator<Item = Cow<'_, str>> {
+pub fn wrap(s: &str, width: usize) -> impl Iterator<Item = Cow<'_, str>> {
     Wrapper::new(width).into_wrap_iter(s)
 }
 
@@ -766,49 +691,55 @@ mod tests {
     #[cfg(feature = "hyphenation")]
     use hyphenation::{Language, Load, Standard};
 
+    macro_rules! assert_iter_eq {
+        ($left:expr, $right:expr) => {
+            assert_eq!($left.collect::<Vec<_>>(), $right);
+        };
+    }
+
     #[test]
     fn no_wrap() {
-        assert_eq!(wrap("foo", 10), vec!["foo"]);
+        assert_iter_eq!(wrap("foo", 10), vec!["foo"]);
     }
 
     #[test]
     fn simple() {
-        assert_eq!(wrap("foo bar baz", 5), vec!["foo", "bar", "baz"]);
+        assert_iter_eq!(wrap("foo bar baz", 5), vec!["foo", "bar", "baz"]);
     }
 
     #[test]
     fn multi_word_on_line() {
-        assert_eq!(wrap("foo bar baz", 10), vec!["foo bar", "baz"]);
+        assert_iter_eq!(wrap("foo bar baz", 10), vec!["foo bar", "baz"]);
     }
 
     #[test]
     fn long_word() {
-        assert_eq!(wrap("foo", 0), vec!["f", "o", "o"]);
+        assert_iter_eq!(wrap("foo", 0), vec!["f", "o", "o"]);
     }
 
     #[test]
     fn long_words() {
-        assert_eq!(wrap("foo bar", 0), vec!["f", "o", "o", "b", "a", "r"]);
+        assert_iter_eq!(wrap("foo bar", 0), vec!["f", "o", "o", "b", "a", "r"]);
     }
 
     #[test]
     fn max_width() {
-        assert_eq!(wrap("foo bar", usize::max_value()), vec!["foo bar"]);
+        assert_iter_eq!(wrap("foo bar", usize::max_value()), vec!["foo bar"]);
     }
 
     #[test]
     fn leading_whitespace() {
-        assert_eq!(wrap("  foo bar", 6), vec!["  foo", "bar"]);
+        assert_iter_eq!(wrap("  foo bar", 6), vec!["  foo", "bar"]);
     }
 
     #[test]
     fn trailing_whitespace() {
-        assert_eq!(wrap("foo bar  ", 6), vec!["foo", "bar  "]);
+        assert_iter_eq!(wrap("foo bar  ", 6), vec!["foo", "bar  "]);
     }
 
     #[test]
     fn interior_whitespace() {
-        assert_eq!(wrap("foo:   bar baz", 10), vec!["foo:   bar", "baz"]);
+        assert_iter_eq!(wrap("foo:   bar baz", 10), vec!["foo:   bar", "baz"]);
     }
 
     #[test]
@@ -817,14 +748,14 @@ mod tests {
         // gets too long and is broken, the first word starts in
         // column zero and is not indented. The line before might end
         // up with trailing whitespace.
-        assert_eq!(wrap("foo               bar", 5), vec!["foo", "bar"]);
+        assert_iter_eq!(wrap("foo               bar", 5), vec!["foo", "bar"]);
     }
 
     #[test]
     fn issue_99() {
         // We did not reset the in_whitespace flag correctly and did
         // not handle single-character words after a line break.
-        assert_eq!(
+        assert_iter_eq!(
             wrap("aaabbbccc x yyyzzzwww", 9),
             vec!["aaabbbccc", "x", "yyyzzzwww"]
         );
@@ -834,13 +765,13 @@ mod tests {
     fn issue_129() {
         // The dash is an em-dash which takes up four bytes. We used
         // to panic since we tried to index into the character.
-        assert_eq!(wrap("x – x", 1), vec!["x", "–", "x"]);
+        assert_iter_eq!(wrap("x – x", 1), vec!["x", "–", "x"]);
     }
 
     #[test]
     fn wide_character_handling() {
-        assert_eq!(wrap("Hello, World!", 15), vec!["Hello, World!"]);
-        assert_eq!(
+        assert_iter_eq!(wrap("Hello, World!", 15), vec!["Hello, World!"]);
+        assert_iter_eq!(
             wrap("Ｈｅｌｌｏ, Ｗｏｒｌｄ!", 15),
             vec!["Ｈｅｌｌｏ,", "Ｗｏｒｌｄ!"]
         );
@@ -861,35 +792,35 @@ mod tests {
     #[test]
     fn indent_multiple_lines() {
         let wrapper = Wrapper::new(6).initial_indent("* ").subsequent_indent("  ");
-        assert_eq!(wrapper.wrap("foo bar baz"), vec!["* foo", "  bar", "  baz"]);
+        assert_iter_eq!(wrapper.wrap("foo bar baz"), vec!["* foo", "  bar", "  baz"]);
     }
 
     #[test]
     fn indent_break_words() {
         let wrapper = Wrapper::new(5).initial_indent("* ").subsequent_indent("  ");
-        assert_eq!(wrapper.wrap("foobarbaz"), vec!["* foo", "  bar", "  baz"]);
+        assert_iter_eq!(wrapper.wrap("foobarbaz"), vec!["* foo", "  bar", "  baz"]);
     }
 
     #[test]
     fn hyphens() {
-        assert_eq!(wrap("foo-bar", 5), vec!["foo-", "bar"]);
+        assert_iter_eq!(wrap("foo-bar", 5), vec!["foo-", "bar"]);
     }
 
     #[test]
     fn trailing_hyphen() {
         let wrapper = Wrapper::new(5).break_words(false);
-        assert_eq!(wrapper.wrap("foobar-"), vec!["foobar-"]);
+        assert_iter_eq!(wrapper.wrap("foobar-"), vec!["foobar-"]);
     }
 
     #[test]
     fn multiple_hyphens() {
-        assert_eq!(wrap("foo-bar-baz", 5), vec!["foo-", "bar-", "baz"]);
+        assert_iter_eq!(wrap("foo-bar-baz", 5), vec!["foo-", "bar-", "baz"]);
     }
 
     #[test]
     fn hyphens_flag() {
         let wrapper = Wrapper::new(5).break_words(false);
-        assert_eq!(
+        assert_iter_eq!(
             wrapper.wrap("The --foo-bar flag."),
             vec!["The", "--foo-", "bar", "flag."]
         );
@@ -898,39 +829,39 @@ mod tests {
     #[test]
     fn repeated_hyphens() {
         let wrapper = Wrapper::new(4).break_words(false);
-        assert_eq!(wrapper.wrap("foo--bar"), vec!["foo--bar"]);
+        assert_iter_eq!(wrapper.wrap("foo--bar"), vec!["foo--bar"]);
     }
 
     #[test]
     fn hyphens_alphanumeric() {
-        assert_eq!(wrap("Na2-CH4", 5), vec!["Na2-", "CH4"]);
+        assert_iter_eq!(wrap("Na2-CH4", 5), vec!["Na2-", "CH4"]);
     }
 
     #[test]
     fn hyphens_non_alphanumeric() {
         let wrapper = Wrapper::new(5).break_words(false);
-        assert_eq!(wrapper.wrap("foo(-)bar"), vec!["foo(-)bar"]);
+        assert_iter_eq!(wrapper.wrap("foo(-)bar"), vec!["foo(-)bar"]);
     }
 
     #[test]
     fn multiple_splits() {
-        assert_eq!(wrap("foo-bar-baz", 9), vec!["foo-bar-", "baz"]);
+        assert_iter_eq!(wrap("foo-bar-baz", 9), vec!["foo-bar-", "baz"]);
     }
 
     #[test]
     fn forced_split() {
         let wrapper = Wrapper::new(5).break_words(false);
-        assert_eq!(wrapper.wrap("foobar-baz"), vec!["foobar-", "baz"]);
+        assert_iter_eq!(wrapper.wrap("foobar-baz"), vec!["foobar-", "baz"]);
     }
 
     #[test]
     fn multiple_unbroken_words_issue_193() {
         let wrapper = Wrapper::new(3).break_words(false);
-        assert_eq!(
+        assert_iter_eq!(
             wrapper.wrap("small large tiny"),
             vec!["small", "large", "tiny"]
         );
-        assert_eq!(
+        assert_iter_eq!(
             wrapper.wrap("small  large   tiny"),
             vec!["small", "large", "tiny"]
         );
@@ -939,14 +870,14 @@ mod tests {
     #[test]
     fn very_narrow_lines_issue_193() {
         let wrapper = Wrapper::new(1).break_words(false);
-        assert_eq!(wrapper.wrap("fooo x y"), vec!["fooo", "x", "y"]);
-        assert_eq!(wrapper.wrap("fooo   x     y"), vec!["fooo", "x", "y"]);
+        assert_iter_eq!(wrapper.wrap("fooo x y"), vec!["fooo", "x", "y"]);
+        assert_iter_eq!(wrapper.wrap("fooo   x     y"), vec!["fooo", "x", "y"]);
     }
 
     #[test]
     fn no_hyphenation() {
         let wrapper = Wrapper::new(8).splitter(Box::new(NoHyphenation));
-        assert_eq!(wrapper.wrap("foo bar-baz"), vec!["foo", "bar-baz"]);
+        assert_iter_eq!(wrapper.wrap("foo bar-baz"), vec!["foo", "bar-baz"]);
     }
 
     #[test]
@@ -954,13 +885,13 @@ mod tests {
     fn auto_hyphenation() {
         let dictionary = Standard::from_embedded(Language::EnglishUS).unwrap();
         let wrapper = Wrapper::new(10);
-        assert_eq!(
+        assert_iter_eq!(
             wrapper.wrap("Internationalization"),
             vec!["Internatio", "nalization"]
         );
 
         let wrapper = Wrapper::new(10).splitter(Box::new(dictionary));
-        assert_eq!(
+        assert_iter_eq!(
             wrapper.wrap("Internationalization"),
             vec!["Interna-", "tionaliza-", "tion"]
         );
@@ -971,13 +902,13 @@ mod tests {
     fn auto_hyphenation_issue_158() {
         let dictionary = Standard::from_embedded(Language::EnglishUS).unwrap();
         let wrapper = Wrapper::new(10);
-        assert_eq!(
+        assert_iter_eq!(
             wrapper.wrap("participation is the key to success"),
             vec!["participat", "ion is the", "key to", "success"]
         );
 
         let wrapper = Wrapper::new(10).splitter(Box::new(dictionary));
-        assert_eq!(
+        assert_iter_eq!(
             wrapper.wrap("participation is the key to success"),
             vec!["participa-", "tion is the", "key to", "success"]
         );
@@ -990,7 +921,7 @@ mod tests {
         // into account.
         let dictionary = Standard::from_embedded(Language::EnglishUS).unwrap();
         let wrapper = Wrapper::new(15).splitter(Box::new(dictionary));
-        assert_eq!(
+        assert_iter_eq!(
             wrapper.wrap("garbage   collection"),
             vec!["garbage   col-", "lection"]
         );
@@ -1004,7 +935,7 @@ mod tests {
         use std::borrow::Cow::{Borrowed, Owned};
         let dictionary = Standard::from_embedded(Language::EnglishUS).unwrap();
         let wrapper = Wrapper::new(10).splitter(Box::new(dictionary));
-        let lines = wrapper.wrap("Internationalization");
+        let lines = wrapper.wrap("Internationalization").collect::<Vec<_>>();
         if let Borrowed(s) = lines[0] {
             assert!(false, "should not have been borrowed: {:?}", s);
         }
@@ -1021,10 +952,10 @@ mod tests {
     fn auto_hyphenation_with_hyphen() {
         let dictionary = Standard::from_embedded(Language::EnglishUS).unwrap();
         let wrapper = Wrapper::new(8).break_words(false);
-        assert_eq!(wrapper.wrap("over-caffinated"), vec!["over-", "caffinated"]);
+        assert_iter_eq!(wrapper.wrap("over-caffinated"), vec!["over-", "caffinated"]);
 
         let wrapper = wrapper.splitter(Box::new(dictionary));
-        assert_eq!(
+        assert_iter_eq!(
             wrapper.wrap("over-caffinated"),
             vec!["over-", "caffi-", "nated"]
         );
@@ -1032,17 +963,17 @@ mod tests {
 
     #[test]
     fn break_words() {
-        assert_eq!(wrap("foobarbaz", 3), vec!["foo", "bar", "baz"]);
+        assert_iter_eq!(wrap("foobarbaz", 3), vec!["foo", "bar", "baz"]);
     }
 
     #[test]
     fn break_words_wide_characters() {
-        assert_eq!(wrap("Ｈｅｌｌｏ", 5), vec!["Ｈｅ", "ｌｌ", "ｏ"]);
+        assert_iter_eq!(wrap("Ｈｅｌｌｏ", 5), vec!["Ｈｅ", "ｌｌ", "ｏ"]);
     }
 
     #[test]
     fn break_words_zero_width() {
-        assert_eq!(wrap("foobar", 0), vec!["f", "o", "o", "b", "a", "r"]);
+        assert_iter_eq!(wrap("foobar", 0), vec!["f", "o", "o", "b", "a", "r"]);
     }
 
     #[test]

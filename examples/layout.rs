@@ -17,7 +17,7 @@ fn main() {
 
     for width in 15..60 {
         wrapper.width = width;
-        let lines = wrapper.wrap(example);
+        let lines = wrapper.wrap(example).collect::<Vec<_>>();
         if lines != prev_lines {
             let title = format!(" Width: {} ", width);
             println!(".{:-^1$}.", title, width + 2);
