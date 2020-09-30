@@ -101,7 +101,7 @@ mod unix_only {
         )?;
         row += 2;
 
-        let mut lines = wrap(text, options).collect::<Vec<_>>();
+        let mut lines = wrap(text, options);
         if let Some(line) = lines.last() {
             // If `text` ends with a newline, the final wrapped line
             // contains this newline. This will in turn leave the
