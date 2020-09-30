@@ -23,12 +23,13 @@ pub fn benchmark(c: &mut Criterion) {
     let mut group = c.benchmark_group("String lengths");
     for length in [100, 200, 400, 800, 1600].iter() {
         let text = lorem_ipsum(*length);
-        let mut wrapper = textwrap::Wrapper::new(LINE_LENGTH);
+        let mut options = textwrap::Options::new(LINE_LENGTH);
         group.bench_with_input(BenchmarkId::new("fill", length), &text, |b, text| {
-            b.iter(|| wrapper.fill(text));
+            b.iter(|| textwrap::fill(text, &options));
         });
-        group.bench_with_input(BenchmarkId::new("wrap", length), &text, |b, text| {
-            b.iter(|| wrapper.wrap(text));
+
+        group.bench_with_input(BenchmarkId::new("fill_usize", length), &text, |b, text| {
+            b.iter(|| textwrap::fill(text, LINE_LENGTH));
         });
 
         #[cfg(feature = "hyphenation")]
@@ -38,9 +39,9 @@ pub fn benchmark(c: &mut Criterion) {
                 .join("benches")
                 .join("la.standard.bincode");
             let dictionary = Standard::from_path(Language::Latin, &path).unwrap();
-            wrapper.splitter = Box::new(dictionary);
+            options.splitter = Box::new(dictionary);
             group.bench_with_input(BenchmarkId::new("hyphenation", length), &text, |b, text| {
-                b.iter(|| wrapper.fill(text));
+                b.iter(|| textwrap::fill(text, &options));
             });
         }
     }

@@ -7,10 +7,10 @@
 
 /// An interface for splitting words.
 ///
-/// When the [`wrap_iter`] method will try to fit text into a line, it
-/// will eventually find a word that it too large the current text
-/// width. It will then call the currently configured `WordSplitter` to
-/// have it attempt to split the word into smaller parts. This trait
+/// When the [`wrap`] function tries to fit text into a line, it will
+/// eventually find a word that it too large the current text width.
+/// It will then call the currently configured `WordSplitter` to have
+/// it attempt to split the word into smaller parts. This trait
 /// describes that functionality via the [`split`] method.
 ///
 /// If the `textwrap` crate has been compiled with the `hyphenation`
@@ -19,7 +19,7 @@
 /// language-aware hyphenation. See the [`hyphenation` documentation]
 /// for details.
 ///
-/// [`wrap_iter`]: ../struct.Wrapper.html#method.wrap_iter
+/// [`wrap`]: ../fn.wrap.html
 /// [`split`]: #tymethod.split
 /// [`hyphenation` documentation]: https://docs.rs/hyphenation/
 pub trait WordSplitter: std::fmt::Debug {
@@ -41,17 +41,18 @@ pub trait WordSplitter: std::fmt::Debug {
     fn split<'w>(&self, word: &'w str) -> Vec<(&'w str, &'w str, &'w str)>;
 }
 
-/// Use this as a [`Wrapper.splitter`] to avoid any kind of
+/// Use this as a [`Options.splitter`] to avoid any kind of
 /// hyphenation:
 ///
 /// ```
-/// use textwrap::{Wrapper, NoHyphenation};
+/// use textwrap::{wrap, Options, NoHyphenation};
 ///
-/// let wrapper = Wrapper::new(8).splitter(Box::new(NoHyphenation));
-/// assert_eq!(wrapper.wrap("foo bar-baz"), vec!["foo", "bar-baz"]);
+/// let options = Options::new(8).splitter(Box::new(NoHyphenation));
+/// assert_eq!(wrap("foo bar-baz", &options).collect::<Vec<_>>(),
+///            vec!["foo", "bar-baz"]);
 /// ```
 ///
-/// [`Wrapper.splitter`]: ../struct.Wrapper.html#structfield.splitter
+/// [`Options.splitter`]: ../struct.Options.html#structfield.splitter
 #[derive(Clone, Debug)]
 pub struct NoHyphenation;
 
@@ -67,12 +68,12 @@ impl WordSplitter for NoHyphenation {
 /// hyphens only.
 ///
 /// You probably don't need to use this type since it's already used
-/// by default by `Wrapper::new`.
+/// by default by `Options::new`.
 #[derive(Clone, Debug)]
 pub struct HyphenSplitter;
 
 /// `HyphenSplitter` is the default `WordSplitter` used by
-/// `Wrapper::new`. It will split words on any existing hyphens in the
+/// `Options::new`. It will split words on any existing hyphens in the
 /// word.
 ///
 /// It will only use hyphens that are surrounded by alphanumeric

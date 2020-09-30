@@ -1,5 +1,5 @@
 #[cfg(feature = "terminal_size")]
-use textwrap::Wrapper;
+use textwrap::{fill, Options};
 
 #[cfg(not(feature = "terminal_size"))]
 fn main() {
@@ -13,21 +13,21 @@ fn main() {
                    Zero-cost abstractions.";
 
     #[cfg(not(feature = "hyphenation"))]
-    let (msg, wrapper) = ("without hyphenation", Wrapper::with_termwidth());
+    let (msg, options) = ("without hyphenation", Options::with_termwidth());
 
     #[cfg(feature = "hyphenation")]
     use hyphenation::Load;
 
     #[cfg(feature = "hyphenation")]
-    let (msg, wrapper) = (
+    let (msg, options) = (
         "with hyphenation",
-        Wrapper::with_termwidth().splitter(Box::new(
+        Options::with_termwidth().splitter(Box::new(
             hyphenation::Standard::from_embedded(hyphenation::Language::EnglishUS).unwrap(),
         )),
     );
 
-    println!("Formatted {} in {} columns:", msg, wrapper.width);
+    println!("Formatted {} in {} columns:", msg, options.width);
     println!("----");
-    println!("{}", wrapper.fill(example));
+    println!("{}", fill(example, &options));
     println!("----");
 }

@@ -73,17 +73,17 @@ hyphenation for [about 70 languages][patterns] via high-quality TeX
 hyphenation patterns.
 
 Your program must load the hyphenation pattern and configure
-`Wrapper::splitter` to use it:
+`Options::splitter` to use it:
 
 ```rust
 use hyphenation::{Language, Load, Standard};
-use textwrap::Wrapper;
+use textwrap::Options;
 
 fn main() {
     let hyphenator = Standard::from_embedded(Language::EnglishUS).unwrap();
-    let wrapper = Wrapper::new(18).splitter(Box::new(hyphenator));
+    let options = Options::new(18).splitter(Box::new(hyphenator));
     let text = "textwrap: a small library for wrapping text.";
-    println!("{}", wrapper.fill(text))
+    println!("{}", fill_with(text, &options);
 }
 ```
 
