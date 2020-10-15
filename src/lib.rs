@@ -631,14 +631,25 @@ pub fn fill<T: WrapOptions>(text: &str, options: T) -> String {
     result
 }
 
+/// Wrap a line of text at `width` characters.
+///
+/// The result is an iterator yielding individual lines. Use the
+/// [`fill`] function if you need a `String` instead.
+///
 /// The easiest way to use this function is to pass an integer for
 /// `options`:
+///
+/// ```
+/// use textwrap::wrap;
+///
 /// let lines = wrap("Memory safety without garbage collection.", 15);
 /// assert_eq!(lines.collect::<Vec<_>>(), &[
 ///     "Memory safety",
 ///     "without garbage",
 ///     "collection.",
 /// ]);
+/// ```
+///
 /// If you need to customize the wrapping, you can pass an [`Options`]
 /// instead of an `usize`:
 ///
@@ -679,6 +690,8 @@ pub fn fill<T: WrapOptions>(text: &str, options: T) -> String {
 ///     "[Owned]    ....long.",
 /// ]);
 /// ```
+///
+/// [`fill`]: fn.fill.html
 pub fn wrap<T: WrapOptions>(text: &str, options: T) -> impl Iterator<Item = Cow<'_, str>> {
     WrapIter::new(options, text)
 }
