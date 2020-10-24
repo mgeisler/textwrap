@@ -33,6 +33,21 @@ pub trait WordSplitter: std::fmt::Debug {
     fn split_points(&self, word: &str) -> Vec<usize>;
 }
 
+impl WordSplitter for Box<dyn WordSplitter> {
+    fn split_points(&self, word: &str) -> Vec<usize> {
+        use std::ops::Deref;
+        self.deref().split_points(word)
+    }
+}
+/* Alternative, also adds impls for specific Box<S> i.e. Box<HyphenSplitter>
+impl<S: WordSplitter + ?Sized> WordSplitter for Box<S> {
+    fn split<'w>(&self, word: &'w str) -> Vec<(&'w str, &'w str, &'w str)> {
+        use std::ops::Deref;
+        self.deref().split(word)
+    }
+}
+*/
+
 /// Use this as a [`Options.splitter`] to avoid any kind of
 /// hyphenation:
 ///

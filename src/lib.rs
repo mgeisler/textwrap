@@ -126,8 +126,8 @@ pub trait WrapOptions {
 }
 
 /// Holds settings for wrapping and filling text.
-#[derive(Debug)]
-pub struct Options<'a> {
+#[derive(Debug, Clone)]
+pub struct Options<'a, S = Box<dyn WordSplitter>> {
     /// The width in columns at which the text will be wrapped.
     pub width: usize,
     /// Indentation used for the first line of output.
@@ -141,7 +141,7 @@ pub struct Options<'a> {
     /// The method for splitting words. If the `hyphenation` feature
     /// is enabled, you can use a `hyphenation::Standard` dictionary
     /// here to get language-aware hyphenation.
-    pub splitter: Box<dyn WordSplitter>,
+    pub splitter: S,
 }
 
 /// Allows using an `Options` with [`wrap`] and [`fill`]:
@@ -159,7 +159,7 @@ pub struct Options<'a> {
 ///
 /// [`wrap`]: fn.wrap.html
 /// [`fill`]: fn.fill.html
-impl WrapOptions for &Options<'_> {
+impl<S: WordSplitter> WrapOptions for &Options<'_, S> {
     #[inline]
     fn width(&self) -> usize {
         self.width
@@ -220,15 +220,16 @@ impl WrapOptions for usize {
     }
 }
 
+/// Constructors for boxed Options, specifically.
 impl<'a> Options<'a> {
-    /// Creates a new `Options` with the specified width. Equivalent
-    /// to
+    /// Creates a new `Options` with the specified width and dynamic dispatch
+    /// using the `HyphenSplitter`. Equivalent to
     ///
     /// ```
-    /// # use textwrap::{Options, HyphenSplitter};
+    /// # use textwrap::{Options, HyphenSplitter, WordSplitter};
     /// # let width = 80;
     /// # let actual = Options::new(width);
-    /// # let expected =
+    /// # let expected: Options =
     /// Options {
     ///     width: width,
     ///     initial_indent: "",
@@ -241,15 +242,18 @@ impl<'a> Options<'a> {
     /// # assert_eq!(actual.initial_indent, expected.initial_indent);
     /// # assert_eq!(actual.subsequent_indent, expected.subsequent_indent);
     /// # assert_eq!(actual.break_words, expected.break_words);
+    /// # let expected_coerced: Options<'static, Box<dyn WordSplitter>> = expected;
     /// ```
-    pub fn new(width: usize) -> Options<'static> {
-        Options {
-            width: width,
-            initial_indent: "",
-            subsequent_indent: "",
-            break_words: true,
-            splitter: Box::new(HyphenSplitter),
-        }
+    ///
+    /// Dynamic dispatch means here, that the splitter is stored in a
+    /// `Box<dyn WordSplitter>`, which allows to even change the splitter's
+    /// inner type without changing the type of this struct. If you instead
+    /// need more control of the type of the splitter, there is also the
+    /// `with_splitter` constructor, which allows you to specify a precise
+    /// splitter without the boxing.
+    ///
+    pub fn new(width: usize) -> Self {
+        Options::with_splitter(width, Box::new(HyphenSplitter))
     }
 
     /// Creates a new `Options` with `width` set to the current
@@ -270,10 +274,138 @@ impl<'a> Options<'a> {
     /// **Note:** Only available when the `terminal_size` feature is
     /// enabled.
     #[cfg(feature = "terminal_size")]
-    pub fn with_termwidth() -> Options<'static> {
-        Options::new(termwidth())
+    pub fn with_termwidth() -> Self {
+        Self::new(termwidth())
     }
+}
 
+impl<'a, S> Options<'a, S> {
+    /// Creates a new `Options` with the specified width and splitter. Equivalent
+    /// to
+    ///
+    /// ```
+    /// # use textwrap::{Options, NoHyphenation};
+    /// # const splitter: NoHyphenation = NoHyphenation;
+    /// # const width: usize = 80;
+    /// # const actual: Options<'static, NoHyphenation> = Options::with_splitter(width, splitter);
+    /// # let expected =
+    /// Options {
+    ///     width: width,
+    ///     initial_indent: "",
+    ///     subsequent_indent: "",
+    ///     break_words: true,
+    ///     splitter: splitter,
+    /// }
+    /// # ;
+    /// # assert_eq!(actual.width, expected.width);
+    /// # assert_eq!(actual.initial_indent, expected.initial_indent);
+    /// # assert_eq!(actual.subsequent_indent, expected.subsequent_indent);
+    /// # assert_eq!(actual.break_words, expected.break_words);
+    /// # let expected_coerced: Options<'static, NoHyphenation> = expected;
+    /// ```
+    ///
+    /// This constructor allows to specify the precise splitter to be used, and
+    /// let it stored as is in the struct, without the need for a box, unlike
+    /// `new`. However, this function can still be used with a box, for
+    /// instance, to obtain a boxed `Options` with a different splitter:
+    ///
+    /// ```
+    /// use textwrap::{Options, NoHyphenation};
+    /// # use textwrap::{WordSplitter, HyphenSplitter};
+    /// # const width: usize = 80;
+    /// # let expected: Options =
+    /// # Options {
+    /// #    width: width,
+    /// #    initial_indent: "",
+    /// #    subsequent_indent: "",
+    /// #    break_words: true,
+    /// #    splitter: Box::new(NoHyphenation),
+    /// # }
+    /// # ;
+    ///
+    /// // This opt has the same type as returned by `new`, but it contains a
+    /// // `NoHyphenation` splitter
+    /// let mut opt: Options = Options::with_splitter(width, Box::new(NoHyphenation));
+    /// #
+    /// # let actual = opt;
+    /// # assert_eq!(actual.width, expected.width);
+    /// # assert_eq!(actual.initial_indent, expected.initial_indent);
+    /// # assert_eq!(actual.subsequent_indent, expected.subsequent_indent);
+    /// # assert_eq!(actual.break_words, expected.break_words);
+    /// # let expected_coerced: Options<Box<dyn WordSplitter>> = expected;
+    ///
+    /// // Thus, it can be overridden.
+    /// opt = Options::new(width);
+    /// // Now, containing a `HyphenSplitter` instead.
+    /// #
+    /// # let expected: Options =
+    /// # Options {
+    /// #    width: width,
+    /// #    initial_indent: "",
+    /// #    subsequent_indent: "",
+    /// #    break_words: true,
+    /// #    splitter: Box::new(HyphenSplitter),
+    /// # }
+    /// # ;
+    /// # let actual = opt;
+    /// # assert_eq!(actual.width, expected.width);
+    /// # assert_eq!(actual.initial_indent, expected.initial_indent);
+    /// # assert_eq!(actual.subsequent_indent, expected.subsequent_indent);
+    /// # assert_eq!(actual.break_words, expected.break_words);
+    /// # let expected_coerced: Options<Box<dyn WordSplitter>> = expected;
+    /// ```
+    ///
+    /// Since the splitter is given by value, which determines the generic
+    /// type parameter, it can be used to produce both an `Options` with static
+    /// and dynamic dispatch, respectively.
+    /// While dynamic dispatch allows to change the type of the inner splitter
+    /// at run time as seen above, static dispatch especially can store the splitter
+    /// directly, without the need for a box. This in turn allows it to be used
+    /// in constant and static context:
+    ///
+    /// ```
+    /// use textwrap::{Options, HyphenSplitter};
+    /// # use textwrap::{WordSplitter};
+    /// # const width: usize = 80;
+    /// # let expected =
+    /// # Options {
+    /// #    width: width,
+    /// #    initial_indent: "",
+    /// #    subsequent_indent: "",
+    /// #    break_words: true,
+    /// #    splitter: HyphenSplitter,
+    /// # }
+    /// # ;
+    ///
+    /// const FOO: Options<HyphenSplitter> = Options::with_splitter(width, HyphenSplitter);
+    /// static BAR: Options<HyphenSplitter> = FOO;
+    /// #
+    /// # let actual = &BAR;
+    /// # assert_eq!(actual.width, expected.width);
+    /// # assert_eq!(actual.initial_indent, expected.initial_indent);
+    /// # assert_eq!(actual.subsequent_indent, expected.subsequent_indent);
+    /// # assert_eq!(actual.break_words, expected.break_words);
+    /// # let expected_coerced: &Options<HyphenSplitter> = actual;
+    /// ```
+    ///
+    /// Notice, that initializing `const` and `static`  can only be done using
+    /// `with_splitter` (or initializing the struct in place), because the
+    /// functional equivalent `Options::new(width).splitter(HyphenSplitter)`
+    /// allocates a `Box`, which can not be done for initializing `const` and
+    /// `static`.
+    ///
+    pub const fn with_splitter(width: usize, splitter: S) -> Self {
+        Options {
+            width,
+            initial_indent: "",
+            subsequent_indent: "",
+            break_words: true,
+            splitter,
+        }
+    }
+}
+
+impl<'a, S: WordSplitter> Options<'a, S> {
     /// Change [`self.initial_indent`]. The initial indentation is
     /// used on the very first line of output.
     ///
@@ -290,7 +422,7 @@ impl<'a> Options<'a> {
     /// ```
     ///
     /// [`self.initial_indent`]: #structfield.initial_indent
-    pub fn initial_indent(self, indent: &'a str) -> Options<'a> {
+    pub fn initial_indent(self, indent: &'a str) -> Self {
         Options {
             initial_indent: indent,
             ..self
@@ -315,7 +447,7 @@ impl<'a> Options<'a> {
     /// ```
     ///
     /// [`self.subsequent_indent`]: #structfield.subsequent_indent
-    pub fn subsequent_indent(self, indent: &'a str) -> Options<'a> {
+    pub fn subsequent_indent(self, indent: &'a str) -> Self {
         Options {
             subsequent_indent: indent,
             ..self
@@ -327,7 +459,7 @@ impl<'a> Options<'a> {
     /// sticking out into the right margin.
     ///
     /// [`self.break_words`]: #structfield.break_words
-    pub fn break_words(self, setting: bool) -> Options<'a> {
+    pub fn break_words(self, setting: bool) -> Self {
         Options {
             break_words: setting,
             ..self
@@ -339,7 +471,7 @@ impl<'a> Options<'a> {
     ///
     /// [`self.splitter`]: #structfield.splitter
     /// [`WordSplitter`]: trait.WordSplitter.html
-    pub fn splitter(self, splitter: Box<dyn WordSplitter>) -> Options<'a> {
+    pub fn splitter(self, splitter: S) -> Self {
         Options {
             splitter: splitter,
             ..self
@@ -939,5 +1071,13 @@ mod tests {
             fill(&(String::from(green_hello) + " " + &blue_world), 6),
             String::from(green_hello) + "\n" + &blue_world
         );
+    }
+
+    #[test]
+    fn cloning_option() {
+        static OPT: Options<HyphenSplitter> = Options::with_splitter(80, HyphenSplitter);
+
+        // just check whether clone works
+        let opt = OPT.clone();
     }
 }
