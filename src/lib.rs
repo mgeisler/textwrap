@@ -89,6 +89,7 @@
 //! [`WordSplitter`]: trait.WordSplitter.html
 
 #![doc(html_root_url = "https://docs.rs/textwrap/0.12.1")]
+#![forbid(unsafe_code)] // See https://github.com/mgeisler/textwrap/issues/210
 #![deny(missing_docs)]
 #![deny(missing_debug_implementations)]
 #![allow(clippy::redundant_field_names)]
