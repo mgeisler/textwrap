@@ -56,6 +56,16 @@ pub trait WordSplitter: std::fmt::Debug {
 #[derive(Clone, Debug)]
 pub struct NoHyphenation;
 
+impl<T> WordSplitter for T
+where
+    T: std::ops::Deref + std::fmt::Debug,
+    T::Target: WordSplitter,
+{
+    fn split<'w>(&self, word: &'w str) -> Vec<(&'w str, &'w str, &'w str)> {
+        (**self).split(word)
+    }
+}
+
 /// `NoHyphenation` implements `WordSplitter` by not splitting the
 /// word at all.
 impl WordSplitter for NoHyphenation {
