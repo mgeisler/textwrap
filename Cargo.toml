@@ -39,3 +39,6 @@ hyphenation = { version = "0.8", optional = true, features = ["embed_en-us"] }
 lipsum = "0.7"
 version-sync = "0.9"
 criterion = "0.3"
+
+[target.'cfg(unix)'.dev-dependencies]
+termion = "1.5"

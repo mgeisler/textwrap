@@ -3,6 +3,12 @@
 This file lists the most important changes made in each release of
 `textwrap`.
 
+## Unreleased
+
+* Added a new interactive demo, which demonstrates the features of
+  `textwrap`. Clone the repository and run `cargo run --example
+  interactive` to try it (Linux only).
+
 ## Version 0.12.1 — July 3rd, 2020
 
 This is a bugfix release.
