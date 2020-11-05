@@ -54,7 +54,7 @@ impl<S: WordSplitter + ?Sized> WordSplitter for Box<S> {
 /// ```
 /// use textwrap::{wrap, Options, NoHyphenation};
 ///
-/// let options = Options::new(8).splitter(Box::new(NoHyphenation));
+/// let options = Options::new(8).splitter(NoHyphenation);
 /// assert_eq!(wrap("foo bar-baz", &options),
 ///            vec!["foo", "bar-baz"]);
 /// ```

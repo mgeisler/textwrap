@@ -236,7 +236,7 @@ pub fn find_words(line: &str) -> impl Iterator<Item = Word> {
 /// );
 ///
 /// // The NoHyphenation splitter ignores the '-':
-/// let options = Options::new(80).splitter(Box::new(NoHyphenation));
+/// let options = Options::new(80).splitter(NoHyphenation);
 /// assert_eq!(
 ///     split_words(vec![Word::from("foo-bar")], &&options).collect::<Vec<_>>(),
 ///     vec![Word::from("foo-bar")]
@@ -548,7 +548,7 @@ mod tests {
             }
         }
 
-        let options = Options::new(80).splitter(Box::new(FixedSplitPoint));
+        let options = Options::new(80).splitter(FixedSplitPoint);
         assert_iter_eq!(
             split_words(vec![Word::from("foobar")].into_iter(), &&options),
             vec![

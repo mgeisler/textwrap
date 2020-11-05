@@ -31,7 +31,7 @@
 //! fn main() {
 //!     let text = "textwrap: a small library for wrapping text.";
 //!     let dictionary = Standard::from_embedded(Language::EnglishUS).unwrap();
-//!     let options = Options::new(18).splitter(Box::new(dictionary));
+//!     let options = Options::new(18).splitter(dictionary);
 //!     println!("{}", fill(text, &options));
 //! }
 //!
@@ -221,39 +221,76 @@ impl WrapOptions for usize {
 }
 
 /// Constructors for boxed Options, specifically.
-impl<'a> Options<'a> {
-    /// Creates a new `Options` with the specified width and dynamic dispatch
+impl<'a> Options<'a, HyphenSplitter> {
+    /// Creates a new `Options` with the specified width and static dispatch
     /// using the `HyphenSplitter`. Equivalent to
     ///
     /// ```
     /// # use textwrap::{Options, HyphenSplitter, WordSplitter};
     /// # let width = 80;
     /// # let actual = Options::new(width);
-    /// # let expected: Options =
+    /// # let expected =
     /// Options {
     ///     width: width,
     ///     initial_indent: "",
     ///     subsequent_indent: "",
     ///     break_words: true,
-    ///     splitter: Box::new(HyphenSplitter),
+    ///     splitter: HyphenSplitter,
     /// }
     /// # ;
     /// # assert_eq!(actual.width, expected.width);
     /// # assert_eq!(actual.initial_indent, expected.initial_indent);
     /// # assert_eq!(actual.subsequent_indent, expected.subsequent_indent);
     /// # assert_eq!(actual.break_words, expected.break_words);
-    /// # let expected_coerced: Options<'static, Box<dyn WordSplitter>> = expected;
+    /// # let expected_coerced: Options<'static, HyphenSplitter> = expected;
     /// ```
     ///
-    /// Dynamic dispatch means here, that the splitter is stored in a
-    /// `Box<dyn WordSplitter>`, which allows to even change the splitter's
-    /// inner type without changing the type of this struct. If you instead
-    /// need more control of the type of the splitter, there is also the
-    /// `with_splitter` constructor, which allows you to specify a precise
-    /// splitter without the boxing.
+    /// Static dispatch mean here, that the splitter is stored as-is and the
+    /// type is known at compile-time. Thus the returned value is actually a
+    /// `Options<HyphenSplitter>`.
     ///
-    pub fn new(width: usize) -> Self {
-        Options::with_splitter(width, Box::new(HyphenSplitter))
+    /// Dynamic dispatch on the other hand, mean that the splitter is stored as a trait object
+    /// for instance in a `Box<dyn WordSplitter>`. This way the splitter's inner type
+    /// can be changed without changing the type of this struct, which then would be just
+    /// `Options` as a short cut for `Options<Box<dyn WordSplitter>>`.
+    ///
+    /// The value and type of the splitter can be choose from the start using the `with_splitter`
+    /// constructor or changed afterwards using the `splitter` method. Whether static or
+    /// dynamic dispatch is used, depends on whether these functions are given a boxed `WordSplitter`
+    /// or not. Take for example:
+    ///
+    /// ```
+    /// use textwrap::{Options, NoHyphenation, HyphenSplitter};
+    /// # use textwrap::{WordSplitter};
+    /// # let width = 80;
+    ///
+    /// // uses HyphenSplitter with static dispatch
+    /// // the actual type: Options<HyphenSplitter>
+    /// let opt = Options::new(width);
+    /// # let opt_coerce: Options<HyphenSplitter> = opt;
+    ///
+    /// // uses NoHyphenation with static dispatch
+    /// // the actual type: Options<NoHyphenation>
+    /// let opt = Options::new(width).splitter(NoHyphenation);
+    /// # let opt_coerce: Options<NoHyphenation> = opt;
+    ///
+    /// // uses HyphenSplitter with dynamic dispatch
+    /// // the actual type: Options<Box<dyn WordSplitter>>
+    /// let opt: Options = Options::new(width).splitter(Box::new(HyphenSplitter));
+    /// # let opt_coerce: Options<Box<dyn WordSplitter>> = opt;
+    ///
+    /// // uses NoHyphenation with dynamic dispatch
+    /// // the actual type: Options<Box<dyn WordSplitter>>
+    /// let opt: Options = Options::new(width).splitter(Box::new(NoHyphenation));
+    /// # let opt_coerce: Options<Box<dyn WordSplitter>> = opt;
+    /// ```
+    ///
+    /// Notice that the last two variables have the same type, despite the different `WordSplitter`
+    /// in use. Thus dynamic dispatch allows to change the splitter at run-time without changing
+    /// the variables type.
+    ///
+    pub const fn new(width: usize) -> Self {
+        Options::with_splitter(width, HyphenSplitter)
     }
 
     /// Creates a new `Options` with `width` set to the current
@@ -284,7 +321,7 @@ impl<'a, S> Options<'a, S> {
     /// to
     ///
     /// ```
-    /// # use textwrap::{Options, NoHyphenation};
+    /// # use textwrap::{Options, NoHyphenation, HyphenSplitter};
     /// # const splitter: NoHyphenation = NoHyphenation;
     /// # const width: usize = 80;
     /// # const actual: Options<'static, NoHyphenation> = Options::with_splitter(width, splitter);
@@ -304,14 +341,13 @@ impl<'a, S> Options<'a, S> {
     /// # let expected_coerced: Options<'static, NoHyphenation> = expected;
     /// ```
     ///
-    /// This constructor allows to specify the precise splitter to be used, and
-    /// let it stored as is in the struct, without the need for a box, unlike
-    /// `new`. However, this function can still be used with a box, for
-    /// instance, to obtain a boxed `Options` with a different splitter:
+    /// This constructor allows to specify the splitter to be used. It is like a short-cut for
+    /// `Options::new(w).splitter(s)`, but this function is a `const fn`. The given splitter may
+    /// be in a `Box`, which then can be coerced into a trait object for dynamic dispatch:
     ///
     /// ```
-    /// use textwrap::{Options, NoHyphenation};
-    /// # use textwrap::{WordSplitter, HyphenSplitter};
+    /// use textwrap::{Options, NoHyphenation, HyphenSplitter};
+    /// # use textwrap::{WordSplitter};
     /// # const width: usize = 80;
     /// # let expected: Options =
     /// # Options {
@@ -323,8 +359,9 @@ impl<'a, S> Options<'a, S> {
     /// # }
     /// # ;
     ///
-    /// // This opt has the same type as returned by `new`, but it contains a
-    /// // `NoHyphenation` splitter
+    /// // This opt contains a boxed trait object as splitter.
+    /// // Its type is actually: `Options<Box<dyn WordSplitter>>`
+    /// // The type annotation is important, otherwise it will be not a trait object
     /// let mut opt: Options = Options::with_splitter(width, Box::new(NoHyphenation));
     /// #
     /// # let actual = opt;
@@ -334,8 +371,8 @@ impl<'a, S> Options<'a, S> {
     /// # assert_eq!(actual.break_words, expected.break_words);
     /// # let expected_coerced: Options<Box<dyn WordSplitter>> = expected;
     ///
-    /// // Thus, it can be overridden.
-    /// opt = Options::new(width);
+    /// // Thus, it can be overridden with a different splitter.
+    /// opt = Options::with_splitter(width, Box::new(HyphenSplitter));
     /// // Now, containing a `HyphenSplitter` instead.
     /// #
     /// # let expected: Options =
@@ -387,12 +424,6 @@ impl<'a, S> Options<'a, S> {
     /// # assert_eq!(actual.break_words, expected.break_words);
     /// # let expected_coerced: &Options<HyphenSplitter> = actual;
     /// ```
-    ///
-    /// Notice, that initializing `const` and `static`  can only be done using
-    /// `with_splitter` (or initializing the struct in place), because the
-    /// functional equivalent `Options::new(width).splitter(HyphenSplitter)`
-    /// allocates a `Box`, which can not be done for initializing `const` and
-    /// `static`.
     ///
     pub const fn with_splitter(width: usize, splitter: S) -> Self {
         Options {
@@ -469,12 +500,27 @@ impl<'a, S: WordSplitter> Options<'a, S> {
     /// Change [`self.splitter`]. The [`WordSplitter`] is used to fit
     /// part of a word into the current line when wrapping text.
     ///
+    /// This function may return a different type than `Self`. That is the case when the given
+    /// `splitter` is of a different type the the currently stored one in the `splitter` field.
+    /// Take for example:
+    ///
+    /// ```
+    /// use textwrap::{Options, HyphenSplitter, NoHyphenation};
+    /// // The default type returned by `new` is `Options<HyphenSplitter>`
+    /// let opt: Options<HyphenSplitter> = Options::new(80);
+    /// // Setting a different splitter changes the type
+    /// let opt: Options<NoHyphenation> = opt.splitter(NoHyphenation);
+    /// ```
+    ///
     /// [`self.splitter`]: #structfield.splitter
     /// [`WordSplitter`]: trait.WordSplitter.html
-    pub fn splitter(self, splitter: S) -> Self {
+    pub fn splitter<T>(self, splitter: T) -> Options<'a, T> {
         Options {
+            width: self.width,
+            initial_indent: self.initial_indent,
+            subsequent_indent: self.subsequent_indent,
+            break_words: self.break_words,
             splitter: splitter,
-            ..self
         }
     }
 }
@@ -494,7 +540,7 @@ impl<'a, S: WordSplitter> Options<'a, S> {
 ///
 /// let width = termwidth() - 4; // Two columns on each side.
 /// let options = Options::new(width)
-///     .splitter(Box::new(NoHyphenation))
+///     .splitter(NoHyphenation)
 ///     .initial_indent("  ")
 ///     .subsequent_indent("  ");
 /// ```
@@ -910,14 +956,32 @@ mod tests {
     }
 
     #[test]
-    fn no_hyphenation() {
-        let options = Options::new(8).splitter(Box::new(NoHyphenation));
+    fn simple_hyphens_static() {
+        let options = Options::new(8).splitter(HyphenSplitter);
+        assert_eq!(wrap("foo bar-baz", &options), vec!["foo bar-", "baz"]);
+    }
+
+    #[test]
+    fn simple_hyphens_dynamic() {
+        let options: Options = Options::new(8).splitter(Box::new(HyphenSplitter));
+        assert_eq!(wrap("foo bar-baz", &options), vec!["foo bar-", "baz"]);
+    }
+
+    #[test]
+    fn no_hyphenation_static() {
+        let options = Options::new(8).splitter(NoHyphenation);
+        assert_eq!(wrap("foo bar-baz", &options), vec!["foo", "bar-baz"]);
+    }
+
+    #[test]
+    fn no_hyphenation_dynamic() {
+        let options: Options = Options::new(8).splitter(Box::new(NoHyphenation));
         assert_eq!(wrap("foo bar-baz", &options), vec!["foo", "bar-baz"]);
     }
 
     #[test]
     #[cfg(feature = "hyphenation")]
-    fn auto_hyphenation_double_hyphenation() {
+    fn auto_hyphenation_double_hyphenation_static() {
         let dictionary = Standard::from_embedded(Language::EnglishUS).unwrap();
         let options = Options::new(10);
         assert_eq!(
@@ -925,7 +989,24 @@ mod tests {
             vec!["Internatio", "nalization"]
         );
 
-        let options = Options::new(10).splitter(Box::new(dictionary));
+        let options = Options::new(10).splitter(dictionary);
+        assert_eq!(
+            wrap("Internationalization", &options),
+            vec!["Interna-", "tionaliza-", "tion"]
+        );
+	}
+
+    #[test]
+    #[cfg(feature = "hyphenation")]
+    fn auto_hyphenation_double_hyphenation_dynamic() {
+        let dictionary = Standard::from_embedded(Language::EnglishUS).unwrap();
+        let mut options: Options = Options::new(10).splitter(Box::new(HyphenSplitter));
+        assert_eq!(
+            wrap("Internationalization", &options),
+            vec!["Internatio", "nalization"]
+        );
+
+        options = Options::new(10).splitter(Box::new(dictionary));
         assert_eq!(
             wrap("Internationalization", &options),
             vec!["Interna-", "tionaliza-", "tion"]
@@ -942,7 +1023,7 @@ mod tests {
             vec!["participat", "ion is the", "key to", "success"]
         );
 
-        let options = Options::new(10).splitter(Box::new(dictionary));
+        let options = Options::new(10).splitter(dictionary);
         assert_eq!(
             wrap("participation is the key to success", &options),
             vec!["participa-", "tion is", "the key to", "success"]
@@ -955,7 +1036,7 @@ mod tests {
         // Test that hyphenation takes the width of the wihtespace
         // into account.
         let dictionary = Standard::from_embedded(Language::EnglishUS).unwrap();
-        let options = Options::new(15).splitter(Box::new(dictionary));
+        let options = Options::new(15).splitter(dictionary);
         assert_eq!(
             wrap("garbage   collection", &options),
             vec!["garbage   col-", "lection"]
@@ -969,7 +1050,7 @@ mod tests {
         // line is borrowed.
         use std::borrow::Cow::{Borrowed, Owned};
         let dictionary = Standard::from_embedded(Language::EnglishUS).unwrap();
-        let options = Options::new(10).splitter(Box::new(dictionary));
+        let options = Options::new(10).splitter(dictionary);
         let lines = wrap("Internationalization", &options);
         if let Borrowed(s) = lines[0] {
             assert!(false, "should not have been borrowed: {:?}", s);
@@ -992,7 +1073,7 @@ mod tests {
             vec!["over-", "caffinated"]
         );
 
-        let options = options.splitter(Box::new(dictionary));
+        let options = options.splitter(dictionary);
         assert_eq!(
             wrap("over-caffinated", &options),
             vec!["over-", "caffi-", "nated"]
@@ -1077,7 +1158,7 @@ mod tests {
     fn cloning_option() {
         static OPT: Options<HyphenSplitter> = Options::with_splitter(80, HyphenSplitter);
 
-        // just check whether clone works
+        // just ensure that clone works
         let opt = OPT.clone();
     }
 }

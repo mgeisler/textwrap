@@ -1,4 +1,4 @@
-use textwrap::{wrap, Options};
+use textwrap::{wrap, HyphenSplitter, Options};
 
 fn main() {
     let example = "Memory safety without garbage collection. \
@@ -6,7 +6,7 @@ fn main() {
                    Zero-cost abstractions.";
     let mut prev_lines = vec![];
 
-    let mut options = Options::new(0);
+    let mut options: Options = Options::new(0).splitter(Box::new(HyphenSplitter));
     #[cfg(feature = "hyphenation")]
     {
         use hyphenation::Load;

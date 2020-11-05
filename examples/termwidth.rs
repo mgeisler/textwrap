@@ -21,9 +21,9 @@ fn main() {
     #[cfg(feature = "hyphenation")]
     let (msg, options) = (
         "with hyphenation",
-        Options::with_termwidth().splitter(Box::new(
+        Options::with_termwidth().splitter(
             hyphenation::Standard::from_embedded(hyphenation::Language::EnglishUS).unwrap(),
-        )),
+        ),
     );
 
     println!("Formatted {} in {} columns:", msg, options.width);
