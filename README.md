@@ -83,7 +83,7 @@ fn main() {
     let hyphenator = Standard::from_embedded(Language::EnglishUS).unwrap();
     let options = Options::new(18).splitter(Box::new(hyphenator));
     let text = "textwrap: a small library for wrapping text.";
-    println!("{}", fill_with(text, &options);
+    println!("{}", fill(text, &options);
 }
 ```
 
