@@ -17,7 +17,7 @@ fn main() {
 
     for width in 15..60 {
         options.width = width;
-        let lines = wrap(example, &options).collect::<Vec<_>>();
+        let lines = wrap(example, &options);
         if lines != prev_lines {
             let title = format!(" Width: {} ", width);
             println!(".{:-^1$}.", title, width + 2);
