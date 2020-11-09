@@ -164,7 +164,7 @@ mod unix_only {
         }
 
         let mut label = labels.pop().unwrap();
-        let mut options = Options::new(initial_width);
+        let mut options: Options = Options::new(initial_width).splitter(Box::new(HyphenSplitter));
         options.break_words = false;
         options.splitter = splitters.pop().unwrap();
 
@@ -203,7 +203,7 @@ mod unix_only {
 
         // TODO: change to cursor::DefaultStyle if
         // https://github.com/redox-os/termion/pull/157 is merged.
-        screen.write(b"\x1b[0 q")?;
+        screen.write_all(b"\x1b[0 q")?;
         screen.flush()
     }
 }
