@@ -739,6 +739,83 @@ pub fn wrap<T: WrapOptions>(text: &str, options: T) -> Vec<Cow<'_, str>> {
     lines
 }
 
+/// Fill `text` in-place without reallocating the input string.
+///
+/// This function works by modifying the input string: some `' '`
+/// characters will be replaced by `'\n'` characters. The rest of the
+/// text remains untouched.
+///
+/// Since we can only replace existing whitespace in the input with
+/// `'\n'`, we cannot do hyphenation nor can we split words longer
+/// than the line width. Indentation is also rules out. In other
+/// words, `fill_inplace(width)` behaves as if you had called `fill`
+/// with these options:
+///
+/// ```
+/// # use textwrap::{Options, NoHyphenation};
+/// # let width = 80;
+/// Options {
+///    width: width,
+///    initial_indent: "",
+///    subsequent_indent: "",
+///    break_words: false,
+///    splitter: NoHyphenation,
+/// };
+/// ```
+///
+/// Finally, unlike `fill`, `fill_inplace` can leave trailing
+/// whitespace on lines. This is because we wrap by inserting a `'\n'`
+/// at the final whitespace in the input string:
+///
+/// ```
+/// let mut text = String::from("Hello   World!");
+/// textwrap::fill_inplace(&mut text, 10);
+/// assert_eq!(text, "Hello  \nWorld!");
+/// ```
+///
+/// If we didn't do this, the word `World!` would end up being
+/// indented. You can avoid this if you make sure that your input text
+/// has no double spaces.
+///
+/// # Performance
+///
+/// In benchmarks, `fill_inplace` is about twice as fast as `fill`.
+/// Please see the [`linear`
+/// benchmark](https://github.com/mgeisler/textwrap/blob/master/benches/linear.rs)
+/// for details.
+pub fn fill_inplace(text: &mut String, width: usize) {
+    let mut indices = Vec::new();
+
+    let mut offset = 0;
+    for line in text.split('\n') {
+        let words = core::find_words(line).collect::<Vec<_>>();
+        let wrapped_words = core::wrap_fragments(&words, |_| width);
+
+        let mut line_offset = offset;
+        for words in &wrapped_words[..wrapped_words.len() - 1] {
+            let line_len = words
+                .iter()
+                .map(|word| word.len() + word.whitespace.len())
+                .sum::<usize>();
+
+            line_offset += line_len;
+            // We've advanced past all ' ' characters -- want to move
+            // one ' ' backwards and insert our '\n' there.
+            indices.push(line_offset - 1);
+        }
+
+        // Advance past entire line, plus the '\n' which was removed
+        // by the split call above.
+        offset += line.len() + 1;
+    }
+
+    let mut bytes = std::mem::take(text).into_bytes();
+    for idx in indices {
+        bytes[idx] = b'\n';
+    }
+    *text = String::from_utf8(bytes).unwrap();
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1159,5 +1236,77 @@ mod tests {
         static OPT: Options<HyphenSplitter> = Options::with_splitter(80, HyphenSplitter);
         let opt = OPT.clone();
         assert_eq!(opt.width, 80);
+    }
+
+    #[test]
+    fn fill_inplace_empty() {
+        let mut text = String::from("");
+        fill_inplace(&mut text, 80);
+        assert_eq!(text, "");
+    }
+
+    #[test]
+    fn fill_inplace_simple() {
+        let mut text = String::from("foo bar baz");
+        fill_inplace(&mut text, 10);
+        assert_eq!(text, "foo bar\nbaz");
+    }
+
+    #[test]
+    fn fill_inplace_multiple_lines() {
+        let mut text = String::from("Some text to wrap over multiple lines");
+        fill_inplace(&mut text, 12);
+        assert_eq!(text, "Some text to\nwrap over\nmultiple\nlines");
+    }
+
+    #[test]
+    fn fill_inplace_long_word() {
+        let mut text = String::from("Internationalization is hard");
+        fill_inplace(&mut text, 10);
+        assert_eq!(text, "Internationalization\nis hard");
+    }
+
+    #[test]
+    fn fill_inplace_no_hyphen_splitting() {
+        let mut text = String::from("A well-chosen example");
+        fill_inplace(&mut text, 10);
+        assert_eq!(text, "A\nwell-chosen\nexample");
+    }
+
+    #[test]
+    fn fill_inplace_newlines() {
+        let mut text = String::from("foo bar\n\nbaz\n\n\n");
+        fill_inplace(&mut text, 10);
+        assert_eq!(text, "foo bar\n\nbaz\n\n\n");
+    }
+
+    #[test]
+    fn fill_inplace_newlines_reset_line_width() {
+        let mut text = String::from("1 3 5\n1 3 5 7 9\n1 3 5 7 9 1 3");
+        fill_inplace(&mut text, 10);
+        assert_eq!(text, "1 3 5\n1 3 5 7 9\n1 3 5 7 9\n1 3");
+    }
+
+    #[test]
+    fn fill_inplace_leading_whitespace() {
+        let mut text = String::from("  foo bar baz");
+        fill_inplace(&mut text, 10);
+        assert_eq!(text, "  foo bar\nbaz");
+    }
+
+    #[test]
+    fn fill_inplace_trailing_whitespace() {
+        let mut text = String::from("foo bar baz  ");
+        fill_inplace(&mut text, 10);
+        assert_eq!(text, "foo bar\nbaz  ");
+    }
+
+    #[test]
+    fn fill_inplace_interior_whitespace() {
+        // To avoid an unwanted indentation of "baz", it is important
+        // to replace the final ' ' with '\n'.
+        let mut text = String::from("foo  bar    baz");
+        fill_inplace(&mut text, 10);
+        assert_eq!(text, "foo  bar   \nbaz");
     }
 }
