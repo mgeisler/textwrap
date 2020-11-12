@@ -994,7 +994,7 @@ mod tests {
             wrap("Internationalization", &options),
             vec!["Interna-", "tionaliza-", "tion"]
         );
-	}
+    }
 
     #[test]
     #[cfg(feature = "hyphenation")]
@@ -1155,10 +1155,9 @@ mod tests {
     }
 
     #[test]
-    fn cloning_option() {
+    fn cloning_works() {
         static OPT: Options<HyphenSplitter> = Options::with_splitter(80, HyphenSplitter);
-
-        // just ensure that clone works
         let opt = OPT.clone();
+        assert_eq!(opt.width, 80);
     }
 }
