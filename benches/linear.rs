@@ -21,7 +21,7 @@ fn lorem_ipsum(length: usize) -> String {
 
 pub fn benchmark(c: &mut Criterion) {
     let mut group = c.benchmark_group("String lengths");
-    for length in [100, 200, 400, 800, 1600].iter() {
+    for length in [100, 200, 400, 800, 1600, 3200, 6400].iter() {
         let text = lorem_ipsum(*length);
         let options = textwrap::Options::new(LINE_LENGTH);
         group.bench_with_input(BenchmarkId::new("fill", length), &text, |b, text| {
@@ -35,6 +35,14 @@ pub fn benchmark(c: &mut Criterion) {
 
         group.bench_with_input(BenchmarkId::new("fill_usize", length), &text, |b, text| {
             b.iter(|| textwrap::fill(text, LINE_LENGTH));
+        });
+
+        group.bench_function(BenchmarkId::new("fill_inplace", length), |b| {
+            b.iter_batched(
+                || text.clone(),
+                |mut text| textwrap::fill_inplace(&mut text, LINE_LENGTH),
+                criterion::BatchSize::SmallInput,
+            );
         });
 
         #[cfg(feature = "hyphenation")]
