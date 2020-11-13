@@ -47,6 +47,11 @@ impl<S: WordSplitter + ?Sized> WordSplitter for Box<S> {
     }
 }
 */
+impl<T: WordSplitter> WordSplitter for &T {
+    fn split_points(&self, word: &str) -> Vec<usize> {
+        (*self).split_points(word)
+    }
+}
 
 /// Use this as a [`Options.splitter`] to avoid any kind of
 /// hyphenation:
@@ -60,7 +65,7 @@ impl<S: WordSplitter + ?Sized> WordSplitter for Box<S> {
 /// ```
 ///
 /// [`Options.splitter`]: ../struct.Options.html#structfield.splitter
-#[derive(Clone, Debug)]
+#[derive(Clone, Copy, Debug)]
 pub struct NoHyphenation;
 
 /// `NoHyphenation` implements `WordSplitter` by not splitting the
@@ -76,7 +81,7 @@ impl WordSplitter for NoHyphenation {
 ///
 /// You probably don't need to use this type since it's already used
 /// by default by `Options::new`.
-#[derive(Clone, Debug)]
+#[derive(Clone, Copy, Debug)]
 pub struct HyphenSplitter;
 
 /// `HyphenSplitter` is the default `WordSplitter` used by

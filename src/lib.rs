@@ -106,27 +106,8 @@ pub use crate::splitting::{HyphenSplitter, NoHyphenation, WordSplitter};
 
 pub mod core;
 
-/// Options for wrapping and filling text. Used with the [`wrap`] and
-/// [`fill`] functions.
-///
-/// [`wrap`]: fn.wrap.html
-/// [`fill`]: fn.fill.html
-pub trait WrapOptions {
-    /// The width in columns at which the text will be wrapped.
-    fn width(&self) -> usize;
-    /// Indentation used for the first line of output.
-    fn initial_indent(&self) -> &str;
-    /// Indentation used for subsequent lines of output.
-    fn subsequent_indent(&self) -> &str;
-    /// Allow long words to be broken if they cannot fit on a line.
-    /// When set to `false`, some lines may be longer than `width`.
-    fn break_words(&self) -> bool;
-    /// Find indices where `word` can be split.
-    fn split_points(&self, word: &str) -> Vec<usize>;
-}
-
 /// Holds settings for wrapping and filling text.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub struct Options<'a, S = Box<dyn WordSplitter>> {
     /// The width in columns at which the text will be wrapped.
     pub width: usize,
@@ -144,79 +125,27 @@ pub struct Options<'a, S = Box<dyn WordSplitter>> {
     pub splitter: S,
 }
 
-/// Allows using an `Options` with [`wrap`] and [`fill`]:
-///
-/// ```
-/// use textwrap::{fill, Options};
-///
-/// let options = Options::new(15).initial_indent("> ");
-/// assert_eq!(fill("Wrapping with options!", &options),
-///            "> Wrapping with\noptions!");
-/// ```
-///
-/// The integer specifes the wrapping width. This is equivalent to
-/// passing `Options::new(15)`.
-///
-/// [`wrap`]: fn.wrap.html
-/// [`fill`]: fn.fill.html
-impl<S: WordSplitter> WrapOptions for &Options<'_, S> {
-    #[inline]
-    fn width(&self) -> usize {
-        self.width
-    }
-    #[inline]
-    fn initial_indent(&self) -> &str {
-        self.initial_indent
-    }
-    #[inline]
-    fn subsequent_indent(&self) -> &str {
-        self.subsequent_indent
-    }
-    #[inline]
-    fn break_words(&self) -> bool {
-        self.break_words
-    }
-    #[inline]
-    fn split_points(&self, word: &str) -> Vec<usize> {
-        self.splitter.split_points(word)
+impl<'a, S> From<&'a Options<'a, S>> for Options<'a, &'a S> {
+    fn from(options: &'a Options<'a, S>) -> Self {
+        Self {
+            width: options.width,
+            initial_indent: options.initial_indent,
+            subsequent_indent: options.subsequent_indent,
+            break_words: options.break_words,
+            splitter: &options.splitter,
+        }
     }
 }
 
-/// Allows using an `usize` directly as options for [`wrap`] and
-/// [`fill`]:
-///
-/// ```
-/// use textwrap::fill;
-///
-/// assert_eq!(fill("Quick and easy wrapping!", 15),
-///            "Quick and easy\nwrapping!");
-/// ```
-///
-/// The integer specifes the wrapping width. This is equivalent to
-/// passing `Options::new(15)`.
-///
-/// [`wrap`]: fn.wrap.html
-/// [`fill`]: fn.fill.html
-impl WrapOptions for usize {
-    #[inline]
-    fn width(&self) -> usize {
-        *self
-    }
-    #[inline]
-    fn initial_indent(&self) -> &str {
-        ""
-    }
-    #[inline]
-    fn subsequent_indent(&self) -> &str {
-        ""
-    }
-    #[inline]
-    fn break_words(&self) -> bool {
-        true
-    }
-    #[inline]
-    fn split_points(&self, word: &str) -> Vec<usize> {
-        HyphenSplitter.split_points(word)
+impl<'a> From<usize> for Options<'a, HyphenSplitter> {
+    fn from(width: usize) -> Self {
+        Self {
+            width,
+            initial_indent: "",
+            subsequent_indent: "",
+            break_words: true,
+            splitter: HyphenSplitter,
+        }
     }
 }
 
@@ -520,7 +449,7 @@ impl<'a, S: WordSplitter> Options<'a, S> {
             initial_indent: self.initial_indent,
             subsequent_indent: self.subsequent_indent,
             break_words: self.break_words,
-            splitter: splitter,
+            splitter,
         }
     }
 }
@@ -580,7 +509,7 @@ pub fn termwidth() -> usize {
 /// ```
 ///
 /// [`wrap`]: fn.wrap.html
-pub fn fill<T: WrapOptions>(text: &str, options: T) -> String {
+pub fn fill<'a, S: WordSplitter, T: Into<Options<'a, S>>>(text: &str, options: T) -> String {
     // This will avoid reallocation in simple cases (no
     // indentation, no hyphenation).
     let mut result = String::with_capacity(text.len());
@@ -658,21 +587,24 @@ pub fn fill<T: WrapOptions>(text: &str, options: T) -> String {
 /// ```
 ///
 /// [`fill`]: fn.fill.html
-pub fn wrap<T: WrapOptions>(text: &str, options: T) -> Vec<Cow<'_, str>> {
-    let initial_width = options
-        .width()
-        .saturating_sub(options.initial_indent().width());
+pub fn wrap<'a, S: WordSplitter, T: Into<Options<'a, S>>>(
+    text: &str,
+    options: T,
+) -> Vec<Cow<'_, str>> {
+    let options = options.into();
+
+    let initial_width = options.width.saturating_sub(options.initial_indent.width());
     let subsequent_width = options
-        .width()
-        .saturating_sub(options.subsequent_indent().width());
+        .width
+        .saturating_sub(options.subsequent_indent.width());
 
     let mut lines = Vec::new();
     for line in text.split('\n') {
         let words = core::find_words(line);
         let split_words = core::split_words(words, &options);
-        let broken_words = if options.break_words() {
+        let broken_words = if options.break_words {
             let mut broken_words = core::break_words(split_words, subsequent_width);
-            if !options.initial_indent().is_empty() {
+            if !options.initial_indent.is_empty() {
                 // Without this, the first word will always go into
                 // the first line. However, since we break words based
                 // on the _second_ line width, it can be wrong to
@@ -710,10 +642,10 @@ pub fn wrap<T: WrapOptions>(text: &str, options: T) -> Vec<Cow<'_, str>> {
 
             // The result is owned if we have indentation, otherwise
             // we can simply borrow an empty string.
-            let mut result = if lines.is_empty() && !options.initial_indent().is_empty() {
-                Cow::Owned(options.initial_indent().to_owned())
-            } else if !lines.is_empty() && !options.subsequent_indent().is_empty() {
-                Cow::Owned(options.subsequent_indent().to_owned())
+            let mut result = if lines.is_empty() && !options.initial_indent.is_empty() {
+                Cow::Owned(options.initial_indent.to_owned())
+            } else if !lines.is_empty() && !options.subsequent_indent.is_empty() {
+                Cow::Owned(options.subsequent_indent.to_owned())
             } else {
                 // We can use an empty string here since string
                 // concatenation for `Cow` preserves a borrowed value
@@ -747,19 +679,16 @@ mod tests {
 
     #[test]
     fn options_agree_with_usize() {
-        let opt_usize: &dyn WrapOptions = &42;
-        let opt_options: &dyn WrapOptions = &&Options::new(42);
+        let opt_usize = Options::from(42_usize);
+        let opt_options = Options::new(42);
 
-        assert_eq!(opt_usize.width(), opt_options.width());
-        assert_eq!(opt_usize.initial_indent(), opt_options.initial_indent());
+        assert_eq!(opt_usize.width, opt_options.width);
+        assert_eq!(opt_usize.initial_indent, opt_options.initial_indent);
+        assert_eq!(opt_usize.subsequent_indent, opt_options.subsequent_indent);
+        assert_eq!(opt_usize.break_words, opt_options.break_words);
         assert_eq!(
-            opt_usize.subsequent_indent(),
-            opt_options.subsequent_indent()
-        );
-        assert_eq!(opt_usize.break_words(), opt_options.break_words());
-        assert_eq!(
-            opt_usize.split_points("hello-world"),
-            opt_options.split_points("hello-world")
+            opt_usize.splitter.split_points("hello-world"),
+            opt_options.splitter.split_points("hello-world")
         );
     }
 
@@ -1149,15 +1078,14 @@ mod tests {
         let green_hello = "\u{1b}[0m\u{1b}[32mHello\u{1b}[0m";
         let blue_world = "\u{1b}[0m\u{1b}[34mWorld!\u{1b}[0m";
         assert_eq!(
-            fill(&(String::from(green_hello) + " " + &blue_world), 6),
-            String::from(green_hello) + "\n" + &blue_world
+            fill(&format!("{} {}", green_hello, blue_world), 6),
+            format!("{}\n{}", green_hello, blue_world),
         );
     }
 
     #[test]
     fn cloning_works() {
         static OPT: Options<HyphenSplitter> = Options::with_splitter(80, HyphenSplitter);
-        let opt = OPT.clone();
-        assert_eq!(opt.width, 80);
+        assert_eq!(OPT.width, 80);
     }
 }
