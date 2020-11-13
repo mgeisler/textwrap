@@ -232,14 +232,14 @@ pub fn find_words(line: &str) -> impl Iterator<Item = Word> {
 /// // The default splitter is HyphenSplitter:
 /// let options = Options::new(80);
 /// assert_eq!(
-///     split_words(vec![Word::from("foo-bar")], &&options).collect::<Vec<_>>(),
+///     split_words(vec![Word::from("foo-bar")], &options).collect::<Vec<_>>(),
 ///     vec![Word::from("foo-"), Word::from("bar")]
 /// );
 ///
 /// // The NoHyphenation splitter ignores the '-':
 /// let options = Options::new(80).splitter(NoHyphenation);
 /// assert_eq!(
-///     split_words(vec![Word::from("foo-bar")], &&options).collect::<Vec<_>>(),
+///     split_words(vec![Word::from("foo-bar")], &options).collect::<Vec<_>>(),
 ///     vec![Word::from("foo-bar")]
 /// );
 /// ```
