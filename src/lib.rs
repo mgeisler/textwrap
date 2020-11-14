@@ -139,13 +139,7 @@ impl<'a, S> From<&'a Options<'a, S>> for Options<'a, &'a S> {
 
 impl<'a> From<usize> for Options<'a, HyphenSplitter> {
     fn from(width: usize) -> Self {
-        Self {
-            width,
-            initial_indent: "",
-            subsequent_indent: "",
-            break_words: true,
-            splitter: HyphenSplitter,
-        }
+        Options::new(width)
     }
 }
 
