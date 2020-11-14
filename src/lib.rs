@@ -107,7 +107,7 @@ pub use crate::splitting::{HyphenSplitter, NoHyphenation, WordSplitter};
 pub mod core;
 
 /// Holds settings for wrapping and filling text.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub struct Options<'a, S = Box<dyn WordSplitter>> {
     /// The width in columns at which the text will be wrapped.
     pub width: usize,
