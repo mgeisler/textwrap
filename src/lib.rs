@@ -115,6 +115,9 @@ pub struct Options<'a, S: ?Sized = Box<dyn WordSplitter>> {
     /// When set to `false`, some lines may be longer than
     /// `self.width`.
     pub break_words: bool,
+    /// Wraping algorithm to use, see [`core::WrapAlgorithm`] for
+    /// details.
+    pub wrap_algorithm: core::WrapAlgorithm,
     /// The method for splitting words. If the `hyphenation` feature
     /// is enabled, you can use a [`hyphenation::Standard`] dictionary
     /// here to get language-aware hyphenation.
@@ -128,6 +131,7 @@ impl<'a, S: ?Sized> From<&'a Options<'a, S>> for Options<'a, &'a S> {
             initial_indent: options.initial_indent,
             subsequent_indent: options.subsequent_indent,
             break_words: options.break_words,
+            wrap_algorithm: options.wrap_algorithm,
             splitter: &options.splitter,
         }
     }
@@ -154,6 +158,7 @@ impl<'a> Options<'a, HyphenSplitter> {
     ///     initial_indent: "",
     ///     subsequent_indent: "",
     ///     break_words: true,
+    ///     wrap_algorithm: textwrap::core::WrapAlgorithm::OptimalFit,
     ///     splitter: HyphenSplitter,
     /// }
     /// # ;
@@ -161,6 +166,7 @@ impl<'a> Options<'a, HyphenSplitter> {
     /// # assert_eq!(actual.initial_indent, expected.initial_indent);
     /// # assert_eq!(actual.subsequent_indent, expected.subsequent_indent);
     /// # assert_eq!(actual.break_words, expected.break_words);
+    /// # assert_eq!(actual.wrap_algorithm, expected.wrap_algorithm);
     /// # let expected_coerced: Options<'static, HyphenSplitter> = expected;
     /// ```
     ///
@@ -254,6 +260,7 @@ impl<'a, S> Options<'a, S> {
     ///     initial_indent: "",
     ///     subsequent_indent: "",
     ///     break_words: true,
+    ///     wrap_algorithm: textwrap::core::WrapAlgorithm::OptimalFit,
     ///     splitter: splitter,
     /// }
     /// # ;
@@ -261,6 +268,7 @@ impl<'a, S> Options<'a, S> {
     /// # assert_eq!(actual.initial_indent, expected.initial_indent);
     /// # assert_eq!(actual.subsequent_indent, expected.subsequent_indent);
     /// # assert_eq!(actual.break_words, expected.break_words);
+    /// # assert_eq!(actual.wrap_algorithm, expected.wrap_algorithm);
     /// # let expected_coerced: Options<'static, NoHyphenation> = expected;
     /// ```
     ///
@@ -308,6 +316,7 @@ impl<'a, S> Options<'a, S> {
             initial_indent: "",
             subsequent_indent: "",
             break_words: true,
+            wrap_algorithm: core::WrapAlgorithm::OptimalFit,
             splitter: splitter,
         }
     }
@@ -372,6 +381,18 @@ impl<'a, S: WordSplitter> Options<'a, S> {
         }
     }
 
+    /// Change [`self.wrap_algorithm`].
+    ///
+    /// See  [`core::WrapAlgorithm`] for details on the choices.
+    ///
+    /// [`self.wrap_algorithm`]: #structfield.wrap_algorithm
+    pub fn wrap_algorithm(self, wrap_algorithm: core::WrapAlgorithm) -> Self {
+        Options {
+            wrap_algorithm,
+            ..self
+        }
+    }
+
     /// Change [`self.splitter`]. The [`WordSplitter`] is used to fit
     /// part of a word into the current line when wrapping text.
     ///
@@ -395,6 +416,7 @@ impl<'a, S: WordSplitter> Options<'a, S> {
             initial_indent: self.initial_indent,
             subsequent_indent: self.subsequent_indent,
             break_words: self.break_words,
+            wrap_algorithm: self.wrap_algorithm,
             splitter: splitter,
         }
     }
@@ -516,6 +538,60 @@ where
 /// ]);
 /// ```
 ///
+/// # Optimal-Fit Wrapping
+///
+/// By default, `wrap` will try to ensure an even right margin by
+/// finding breaks which avoid short lines. We call this an
+/// “optimal-fit algorithm” since the line breaks are computed by
+/// considering all possible line breaks. The alternative is a
+/// “first-fit algorithm” which simply accumulates words until they no
+/// longer fit on the line.
+///
+/// As an example, using the first-fit algorithm to wrap the famous
+/// Hamlet quote “To be, or not to be: that is the question” in a
+/// narrow column with room for only 10 characters looks like this:
+///
+/// ```
+/// # use textwrap::{Options, wrap};
+/// # use textwrap::core::WrapAlgorithm::FirstFit;
+/// #
+/// # let lines = wrap("To be, or not to be: that is the question",
+/// #                  Options::new(10).wrap_algorithm(FirstFit));
+/// # assert_eq!(lines.join("\n") + "\n", "\
+/// To be, or
+/// not to be:
+/// that is
+/// the
+/// question
+/// # ");
+/// ```
+///
+/// Notice how the second to last line is quite narrow because
+/// “question” was too large to fit? The greedy first-fit algorithm
+/// doesn’t look ahead, so it has no other option than to put
+/// “question” onto its own line.
+///
+/// With the optimal-fit wrapping algorithm, the previous lines are
+/// shortened slightly in order to make the word “is” go into the
+/// second last line:
+///
+/// ```
+/// # use textwrap::{Options, wrap};
+/// # use textwrap::core::WrapAlgorithm::OptimalFit;
+/// #
+/// # let lines = wrap("To be, or not to be: that is the question",
+/// #                  Options::new(10).wrap_algorithm(OptimalFit));
+/// # assert_eq!(lines.join("\n") + "\n", "\
+/// To be,
+/// or not to
+/// be: that
+/// is the
+/// question
+/// # ");
+/// ```
+///
+/// Please see [`core::WrapAlgorithm`] for details.
+///
 /// # Examples
 ///
 /// The returned iterator yields lines of type `Cow<'_, str>`. If
@@ -579,7 +655,10 @@ where
 
         #[rustfmt::skip]
         let line_lengths = |i| if i == 0 { initial_width } else { subsequent_width };
-        let wrapped_words = core::wrap_fragments(&broken_words, line_lengths);
+        let wrapped_words = match options.wrap_algorithm {
+            core::WrapAlgorithm::OptimalFit => core::wrap_optimal_fit(&broken_words, line_lengths),
+            core::WrapAlgorithm::FirstFit => core::wrap_first_fit(&broken_words, line_lengths),
+        };
 
         let mut idx = 0;
         for words in wrapped_words {
@@ -651,13 +730,19 @@ where
 ///     initial_indent: "",
 ///     subsequent_indent: "",
 ///     break_words: false,
+///     wrap_algorithm: textwrap::core::WrapAlgorithm::FirstFit,
 ///     splitter: NoHyphenation,
 /// };
 /// ```
 ///
-/// Finally, unlike [`fill`], `fill_inplace` can leave trailing
-/// whitespace on lines. This is because we wrap by inserting a `'\n'`
-/// at the final whitespace in the input string:
+/// The wrap algorithm is [`core::WrapAlgorithm::FirstFit`] since this
+/// is the fastest algorithm — and the main reason to use
+/// `fill_inplace` is to get the string broken into newlines as fast
+/// as possible.
+///
+/// A last difference is that (unlike [`fill`]) `fill_inplace` can
+/// leave trailing whitespace on lines. This is because we wrap by
+/// inserting a `'\n'` at the final whitespace in the input string:
 ///
 /// ```
 /// let mut text = String::from("Hello   World!");
@@ -681,7 +766,7 @@ pub fn fill_inplace(text: &mut String, width: usize) {
     let mut offset = 0;
     for line in text.split('\n') {
         let words = core::find_words(line).collect::<Vec<_>>();
-        let wrapped_words = core::wrap_fragments(&words, |_| width);
+        let wrapped_words = core::wrap_first_fit(&words, |_| width);
 
         let mut line_offset = offset;
         for words in &wrapped_words[..wrapped_words.len() - 1] {
@@ -737,6 +822,17 @@ mod tests {
     #[test]
     fn wrap_simple() {
         assert_eq!(wrap("foo bar baz", 5), vec!["foo", "bar", "baz"]);
+    }
+
+    #[test]
+    fn to_be_or_not() {
+        assert_eq!(
+            wrap(
+                "To be, or not to be, that is the question.",
+                Options::new(10).wrap_algorithm(core::WrapAlgorithm::FirstFit)
+            ),
+            vec!["To be, or", "not to be,", "that is", "the", "question."]
+        );
     }
 
     #[test]
@@ -986,13 +1082,13 @@ mod tests {
         let options = Options::new(10);
         assert_eq!(
             wrap("participation is the key to success", &options),
-            vec!["participat", "ion is the", "key to", "success"]
+            vec!["participat", "ion is", "the key to", "success"]
         );
 
         let options = Options::new(10).splitter(dictionary);
         assert_eq!(
             wrap("participation is the key to success", &options),
-            vec!["participa-", "tion is", "the key to", "success"]
+            vec!["partici-", "pation is", "the key to", "success"]
         );
     }
 
@@ -1087,8 +1183,20 @@ mod tests {
         assert_eq!(fill("\n\n\n", 80), "\n\n\n");
         assert_eq!(fill("test\n", 80), "test\n");
         assert_eq!(fill("test\n\na\n\n", 80), "test\n\na\n\n");
-        assert_eq!(fill("1 3 5 7\n1 3 5 7", 7), "1 3 5 7\n1 3 5 7");
-        assert_eq!(fill("1 3 5 7\n1 3 5 7", 5), "1 3 5\n7\n1 3 5\n7");
+        assert_eq!(
+            fill(
+                "1 3 5 7\n1 3 5 7",
+                Options::new(7).wrap_algorithm(core::WrapAlgorithm::FirstFit)
+            ),
+            "1 3 5 7\n1 3 5 7"
+        );
+        assert_eq!(
+            fill(
+                "1 3 5 7\n1 3 5 7",
+                Options::new(5).wrap_algorithm(core::WrapAlgorithm::FirstFit)
+            ),
+            "1 3 5\n7\n1 3 5\n7"
+        );
     }
 
     #[test]
