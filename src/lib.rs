@@ -224,7 +224,6 @@ impl<'a> Options<'a, HyphenSplitter> {
     /// Equivalent to:
     ///
     /// ```no_run
-    /// # #![allow(unused_variables)]
     /// use textwrap::{termwidth, Options};
     ///
     /// let options = Options::new(termwidth());
@@ -271,47 +270,16 @@ impl<'a, S> Options<'a, S> {
     /// use textwrap::{HyphenSplitter, NoHyphenation, Options};
     /// # use textwrap::{WordSplitter};
     /// # const width: usize = 80;
-    /// # let expected: Options =
-    /// # Options {
-    /// #    width: width,
-    /// #    initial_indent: "",
-    /// #    subsequent_indent: "",
-    /// #    break_words: true,
-    /// #    splitter: Box::new(NoHyphenation),
-    /// # }
-    /// # ;
     ///
     /// // This opt contains a boxed trait object as splitter.
-    /// // Its type is actually: `Options<Box<dyn WordSplitter>>`
     /// // The type annotation is important, otherwise it will be not a trait object
     /// let mut opt: Options = Options::with_splitter(width, Box::new(NoHyphenation));
-    /// #
-    /// # let actual = opt;
-    /// # assert_eq!(actual.width, expected.width);
-    /// # assert_eq!(actual.initial_indent, expected.initial_indent);
-    /// # assert_eq!(actual.subsequent_indent, expected.subsequent_indent);
-    /// # assert_eq!(actual.break_words, expected.break_words);
-    /// # let expected_coerced: Options<Box<dyn WordSplitter>> = expected;
+    /// // Its type is actually: `Options<Box<dyn WordSplitter>>`:
+    /// let opt_coerced: Options<Box<dyn WordSplitter>> = opt;
     ///
     /// // Thus, it can be overridden with a different splitter.
     /// opt = Options::with_splitter(width, Box::new(HyphenSplitter));
     /// // Now, containing a `HyphenSplitter` instead.
-    /// #
-    /// # let expected: Options =
-    /// # Options {
-    /// #    width: width,
-    /// #    initial_indent: "",
-    /// #    subsequent_indent: "",
-    /// #    break_words: true,
-    /// #    splitter: Box::new(HyphenSplitter),
-    /// # }
-    /// # ;
-    /// # let actual = opt;
-    /// # assert_eq!(actual.width, expected.width);
-    /// # assert_eq!(actual.initial_indent, expected.initial_indent);
-    /// # assert_eq!(actual.subsequent_indent, expected.subsequent_indent);
-    /// # assert_eq!(actual.break_words, expected.break_words);
-    /// # let expected_coerced: Options<Box<dyn WordSplitter>> = expected;
     /// ```
     ///
     /// Since the splitter is given by value, which determines the generic
@@ -324,27 +292,10 @@ impl<'a, S> Options<'a, S> {
     ///
     /// ```
     /// use textwrap::{HyphenSplitter, Options};
-    /// # use textwrap::{WordSplitter};
     /// # const width: usize = 80;
-    /// # let expected =
-    /// # Options {
-    /// #    width: width,
-    /// #    initial_indent: "",
-    /// #    subsequent_indent: "",
-    /// #    break_words: true,
-    /// #    splitter: HyphenSplitter,
-    /// # }
-    /// # ;
     ///
     /// const FOO: Options<HyphenSplitter> = Options::with_splitter(width, HyphenSplitter);
     /// static BAR: Options<HyphenSplitter> = FOO;
-    /// #
-    /// # let actual = &BAR;
-    /// # assert_eq!(actual.width, expected.width);
-    /// # assert_eq!(actual.initial_indent, expected.initial_indent);
-    /// # assert_eq!(actual.subsequent_indent, expected.subsequent_indent);
-    /// # assert_eq!(actual.break_words, expected.break_words);
-    /// # let expected_coerced: &Options<HyphenSplitter> = actual;
     /// ```
     pub const fn with_splitter(width: usize, splitter: S) -> Self {
         Options {
@@ -367,7 +318,6 @@ impl<'a, S: WordSplitter> Options<'a, S> {
     /// initial indentation and wrapping each paragraph by itself:
     ///
     /// ```no_run
-    /// # #![allow(unused_variables)]
     /// use textwrap::Options;
     ///
     /// let options = Options::new(15).initial_indent("    ");
@@ -390,7 +340,6 @@ impl<'a, S: WordSplitter> Options<'a, S> {
     /// single paragraph as a bullet list:
     ///
     /// ```no_run
-    /// # #![allow(unused_variables)]
     /// use textwrap::Options;
     ///
     /// let options = Options::new(15)
@@ -456,7 +405,6 @@ impl<'a, S: WordSplitter> Options<'a, S> {
 /// with a two column margin to the left and the right:
 ///
 /// ```no_run
-/// # #![allow(unused_variables)]
 /// use textwrap::{termwidth, NoHyphenation, Options};
 ///
 /// let width = termwidth() - 4; // Two columns on each side.
