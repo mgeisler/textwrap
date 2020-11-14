@@ -145,8 +145,8 @@ impl<'a> From<usize> for Options<'a, HyphenSplitter> {
 
 /// Constructors for boxed Options, specifically.
 impl<'a> Options<'a, HyphenSplitter> {
-    /// Creates a new `Options` with the specified width and static dispatch
-    /// using the `HyphenSplitter`. Equivalent to
+    /// Creates a new `Options` with the specified width and static
+    /// dispatch using the `HyphenSplitter`. Equivalent to
     ///
     /// ```
     /// # use textwrap::{Options, HyphenSplitter, WordSplitter};
@@ -168,19 +168,22 @@ impl<'a> Options<'a, HyphenSplitter> {
     /// # let expected_coerced: Options<'static, HyphenSplitter> = expected;
     /// ```
     ///
-    /// Static dispatch mean here, that the splitter is stored as-is and the
-    /// type is known at compile-time. Thus the returned value is actually a
-    /// `Options<HyphenSplitter>`.
+    /// Static dispatch mean here, that the splitter is stored as-is
+    /// and the type is known at compile-time. Thus the returned value
+    /// is actually a `Options<HyphenSplitter>`.
     ///
-    /// Dynamic dispatch on the other hand, mean that the splitter is stored as a trait object
-    /// for instance in a `Box<dyn WordSplitter>`. This way the splitter's inner type
-    /// can be changed without changing the type of this struct, which then would be just
-    /// `Options` as a short cut for `Options<Box<dyn WordSplitter>>`.
+    /// Dynamic dispatch on the other hand, mean that the splitter is
+    /// stored as a trait object for instance in a `Box<dyn
+    /// WordSplitter>`. This way the splitter's inner type can be
+    /// changed without changing the type of this struct, which then
+    /// would be just `Options` as a short cut for `Options<Box<dyn
+    /// WordSplitter>>`.
     ///
-    /// The value and type of the splitter can be choose from the start using the `with_splitter`
-    /// constructor or changed afterwards using the `splitter` method. Whether static or
-    /// dynamic dispatch is used, depends on whether these functions are given a boxed `WordSplitter`
-    /// or not. Take for example:
+    /// The value and type of the splitter can be choose from the
+    /// start using the `with_splitter` constructor or changed
+    /// afterwards using the `splitter` method. Whether static or
+    /// dynamic dispatch is used, depends on whether these functions
+    /// are given a boxed `WordSplitter` or not. Take for example:
     ///
     /// ```
     /// use textwrap::{HyphenSplitter, NoHyphenation, Options};
@@ -208,9 +211,10 @@ impl<'a> Options<'a, HyphenSplitter> {
     /// # let opt_coerce: Options<Box<dyn WordSplitter>> = opt;
     /// ```
     ///
-    /// Notice that the last two variables have the same type, despite the different `WordSplitter`
-    /// in use. Thus dynamic dispatch allows to change the splitter at run-time without changing
-    /// the variables type.
+    /// Notice that the last two variables have the same type, despite
+    /// the different `WordSplitter` in use. Thus dynamic dispatch
+    /// allows to change the splitter at run-time without changing the
+    /// variables type.
     pub const fn new(width: usize) -> Self {
         Options::with_splitter(width, HyphenSplitter)
     }
@@ -238,8 +242,8 @@ impl<'a> Options<'a, HyphenSplitter> {
 }
 
 impl<'a, S> Options<'a, S> {
-    /// Creates a new `Options` with the specified width and splitter. Equivalent
-    /// to
+    /// Creates a new `Options` with the specified width and splitter.
+    /// Equivalent to
     ///
     /// ```
     /// # use textwrap::{Options, NoHyphenation, HyphenSplitter};
@@ -262,9 +266,11 @@ impl<'a, S> Options<'a, S> {
     /// # let expected_coerced: Options<'static, NoHyphenation> = expected;
     /// ```
     ///
-    /// This constructor allows to specify the splitter to be used. It is like a short-cut for
-    /// `Options::new(w).splitter(s)`, but this function is a `const fn`. The given splitter may
-    /// be in a `Box`, which then can be coerced into a trait object for dynamic dispatch:
+    /// This constructor allows to specify the splitter to be used. It
+    /// is like a short-cut for `Options::new(w).splitter(s)`, but
+    /// this function is a `const fn`. The given splitter may be in a
+    /// `Box`, which then can be coerced into a trait object for
+    /// dynamic dispatch:
     ///
     /// ```
     /// use textwrap::{HyphenSplitter, NoHyphenation, Options};
@@ -282,13 +288,14 @@ impl<'a, S> Options<'a, S> {
     /// // Now, containing a `HyphenSplitter` instead.
     /// ```
     ///
-    /// Since the splitter is given by value, which determines the generic
-    /// type parameter, it can be used to produce both an `Options` with static
-    /// and dynamic dispatch, respectively.
-    /// While dynamic dispatch allows to change the type of the inner splitter
-    /// at run time as seen above, static dispatch especially can store the splitter
-    /// directly, without the need for a box. This in turn allows it to be used
-    /// in constant and static context:
+    /// Since the splitter is given by value, which determines the
+    /// generic type parameter, it can be used to produce both an
+    /// `Options` with static and dynamic dispatch, respectively.
+    /// While dynamic dispatch allows to change the type of the inner
+    /// splitter at run time as seen above, static dispatch especially
+    /// can store the splitter directly, without the need for a box.
+    /// This in turn allows it to be used in constant and static
+    /// context:
     ///
     /// ```
     /// use textwrap::{HyphenSplitter, Options};
@@ -370,9 +377,10 @@ impl<'a, S: WordSplitter> Options<'a, S> {
     /// Change [`self.splitter`]. The [`WordSplitter`] is used to fit
     /// part of a word into the current line when wrapping text.
     ///
-    /// This function may return a different type than `Self`. That is the case when the given
-    /// `splitter` is of a different type the the currently stored one in the `splitter` field.
-    /// Take for example:
+    /// This function may return a different type than `Self`. That is
+    /// the case when the given `splitter` is of a different type the
+    /// the currently stored one in the `splitter` field. Take for
+    /// example:
     ///
     /// ```
     /// use textwrap::{HyphenSplitter, NoHyphenation, Options};
