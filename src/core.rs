@@ -4,7 +4,7 @@
 //! advanced wrapping functionality when the `wrap` and `fill`
 //! function don't do what you want.
 
-use crate::splitting::WordSplitter;
+use crate::{Options, WordSplitter};
 use unicode_width::UnicodeWidthChar;
 use unicode_width::UnicodeWidthStr;
 
@@ -413,7 +413,6 @@ pub fn wrap_fragments<T: Fragment, F: Fn(usize) -> usize>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{Options, WordSplitter};
 
     // Like assert_eq!, but the left expression is an iterator.
     macro_rules! assert_iter_eq {
