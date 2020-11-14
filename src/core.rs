@@ -411,8 +411,6 @@ pub fn wrap_fragments<T: Fragment, F: Fn(usize) -> usize>(
 mod tests {
     use super::*;
     use crate::{Options, WordSplitter};
-    #[cfg(feature = "hyphenation")]
-    use hyphenation::{Language, Load, Standard};
 
     // Like assert_eq!, but the left expression is an iterator.
     macro_rules! assert_iter_eq {
