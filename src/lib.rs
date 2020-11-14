@@ -25,7 +25,7 @@
 //! ```no_run
 //! # #[cfg(feature = "hyphenation")]
 //! use hyphenation::{Language, Load, Standard};
-//! use textwrap::{Options, fill};
+//! use textwrap::{fill, Options};
 //!
 //! # #[cfg(feature = "hyphenation")]
 //! fn main() {
@@ -183,7 +183,7 @@ impl<'a> Options<'a, HyphenSplitter> {
     /// or not. Take for example:
     ///
     /// ```
-    /// use textwrap::{Options, NoHyphenation, HyphenSplitter};
+    /// use textwrap::{HyphenSplitter, NoHyphenation, Options};
     /// # use textwrap::{WordSplitter};
     /// # let width = 80;
     ///
@@ -211,7 +211,6 @@ impl<'a> Options<'a, HyphenSplitter> {
     /// Notice that the last two variables have the same type, despite the different `WordSplitter`
     /// in use. Thus dynamic dispatch allows to change the splitter at run-time without changing
     /// the variables type.
-    ///
     pub const fn new(width: usize) -> Self {
         Options::with_splitter(width, HyphenSplitter)
     }
@@ -226,7 +225,7 @@ impl<'a> Options<'a, HyphenSplitter> {
     ///
     /// ```no_run
     /// # #![allow(unused_variables)]
-    /// use textwrap::{Options, termwidth};
+    /// use textwrap::{termwidth, Options};
     ///
     /// let options = Options::new(termwidth());
     /// ```
@@ -269,7 +268,7 @@ impl<'a, S> Options<'a, S> {
     /// be in a `Box`, which then can be coerced into a trait object for dynamic dispatch:
     ///
     /// ```
-    /// use textwrap::{Options, NoHyphenation, HyphenSplitter};
+    /// use textwrap::{HyphenSplitter, NoHyphenation, Options};
     /// # use textwrap::{WordSplitter};
     /// # const width: usize = 80;
     /// # let expected: Options =
@@ -324,7 +323,7 @@ impl<'a, S> Options<'a, S> {
     /// in constant and static context:
     ///
     /// ```
-    /// use textwrap::{Options, HyphenSplitter};
+    /// use textwrap::{HyphenSplitter, Options};
     /// # use textwrap::{WordSplitter};
     /// # const width: usize = 80;
     /// # let expected =
@@ -347,7 +346,6 @@ impl<'a, S> Options<'a, S> {
     /// # assert_eq!(actual.break_words, expected.break_words);
     /// # let expected_coerced: &Options<HyphenSplitter> = actual;
     /// ```
-    ///
     pub const fn with_splitter(width: usize, splitter: S) -> Self {
         Options {
             width,
@@ -428,7 +426,7 @@ impl<'a, S: WordSplitter> Options<'a, S> {
     /// Take for example:
     ///
     /// ```
-    /// use textwrap::{Options, HyphenSplitter, NoHyphenation};
+    /// use textwrap::{HyphenSplitter, NoHyphenation, Options};
     /// // The default type returned by `new` is `Options<HyphenSplitter>`
     /// let opt: Options<HyphenSplitter> = Options::new(80);
     /// // Setting a different splitter changes the type
@@ -459,7 +457,7 @@ impl<'a, S: WordSplitter> Options<'a, S> {
 ///
 /// ```no_run
 /// # #![allow(unused_variables)]
-/// use textwrap::{Options, NoHyphenation, termwidth};
+/// use textwrap::{termwidth, NoHyphenation, Options};
 ///
 /// let width = termwidth() - 4; // Two columns on each side.
 /// let options = Options::new(width)
@@ -487,8 +485,10 @@ pub fn termwidth() -> usize {
 /// ```
 /// use textwrap::fill;
 ///
-/// assert_eq!(fill("Memory safety without garbage collection.", 15),
-///            "Memory safety\nwithout garbage\ncollection.");
+/// assert_eq!(
+///     fill("Memory safety without garbage collection.", 15),
+///     "Memory safety\nwithout garbage\ncollection."
+/// );
 /// ```
 ///
 /// If you need to customize the wrapping, you can pass an [`Options`]
@@ -497,9 +497,13 @@ pub fn termwidth() -> usize {
 /// ```
 /// use textwrap::{fill, Options};
 ///
-/// let options = Options::new(15).initial_indent("- ").subsequent_indent("  ");
-/// assert_eq!(fill("Memory safety without garbage collection.", &options),
-///            "- Memory safety\n  without\n  garbage\n  collection.");
+/// let options = Options::new(15)
+///     .initial_indent("- ")
+///     .subsequent_indent("  ");
+/// assert_eq!(
+///     fill("Memory safety without garbage collection.", &options),
+///     "- Memory safety\n  without\n  garbage\n  collection."
+/// );
 /// ```
 ///
 /// [`wrap`]: fn.wrap.html
@@ -549,7 +553,9 @@ where
 /// ```
 /// use textwrap::{wrap, Options};
 ///
-/// let options = Options::new(15).initial_indent("- ").subsequent_indent("  ");
+/// let options = Options::new(15)
+///     .initial_indent("- ")
+///     .subsequent_indent("  ");
 /// let lines = wrap("Memory safety without garbage collection.", &options);
 /// assert_eq!(lines, &[
 ///     "- Memory safety",
@@ -573,15 +579,21 @@ where
 ///
 /// let options = Options::new(15).subsequent_indent("....");
 /// let lines = wrap("Wrapping text all day long.", &options);
-/// let annotated = lines.iter().map(|line| match line {
-///     Borrowed(text) => format!("[Borrowed] {}", text),
-///     Owned(text)    => format!("[Owned]    {}", text),
-/// }).collect::<Vec<_>>();
-/// assert_eq!(annotated, &[
-///     "[Borrowed] Wrapping text",
-///     "[Owned]    ....all day",
-///     "[Owned]    ....long.",
-/// ]);
+/// let annotated = lines
+///     .iter()
+///     .map(|line| match line {
+///         Borrowed(text) => format!("[Borrowed] {}", text),
+///         Owned(text) => format!("[Owned]    {}", text),
+///     })
+///     .collect::<Vec<_>>();
+/// assert_eq!(
+///     annotated,
+///     &[
+///         "[Borrowed] Wrapping text",
+///         "[Owned]    ....all day",
+///         "[Owned]    ....long.",
+///     ]
+/// );
 /// ```
 ///
 /// [`fill`]: fn.fill.html
@@ -686,11 +698,11 @@ where
 /// # use textwrap::{Options, NoHyphenation};
 /// # let width = 80;
 /// Options {
-///    width: width,
-///    initial_indent: "",
-///    subsequent_indent: "",
-///    break_words: false,
-///    splitter: NoHyphenation,
+///     width: width,
+///     initial_indent: "",
+///     subsequent_indent: "",
+///     break_words: false,
+///     splitter: NoHyphenation,
 /// };
 /// ```
 ///
