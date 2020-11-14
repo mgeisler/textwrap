@@ -93,7 +93,7 @@ impl<'a> Word<'a> {
 
         Word {
             word: trimmed,
-            width,
+            width: width,
             whitespace: &word[trimmed.len()..],
             penalty: "",
         }
@@ -125,7 +125,7 @@ impl<'a> Word<'a> {
                 if width > 0 && width + ch_width > line_width {
                     let word = Word {
                         word: &self.word[offset..idx],
-                        width,
+                        width: width,
                         whitespace: "",
                         penalty: "",
                     };
@@ -140,7 +140,7 @@ impl<'a> Word<'a> {
             if offset < self.word.len() {
                 let word = Word {
                     word: &self.word[offset..],
-                    width,
+                    width: width,
                     whitespace: self.whitespace,
                     penalty: self.penalty,
                 };

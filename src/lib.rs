@@ -360,7 +360,7 @@ impl<'a, S> Options<'a, S> {
             initial_indent: "",
             subsequent_indent: "",
             break_words: true,
-            splitter,
+            splitter: splitter,
         }
     }
 }
@@ -449,7 +449,7 @@ impl<'a, S: WordSplitter> Options<'a, S> {
             initial_indent: self.initial_indent,
             subsequent_indent: self.subsequent_indent,
             break_words: self.break_words,
-            splitter,
+            splitter: splitter,
         }
     }
 }
@@ -1078,14 +1078,16 @@ mod tests {
         let green_hello = "\u{1b}[0m\u{1b}[32mHello\u{1b}[0m";
         let blue_world = "\u{1b}[0m\u{1b}[34mWorld!\u{1b}[0m";
         assert_eq!(
-            fill(&format!("{} {}", green_hello, blue_world), 6),
-            format!("{}\n{}", green_hello, blue_world),
+            fill(&(String::from(green_hello) + " " + &blue_world), 6),
+            String::from(green_hello) + "\n" + &blue_world
         );
     }
 
     #[test]
     fn cloning_works() {
         static OPT: Options<HyphenSplitter> = Options::with_splitter(80, HyphenSplitter);
-        assert_eq!(OPT.width, 80);
+        #[allow(clippy::clone_on_copy)]
+        let opt = OPT.clone();
+        assert_eq!(opt.width, 80);
     }
 }
