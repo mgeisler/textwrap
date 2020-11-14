@@ -243,12 +243,11 @@ pub fn find_words(line: &str) -> impl Iterator<Item = Word> {
 ///     vec![Word::from("foo-bar")]
 /// );
 /// ```
-pub fn split_words<'a, I, S: WordSplitter, T: Into<crate::Options<'a, S>>>(
-    words: I,
-    options: T,
-) -> impl Iterator<Item = Word<'a>>
+pub fn split_words<'a, I, S, Opt>(words: I, options: Opt) -> impl Iterator<Item = Word<'a>>
 where
     I: IntoIterator<Item = Word<'a>>,
+    S: WordSplitter,
+    Opt: Into<Options<'a, S>>,
 {
     let options = options.into();
 

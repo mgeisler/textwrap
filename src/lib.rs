@@ -503,7 +503,11 @@ pub fn termwidth() -> usize {
 /// ```
 ///
 /// [`wrap`]: fn.wrap.html
-pub fn fill<'a, S: WordSplitter, T: Into<Options<'a, S>>>(text: &str, options: T) -> String {
+pub fn fill<'a, S, Opt>(text: &str, options: Opt) -> String
+where
+    S: WordSplitter,
+    Opt: Into<Options<'a, S>>,
+{
     // This will avoid reallocation in simple cases (no
     // indentation, no hyphenation).
     let mut result = String::with_capacity(text.len());
@@ -581,10 +585,11 @@ pub fn fill<'a, S: WordSplitter, T: Into<Options<'a, S>>>(text: &str, options: T
 /// ```
 ///
 /// [`fill`]: fn.fill.html
-pub fn wrap<'a, S: WordSplitter, T: Into<Options<'a, S>>>(
-    text: &str,
-    options: T,
-) -> Vec<Cow<'_, str>> {
+pub fn wrap<'a, S, Opt>(text: &str, options: Opt) -> Vec<Cow<'_, str>>
+where
+    S: WordSplitter,
+    Opt: Into<Options<'a, S>>,
+{
     let options = options.into();
 
     let initial_width = options.width.saturating_sub(options.initial_indent.width());
