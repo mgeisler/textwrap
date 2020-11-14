@@ -108,7 +108,7 @@ pub mod core;
 
 /// Holds settings for wrapping and filling text.
 #[derive(Debug, Clone)]
-pub struct Options<'a, S = Box<dyn WordSplitter>> {
+pub struct Options<'a, S: ?Sized = Box<dyn WordSplitter>> {
     /// The width in columns at which the text will be wrapped.
     pub width: usize,
     /// Indentation used for the first line of output.
@@ -125,7 +125,7 @@ pub struct Options<'a, S = Box<dyn WordSplitter>> {
     pub splitter: S,
 }
 
-impl<'a, S> From<&'a Options<'a, S>> for Options<'a, &'a S> {
+impl<'a, S: ?Sized> From<&'a Options<'a, S>> for Options<'a, &'a S> {
     fn from(options: &'a Options<'a, S>) -> Self {
         Self {
             width: options.width,
@@ -1238,5 +1238,73 @@ mod tests {
         let mut text = String::from("foo  bar    baz");
         fill_inplace(&mut text, 10);
         assert_eq!(text, "foo  bar   \nbaz");
+    }
+
+    #[test]
+    fn trait_object() {
+        let opt_a: Options<NoHyphenation> = Options::with_splitter(20, NoHyphenation);
+        let opt_b: Options<HyphenSplitter> = 10.into();
+
+        let mut dyn_opt: &Options<dyn WordSplitter> = &opt_a;
+        assert_eq!(wrap("foo bar-baz", dyn_opt), vec!["foo bar-baz"]);
+
+        // Just assign a totally different option
+        dyn_opt = &opt_b;
+        assert_eq!(wrap("foo bar-baz", dyn_opt), vec!["foo bar-", "baz"]);
+    }
+
+    #[test]
+    fn trait_object_vec() {
+        // Create a vector of referenced trait-objects
+        let mut vector: Vec<&Options<dyn WordSplitter>> = Vec::new();
+        // Expected result from each options
+        let mut results = Vec::new();
+
+        let opt_usize: Options<_> = 10.into();
+        vector.push(&opt_usize);
+        results.push(vec!["over-", "caffinated"]);
+
+        #[cfg(feature = "hyphenation")]
+        let dictionary = Standard::from_embedded(Language::EnglishUS).unwrap();
+        #[cfg(feature = "hyphenation")]
+        let opt_hyp = Options::new(8).splitter(dictionary);
+        #[cfg(feature = "hyphenation")]
+        vector.push(&opt_hyp);
+        #[cfg(feature = "hyphenation")]
+        results.push(vec!["over-", "caffi-", "nated"]);
+
+        // Actually: Options<Box<dyn WordSplitter>>
+        let opt_box: Options = Options::new(10)
+            .break_words(false)
+            .splitter(Box::new(NoHyphenation));
+        vector.push(&opt_box);
+        results.push(vec!["over-caffinated"]);
+
+        // Test each entry
+        for (opt, expected) in vector.into_iter().zip(results) {
+            assert_eq!(
+                // Just all the totally different options
+                wrap("over-caffinated", opt),
+                expected
+            );
+        }
+    }
+
+    #[test]
+    fn outer_boxing() {
+        let mut wrapper: Box<Options<dyn WordSplitter>> = Box::new(Options::new(80));
+
+        // We must first deref the Box into a trait object and pass it by-reference
+        assert_eq!(wrap("foo bar baz", &*wrapper), vec!["foo bar baz"]);
+
+        // Replace the `Options` with a `usize`
+        wrapper = Box::new(Options::from(5));
+
+        // Deref per-se works as well, it already returns a reference
+        use std::ops::Deref;
+        assert_eq!(
+            wrap("foo bar baz", wrapper.deref()),
+            vec!["foo", "bar", "baz"]
+        );
     }
 }
