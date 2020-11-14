@@ -4,7 +4,7 @@
 //! advanced wrapping functionality when the `wrap` and `fill`
 //! function don't do what you want.
 
-use crate::splitting::WordSplitter;
+use crate::{Options, WordSplitter};
 use unicode_width::UnicodeWidthChar;
 use unicode_width::UnicodeWidthStr;
 
@@ -107,8 +107,10 @@ impl<'a> Word<'a> {
     ///
     /// ```
     /// use textwrap::core::Word;
-    /// assert_eq!(Word::from("Hello!  ").break_apart(3).collect::<Vec<_>>(),
-    ///            vec![Word::from("Hel"), Word::from("lo!  ")]);
+    /// assert_eq!(
+    ///     Word::from("Hello!  ").break_apart(3).collect::<Vec<_>>(),
+    ///     vec![Word::from("Hel"), Word::from("lo!  ")]
+    /// );
     /// ```
     pub fn break_apart<'b>(&'b self, line_width: usize) -> impl Iterator<Item = Word<'a>> + 'b {
         let mut char_indices = self.word.char_indices();
@@ -176,7 +178,7 @@ impl Fragment for Word<'_> {
 /// # Examples
 ///
 /// ```
-/// use textwrap::core::{Fragment, Word, find_words};
+/// use textwrap::core::{find_words, Fragment, Word};
 /// let words = find_words("Hello World!").collect::<Vec<_>>();
 /// assert_eq!(words, vec![Word::from("Hello "), Word::from("World!")]);
 /// assert_eq!(words[0].width(), 5);
@@ -226,8 +228,8 @@ pub fn find_words(line: &str) -> impl Iterator<Item = Word> {
 /// # Examples
 ///
 /// ```
-/// use textwrap::{Options, NoHyphenation};
-/// use textwrap::core::{Word, split_words};
+/// use textwrap::core::{split_words, Word};
+/// use textwrap::{NoHyphenation, Options};
 ///
 /// // The default splitter is HyphenSplitter:
 /// let options = Options::new(80);
@@ -243,12 +245,11 @@ pub fn find_words(line: &str) -> impl Iterator<Item = Word> {
 ///     vec![Word::from("foo-bar")]
 /// );
 /// ```
-pub fn split_words<'a, I, S: WordSplitter, T: Into<crate::Options<'a, S>>>(
-    words: I,
-    options: T,
-) -> impl Iterator<Item = Word<'a>>
+pub fn split_words<'a, I, S, Opt>(words: I, options: Opt) -> impl Iterator<Item = Word<'a>>
 where
     I: IntoIterator<Item = Word<'a>>,
+    S: WordSplitter,
+    Opt: Into<Options<'a, S>>,
 {
     let options = options.into();
 
@@ -329,14 +330,14 @@ where
 /// on your estimates. You can model this with a program like this:
 ///
 /// ```
-/// use textwrap::core::{Fragment, wrap_fragments};
+/// use textwrap::core::{wrap_fragments, Fragment};
 ///
 /// #[derive(Debug)]
 /// struct Task<'a> {
-///      name: &'a str,
-///      hours: usize,    // Time needed to complete task.
-///      sweep: usize,    // Time needed for a quick sweep after task during the day.
-///      cleanup: usize,  // Time needed to cleanup after task at end of day.
+///     name: &'a str,
+///     hours: usize,   // Time needed to complete task.
+///     sweep: usize,   // Time needed for a quick sweep after task during the day.
+///     cleanup: usize, // Time needed to cleanup after task at end of day.
 /// }
 ///
 /// impl Fragment for Task<'_> {
@@ -360,7 +361,7 @@ where
 ///
 /// fn assign_days<'a>(tasks: &[Task<'a>], day_length: usize) -> Vec<(usize, Vec<&'a str>)> {
 ///     let mut days = Vec::new();
-///     for day in wrap_fragments(&tasks, |i| { day_length }) {
+///     for day in wrap_fragments(&tasks, |i| day_length) {
 ///         let last = day.last().unwrap();
 ///         let work_hours: usize = day.iter().map(|t| t.hours + t.sweep).sum();
 ///         let names = day.iter().map(|t| t.name).collect::<Vec<_>>();
@@ -370,21 +371,27 @@ where
 /// }
 ///
 /// // With a single crew working 8 hours a day:
-/// assert_eq!(assign_days(&tasks, 8), [
-///     (7, vec!["Foundation"]),
-///     (8, vec!["Framing", "Plumbing"]),
-///     (7, vec!["Electrical", "Insulation"]),
-///     (5, vec!["Drywall"]),
-///     (7, vec!["Floors", "Countertops"]),
-///     (4, vec!["Bathrooms"]),
-/// ]);
+/// assert_eq!(
+///     assign_days(&tasks, 8),
+///     [
+///         (7, vec!["Foundation"]),
+///         (8, vec!["Framing", "Plumbing"]),
+///         (7, vec!["Electrical", "Insulation"]),
+///         (5, vec!["Drywall"]),
+///         (7, vec!["Floors", "Countertops"]),
+///         (4, vec!["Bathrooms"]),
+///     ]
+/// );
 ///
 /// // With two crews working in shifts, 16 hours a day:
-/// assert_eq!(assign_days(&tasks, 16), [
-///     (14, vec!["Foundation", "Framing", "Plumbing"]),
-///     (15, vec!["Electrical", "Insulation", "Drywall", "Floors"]),
-///      (6, vec!["Countertops", "Bathrooms"]),
-/// ]);
+/// assert_eq!(
+///     assign_days(&tasks, 16),
+///     [
+///         (14, vec!["Foundation", "Framing", "Plumbing"]),
+///         (15, vec!["Electrical", "Insulation", "Drywall", "Floors"]),
+///         (6, vec!["Countertops", "Bathrooms"]),
+///     ]
+/// );
 /// ```
 ///
 /// Apologies to anyone who actually knows how to build a house and
@@ -413,7 +420,6 @@ pub fn wrap_fragments<T: Fragment, F: Fn(usize) -> usize>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{Options, WordSplitter};
 
     // Like assert_eq!, but the left expression is an iterator.
     macro_rules! assert_iter_eq {

@@ -26,7 +26,7 @@ pub trait WordSplitter: std::fmt::Debug {
     /// # Examples
     ///
     /// ```
-    /// use textwrap::{NoHyphenation, HyphenSplitter, WordSplitter};
+    /// use textwrap::{HyphenSplitter, NoHyphenation, WordSplitter};
     /// assert_eq!(NoHyphenation.split_points("cannot-be-split"), vec![]);
     /// assert_eq!(HyphenSplitter.split_points("can-be-split"), vec![4, 7]);
     /// ```
@@ -57,7 +57,7 @@ impl<T: WordSplitter> WordSplitter for &T {
 /// hyphenation:
 ///
 /// ```
-/// use textwrap::{wrap, Options, NoHyphenation};
+/// use textwrap::{wrap, NoHyphenation, Options};
 ///
 /// let options = Options::new(8).splitter(NoHyphenation);
 /// assert_eq!(wrap("foo bar-baz", &options),
