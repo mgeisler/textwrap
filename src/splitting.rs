@@ -47,7 +47,7 @@ impl<S: WordSplitter + ?Sized> WordSplitter for Box<S> {
     }
 }
 */
-impl<T: WordSplitter> WordSplitter for &T {
+impl<T: ?Sized + WordSplitter> WordSplitter for &T {
     fn split_points(&self, word: &str) -> Vec<usize> {
         (*self).split_points(word)
     }
