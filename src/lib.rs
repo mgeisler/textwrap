@@ -1,4 +1,5 @@
-//! `textwrap` provides functions for word wrapping and filling text.
+//! The textwrap library provides functions for word wrapping and
+//! filling text.
 //!
 //! Wrapping text can be very useful in commandline programs where you
 //! want to format dynamic output nicely so it looks good in a
@@ -50,13 +51,14 @@
 //! # Wrapping Strings at Compile Time
 //!
 //! If your strings are known at compile time, please take a look at
-//! the procedural macros from the [`textwrap-macros` crate].
+//! the procedural macros from the [textwrap-macros] crate.
 //!
 //! # Displayed Width vs Byte Size
 //!
 //! To word wrap text, one must know the width of each word so one can
 //! know when to break lines. This library measures the width of text
-//! using the [displayed width][unicode-width], not the size in bytes.
+//! using the _displayed width_ (computed via [UnicodeWidthStr]), not
+//! the size in bytes.
 //!
 //! This is important for non-ASCII text. ASCII characters such as `a`
 //! and `!` are simple and take up one column each. This means that
@@ -71,22 +73,16 @@
 //!
 //! # Cargo Features
 //!
-//! The library has two optional features:
+//! The textwrap library has two optional features:
 //!
 //! * `terminal_size`: enables automatic detection of the terminal
-//!   width via the [terminal_size][] crate. See the
+//!   width via the [terminal_size] crate. See the
 //!   [`Options::with_termwidth`] constructor for details.
 //!
 //! * `hyphenation`: enables language-sentive hyphenation via the
-//!   [hyphenation][] crate. See the [`WordSplitter`] trait for
-//!   details.
+//!   [hyphenation] crate. See the [`WordSplitter`] trait for details.
 //!
-//! [`textwrap-macros` crate]: https://crates.io/crates/textwrap-macros
-//! [unicode-width]: https://docs.rs/unicode-width/
-//! [terminal_size]: https://crates.io/crates/terminal_size
-//! [hyphenation]: https://crates.io/crates/hyphenation
-//! [`Options::with_termwidth`]: struct.Options.html#method.with_termwidth
-//! [`WordSplitter`]: trait.WordSplitter.html
+//! [textwrap-macros]: https://docs.rs/textwrap-macros/
 
 #![doc(html_root_url = "https://docs.rs/textwrap/0.12.1")]
 #![forbid(unsafe_code)] // See https://github.com/mgeisler/textwrap/issues/210
@@ -391,7 +387,6 @@ impl<'a, S: WordSplitter> Options<'a, S> {
     /// ```
     ///
     /// [`self.splitter`]: #structfield.splitter
-    /// [`WordSplitter`]: trait.WordSplitter.html
     pub fn splitter<T>(self, splitter: T) -> Options<'a, T> {
         Options {
             width: self.width,
@@ -461,8 +456,6 @@ pub fn termwidth() -> usize {
 ///     "- Memory safety\n  without\n  garbage\n  collection."
 /// );
 /// ```
-///
-/// [`wrap`]: fn.wrap.html
 pub fn fill<'a, S, Opt>(text: &str, options: Opt) -> String
 where
     S: WordSplitter,
@@ -551,8 +544,6 @@ where
 ///     ]
 /// );
 /// ```
-///
-/// [`fill`]: fn.fill.html
 pub fn wrap<'a, S, Opt>(text: &str, options: Opt) -> Vec<Cow<'_, str>>
 where
     S: WordSplitter,

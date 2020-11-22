@@ -7,14 +7,13 @@
 
 /// The `WordSplitter` trait describes where words can be split.
 ///
-/// If the `textwrap` crate has been compiled with the `hyphenation`
+/// If the textwrap crate has been compiled with the `hyphenation`
 /// feature enabled, you will find an implementation of `WordSplitter`
 /// by the `hyphenation::Standard` struct. Use this struct for
-/// language-aware hyphenation. See the [`hyphenation` documentation]
+/// language-aware hyphenation. See the [hyphenation] documentation
 /// for details.
 ///
-/// [`wrap`]: ../fn.wrap.html
-/// [`hyphenation` documentation]: https://docs.rs/hyphenation/
+/// [`wrap`]: super::wrap()
 pub trait WordSplitter: std::fmt::Debug {
     /// Return all possible indices where `word` can be split.
     ///
@@ -64,7 +63,7 @@ impl<T: WordSplitter> WordSplitter for &T {
 ///            vec!["foo", "bar-baz"]);
 /// ```
 ///
-/// [`Options.splitter`]: ../struct.Options.html#structfield.splitter
+/// [`Options.splitter`]: super::Options::splitter
 #[derive(Clone, Copy, Debug)]
 pub struct NoHyphenation;
 
