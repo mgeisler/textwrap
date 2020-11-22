@@ -1,8 +1,8 @@
 //! Building blocks for advanced wrapping functionality.
 //!
 //! The functions and structs in this module can be used to implement
-//! advanced wrapping functionality when the `wrap` and `fill`
-//! function don't do what you want.
+//! advanced wrapping functionality when the [`wrap`](super::wrap) and
+//! [`fill`](super::fill) function don't do what you want.
 
 use crate::{Options, WordSplitter};
 use unicode_width::UnicodeWidthChar;
@@ -57,7 +57,7 @@ pub trait Fragment: std::fmt::Debug {
 
 /// A piece of wrappable text, including any trailing whitespace.
 ///
-/// A `Word` is an example of a `Fragment`, so it has a width,
+/// A `Word` is an example of a [`Fragment`], so it has a width,
 /// trailing whitespace, and potentially a penalty item.
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct Word<'a> {
@@ -287,9 +287,9 @@ where
 
 /// Forcibly break words wider than `line_width` into smaller words.
 ///
-/// This simply calls `Word::break_apart` on words that are too wide.
-/// This means that no extra `'-'` is inserted, the word is simply
-/// broken into smaller pieces.
+/// This simply calls [`Word::break_apart`] on words that are too
+/// wide. This means that no extra `'-'` is inserted, the word is
+/// simply broken into smaller pieces.
 pub fn break_words<'a, I>(words: I, line_width: usize) -> Vec<Word<'a>>
 where
     I: IntoIterator<Item = Word<'a>>,
