@@ -1,4 +1,5 @@
-//! `textwrap` provides functions for word wrapping and filling text.
+//! The textwrap library provides functions for word wrapping and
+//! filling text.
 //!
 //! Wrapping text can be very useful in commandline programs where you
 //! want to format dynamic output nicely so it looks good in a
@@ -50,13 +51,14 @@
 //! # Wrapping Strings at Compile Time
 //!
 //! If your strings are known at compile time, please take a look at
-//! the procedural macros from the [`textwrap-macros` crate].
+//! the procedural macros from the [textwrap-macros] crate.
 //!
 //! # Displayed Width vs Byte Size
 //!
 //! To word wrap text, one must know the width of each word so one can
 //! know when to break lines. This library measures the width of text
-//! using the [displayed width][unicode-width], not the size in bytes.
+//! using the _displayed width_ (computed via [UnicodeWidthStr]), not
+//! the size in bytes.
 //!
 //! This is important for non-ASCII text. ASCII characters such as `a`
 //! and `!` are simple and take up one column each. This means that
@@ -71,22 +73,16 @@
 //!
 //! # Cargo Features
 //!
-//! The library has two optional features:
+//! The textwrap library has two optional features:
 //!
 //! * `terminal_size`: enables automatic detection of the terminal
-//!   width via the [terminal_size][] crate. See the
+//!   width via the [terminal_size] crate. See the
 //!   [`Options::with_termwidth`] constructor for details.
 //!
 //! * `hyphenation`: enables language-sentive hyphenation via the
-//!   [hyphenation][] crate. See the [`WordSplitter`] trait for
-//!   details.
+//!   [hyphenation] crate. See the [`WordSplitter`] trait for details.
 //!
-//! [`textwrap-macros` crate]: https://crates.io/crates/textwrap-macros
-//! [unicode-width]: https://docs.rs/unicode-width/
-//! [terminal_size]: https://crates.io/crates/terminal_size
-//! [hyphenation]: https://crates.io/crates/hyphenation
-//! [`Options::with_termwidth`]: struct.Options.html#method.with_termwidth
-//! [`WordSplitter`]: trait.WordSplitter.html
+//! [textwrap-macros]: https://docs.rs/textwrap-macros/
 
 #![doc(html_root_url = "https://docs.rs/textwrap/0.12.1")]
 #![forbid(unsafe_code)] // See https://github.com/mgeisler/textwrap/issues/210
@@ -120,7 +116,7 @@ pub struct Options<'a, S: ?Sized = Box<dyn WordSplitter>> {
     /// `self.width`.
     pub break_words: bool,
     /// The method for splitting words. If the `hyphenation` feature
-    /// is enabled, you can use a `hyphenation::Standard` dictionary
+    /// is enabled, you can use a [`hyphenation::Standard`] dictionary
     /// here to get language-aware hyphenation.
     pub splitter: S,
 }
@@ -145,8 +141,8 @@ impl<'a> From<usize> for Options<'a, HyphenSplitter> {
 
 /// Constructors for boxed Options, specifically.
 impl<'a> Options<'a, HyphenSplitter> {
-    /// Creates a new `Options` with the specified width and static
-    /// dispatch using the `HyphenSplitter`. Equivalent to
+    /// Creates a new [`Options`] with the specified width and static
+    /// dispatch using the [`HyphenSplitter`]. Equivalent to
     ///
     /// ```
     /// # use textwrap::{Options, HyphenSplitter, WordSplitter};
@@ -180,10 +176,11 @@ impl<'a> Options<'a, HyphenSplitter> {
     /// WordSplitter>>`.
     ///
     /// The value and type of the splitter can be choose from the
-    /// start using the `with_splitter` constructor or changed
-    /// afterwards using the `splitter` method. Whether static or
-    /// dynamic dispatch is used, depends on whether these functions
-    /// are given a boxed `WordSplitter` or not. Take for example:
+    /// start using the [`Options::with_splitter`] constructor or
+    /// changed afterwards using the [`Options::splitter`] method.
+    /// Whether static or dynamic dispatch is used, depends on whether
+    /// these functions are given a boxed [`WordSplitter`] or not.
+    /// Take for example:
     ///
     /// ```
     /// use textwrap::{HyphenSplitter, NoHyphenation, Options};
@@ -219,11 +216,12 @@ impl<'a> Options<'a, HyphenSplitter> {
         Options::with_splitter(width, HyphenSplitter)
     }
 
-    /// Creates a new `Options` with `width` set to the current
+    /// Creates a new [`Options`] with `width` set to the current
     /// terminal width. If the terminal width cannot be determined
     /// (typically because the standard input and output is not
     /// connected to a terminal), a width of 80 characters will be
-    /// used. Other settings use the same defaults as `Options::new`.
+    /// used. Other settings use the same defaults as
+    /// [`Options::new`].
     ///
     /// Equivalent to:
     ///
@@ -242,8 +240,8 @@ impl<'a> Options<'a, HyphenSplitter> {
 }
 
 impl<'a, S> Options<'a, S> {
-    /// Creates a new `Options` with the specified width and splitter.
-    /// Equivalent to
+    /// Creates a new [`Options`] with the specified width and
+    /// splitter. Equivalent to
     ///
     /// ```
     /// # use textwrap::{Options, NoHyphenation, HyphenSplitter};
@@ -269,7 +267,7 @@ impl<'a, S> Options<'a, S> {
     /// This constructor allows to specify the splitter to be used. It
     /// is like a short-cut for `Options::new(w).splitter(s)`, but
     /// this function is a `const fn`. The given splitter may be in a
-    /// `Box`, which then can be coerced into a trait object for
+    /// [`Box`], which then can be coerced into a trait object for
     /// dynamic dispatch:
     ///
     /// ```
@@ -290,7 +288,7 @@ impl<'a, S> Options<'a, S> {
     ///
     /// Since the splitter is given by value, which determines the
     /// generic type parameter, it can be used to produce both an
-    /// `Options` with static and dynamic dispatch, respectively.
+    /// [`Options`] with static and dynamic dispatch, respectively.
     /// While dynamic dispatch allows to change the type of the inner
     /// splitter at run time as seen above, static dispatch especially
     /// can store the splitter directly, without the need for a box.
@@ -391,7 +389,6 @@ impl<'a, S: WordSplitter> Options<'a, S> {
     /// ```
     ///
     /// [`self.splitter`]: #structfield.splitter
-    /// [`WordSplitter`]: trait.WordSplitter.html
     pub fn splitter<T>(self, splitter: T) -> Options<'a, T> {
         Options {
             width: self.width,
@@ -409,7 +406,7 @@ impl<'a, S: WordSplitter> Options<'a, S> {
 ///
 /// # Examples
 ///
-/// Create an `Options` for wrapping at the current terminal width
+/// Create an [`Options`] for wrapping at the current terminal width
 /// with a two column margin to the left and the right:
 ///
 /// ```no_run
@@ -431,7 +428,7 @@ pub fn termwidth() -> usize {
 
 /// Fill a line of text at `width` characters.
 ///
-/// The result is a `String`, complete with newlines between each
+/// The result is a [`String`], complete with newlines between each
 /// line. Use the [`wrap`] function if you need access to the
 /// individual lines.
 ///
@@ -461,8 +458,6 @@ pub fn termwidth() -> usize {
 ///     "- Memory safety\n  without\n  garbage\n  collection."
 /// );
 /// ```
-///
-/// [`wrap`]: fn.wrap.html
 pub fn fill<'a, S, Opt>(text: &str, options: Opt) -> String
 where
     S: WordSplitter,
@@ -484,10 +479,10 @@ where
 
 /// Wrap a line of text at `width` characters.
 ///
-/// The result is a vector of lines, each line is of type `Cow<'_,
-/// str>`, which means that the line will borrow from the input `&str`
-/// if possible. The lines do not have a trailing `'\n'`. Use the
-/// [`fill`] function if you need a `String` instead.
+/// The result is a vector of lines, each line is of type [`Cow<'_,
+/// str>`](Cow), which means that the line will borrow from the input
+/// `&str` if possible. The lines do not have a trailing `'\n'`. Use
+/// the [`fill`] function if you need a [`String`] instead.
 ///
 /// The easiest way to use this function is to pass an integer for
 /// `options`:
@@ -551,8 +546,6 @@ where
 ///     ]
 /// );
 /// ```
-///
-/// [`fill`]: fn.fill.html
 pub fn wrap<'a, S, Opt>(text: &str, options: Opt) -> Vec<Cow<'_, str>>
 where
     S: WordSplitter,
@@ -647,7 +640,7 @@ where
 /// Since we can only replace existing whitespace in the input with
 /// `'\n'`, we cannot do hyphenation nor can we split words longer
 /// than the line width. Indentation is also rules out. In other
-/// words, `fill_inplace(width)` behaves as if you had called `fill`
+/// words, `fill_inplace(width)` behaves as if you had called [`fill`]
 /// with these options:
 ///
 /// ```
@@ -662,7 +655,7 @@ where
 /// };
 /// ```
 ///
-/// Finally, unlike `fill`, `fill_inplace` can leave trailing
+/// Finally, unlike [`fill`], `fill_inplace` can leave trailing
 /// whitespace on lines. This is because we wrap by inserting a `'\n'`
 /// at the final whitespace in the input string:
 ///
@@ -678,7 +671,7 @@ where
 ///
 /// # Performance
 ///
-/// In benchmarks, `fill_inplace` is about twice as fast as `fill`.
+/// In benchmarks, `fill_inplace` is about twice as fast as [`fill`].
 /// Please see the [`linear`
 /// benchmark](https://github.com/mgeisler/textwrap/blob/master/benches/linear.rs)
 /// for details.

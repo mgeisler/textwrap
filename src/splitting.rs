@@ -7,14 +7,11 @@
 
 /// The `WordSplitter` trait describes where words can be split.
 ///
-/// If the `textwrap` crate has been compiled with the `hyphenation`
+/// If the textwrap crate has been compiled with the `hyphenation`
 /// feature enabled, you will find an implementation of `WordSplitter`
-/// by the `hyphenation::Standard` struct. Use this struct for
-/// language-aware hyphenation. See the [`hyphenation` documentation]
+/// by the [`hyphenation::Standard`] struct. Use this struct for
+/// language-aware hyphenation. See the [hyphenation] documentation
 /// for details.
-///
-/// [`wrap`]: ../fn.wrap.html
-/// [`hyphenation` documentation]: https://docs.rs/hyphenation/
 pub trait WordSplitter: std::fmt::Debug {
     /// Return all possible indices where `word` can be split.
     ///
@@ -64,7 +61,7 @@ impl<T: ?Sized + WordSplitter> WordSplitter for &T {
 ///            vec!["foo", "bar-baz"]);
 /// ```
 ///
-/// [`Options.splitter`]: ../struct.Options.html#structfield.splitter
+/// [`Options.splitter`]: super::Options::splitter
 #[derive(Clone, Copy, Debug)]
 pub struct NoHyphenation;
 
@@ -80,17 +77,17 @@ impl WordSplitter for NoHyphenation {
 /// hyphens only.
 ///
 /// You probably don't need to use this type since it's already used
-/// by default by `Options::new`.
+/// by default by [`Options::new`](super::Options::new).
 #[derive(Clone, Copy, Debug)]
 pub struct HyphenSplitter;
 
 /// `HyphenSplitter` is the default `WordSplitter` used by
-/// `Options::new`. It will split words on any existing hyphens in the
-/// word.
+/// [`Options::new`](super::Options::new). It will split words on any
+/// existing hyphens in the word.
 ///
 /// It will only use hyphens that are surrounded by alphanumeric
-/// characters, which prevents a word like "--foo-bar" from being
-/// split on the first or second hyphen.
+/// characters, which prevents a word like `"--foo-bar"` from being
+/// split into `"--"` and `"foo-bar"`.
 impl WordSplitter for HyphenSplitter {
     fn split_points(&self, word: &str) -> Vec<usize> {
         let mut splits = Vec::new();
@@ -114,7 +111,7 @@ impl WordSplitter for HyphenSplitter {
 }
 
 /// A hyphenation dictionary can be used to do language-specific
-/// hyphenation using patterns from the hyphenation crate.
+/// hyphenation using patterns from the [hyphenation] crate.
 ///
 /// **Note:** Only available when the `hyphenation` feature is
 /// enabled.
