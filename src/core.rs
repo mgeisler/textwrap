@@ -8,7 +8,7 @@ use crate::{Options, WordSplitter};
 use unicode_width::UnicodeWidthChar;
 use unicode_width::UnicodeWidthStr;
 
-/// The CSI or "Control Sequence Introducer" introduces an ANSI escape
+/// The CSI or “Control Sequence Introducer” introduces an ANSI escape
 /// sequence. This is typically used for colored text and will be
 /// ignored when computing the text width.
 const CSI: (char, char) = ('\x1b', '[');
