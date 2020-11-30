@@ -284,6 +284,8 @@ mod unix_only {
                 Key::Backspace => {
                     text.pop();
                 }
+                // Also known as Ctrl-Backspace
+                Key::Ctrl('h') => text.truncate(text.rfind(' ').unwrap_or(0)),
                 _ => {}
             }
 
