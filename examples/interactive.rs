@@ -58,50 +58,96 @@ mod unix_only {
         splitter_label: &str,
         stdout: &mut RawTerminal<io::Stdout>,
     ) -> Result<(), io::Error> {
-        let mut row: u16 = 1;
-        let col: u16 = 3;
+        let mut left_row: u16 = 1;
+        let left_col: u16 = 3;
 
         write!(stdout, "{}", termion::clear::All)?;
         write!(
             stdout,
-            "{}{}Settings:{}",
-            cursor::Goto(col, row),
+            "{}{}Options:{}",
+            cursor::Goto(left_col, left_row),
             style::Bold,
             style::Reset,
         )?;
-        row += 1;
+        left_row += 1;
 
         write!(
             stdout,
             "{}- width: {}{}{} (use ← and → to change)",
-            cursor::Goto(col, row),
+            cursor::Goto(left_col, left_row),
             style::Bold,
             options.width,
             style::Reset,
         )?;
-        row += 1;
+        left_row += 1;
 
         write!(
             stdout,
             "{}- break_words: {}{:?}{} (toggle with Ctrl-b)",
-            cursor::Goto(col, row),
+            cursor::Goto(left_col, left_row),
             style::Bold,
             options.break_words,
             style::Reset,
         )?;
-        row += 1;
+        left_row += 1;
 
         write!(
             stdout,
             "{}- splitter: {}{}{} (cycle with Ctrl-s)",
-            cursor::Goto(col, row),
+            cursor::Goto(left_col, left_row),
             style::Bold,
             splitter_label,
             style::Reset,
         )?;
-        row += 2;
+        left_row += 1;
 
+        let now = std::time::Instant::now();
         let mut lines = wrap(text, options);
+        let elapsed = now.elapsed();
+
+        let right_col: u16 = 55;
+        let mut right_row: u16 = 1;
+        write!(
+            stdout,
+            "{}{}Performance:{}",
+            cursor::Goto(right_col, right_row),
+            style::Bold,
+            style::Reset,
+        )?;
+        right_row += 1;
+
+        write!(
+            stdout,
+            "{}- words: {}{}{}",
+            cursor::Goto(right_col, right_row),
+            style::Bold,
+            text.split_whitespace().count(),
+            style::Reset,
+        )?;
+        right_row += 1;
+
+        write!(
+            stdout,
+            "{}- characters: {}{}{}",
+            cursor::Goto(right_col, right_row),
+            style::Bold,
+            text.chars().count(),
+            style::Reset,
+        )?;
+        right_row += 1;
+
+        write!(
+            stdout,
+            "{}- latency: {}{} usec{}",
+            cursor::Goto(right_col, right_row),
+            style::Bold,
+            elapsed.as_micros(),
+            style::Reset,
+        )?;
+
+        // Empty line.
+        left_row += 1;
+
         if let Some(line) = lines.last() {
             // If `text` ends with a newline, the final wrapped line
             // contains this newline. This will in turn leave the
@@ -119,15 +165,15 @@ mod unix_only {
         // Draw margins extended one line above and below the wrapped
         // text. This serves to indicate the margins if `break_words`
         // is `false` and `width` is very small.
-        draw_margins(row, col, options.width as u16, '┌', '┐', stdout)?;
-        let final_row = row + lines.len() as u16 + 1;
-        draw_margins(final_row, col, options.width as u16, '└', '┘', stdout)?;
-        row += 1;
+        draw_margins(left_row, left_col, options.width as u16, '┌', '┐', stdout)?;
+        let final_row = left_row + lines.len() as u16 + 1;
+        draw_margins(final_row, left_col, options.width as u16, '└', '┘', stdout)?;
+        left_row += 1;
 
         for line in lines {
-            draw_margins(row, col, options.width as u16, '│', '│', stdout)?;
-            write!(stdout, "{}{}", cursor::Goto(col, row), line)?;
-            row += 1;
+            draw_margins(left_row, left_col, options.width as u16, '│', '│', stdout)?;
+            write!(stdout, "{}{}", cursor::Goto(left_col, left_row), line)?;
+            left_row += 1;
         }
 
         stdout.flush()
