@@ -79,7 +79,7 @@
 //!   width via the [terminal_size] crate. See the
 //!   [`Options::with_termwidth`] constructor for details.
 //!
-//! * `hyphenation`: enables language-sentive hyphenation via the
+//! * `hyphenation`: enables language-sensitive hyphenation via the
 //!   [hyphenation] crate. See the [`WordSplitter`] trait for details.
 //!
 //! [textwrap-macros]: https://docs.rs/textwrap-macros/
@@ -595,10 +595,9 @@ where
 /// # Examples
 ///
 /// The returned iterator yields lines of type `Cow<'_, str>`. If
-/// possible, the wrapped lines will borrow borrow from the input
-/// string. As an example, a hanging indentation, the first line can
-/// borrow from the input, but the subsequent lines become owned
-/// strings:
+/// possible, the wrapped lines will borrow from the input string. As
+/// an example, a hanging indentation, the first line can borrow from
+/// the input, but the subsequent lines become owned strings:
 ///
 /// ```
 /// use std::borrow::Cow::{Borrowed, Owned};
@@ -672,7 +671,7 @@ where
 
             // We assume here that all words are contiguous in `line`.
             // That is, the sum of their lengths should add up to the
-            // lenght of `line`.
+            // length of `line`.
             let len = words
                 .iter()
                 .map(|word| word.len() + word.whitespace.len())

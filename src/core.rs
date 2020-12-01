@@ -105,7 +105,7 @@ impl std::ops::Deref for Word<'_> {
 impl<'a> Word<'a> {
     /// Construct a new `Word`.
     ///
-    /// A trailing strech of `' '` is automatically taken to be the
+    /// A trailing stretch of `' '` is automatically taken to be the
     /// whitespace part of the word.
     pub fn from(word: &str) -> Word<'_> {
         let trimmed = word.trim_end_matches(' ');
@@ -419,7 +419,7 @@ pub enum WrapAlgorithm {
 ///
 /// Imagine you're building a house site and you have a number of
 /// tasks you need to execute. Things like pour foundation, complete
-/// framing, install plumbing, electric cabling, install insolutation.
+/// framing, install plumbing, electric cabling, install insulation.
 ///
 /// The construction workers can only work during daytime, so they
 /// need to pack up everything at night. Because they need to secure
@@ -427,7 +427,7 @@ pub enum WrapAlgorithm {
 /// takes much more time than the time it would take them to simply
 /// switch to another task.
 ///
-/// You would like to make a list of taks to execute every day based
+/// You would like to make a list of tasks to execute every day based
 /// on your estimates. You can model this with a program like this:
 ///
 /// ```
