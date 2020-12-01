@@ -305,7 +305,7 @@ where
     shortened_words
 }
 
-/// Wrap abstract fragments into lines of differnet widths.
+/// Wrap abstract fragments into lines of different widths.
 ///
 /// The `line_widths` maps the line number to the desired width. This
 /// can be used to implement hanging indentation.
