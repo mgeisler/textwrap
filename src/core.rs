@@ -3,6 +3,32 @@
 //! The functions and structs in this module can be used to implement
 //! advanced wrapping functionality when the [`wrap`](super::wrap) and
 //! [`fill`](super::fill) function don't do what you want.
+//!
+//! In general, you want to follow these steps when wrapping
+//! something:
+//!
+//! 1. Split your input into [`Fragment`]s. These are abstract blocks
+//!    of text or content which can be wrapped into lines. You can use
+//!    [`find_words`] to do this for text.
+//!
+//! 2. Potentially split your fragments into smaller pieces. This
+//!    allows you to implement things like hyphenation. If wrapping
+//!    text, [`split_words`] can help you do this.
+//!
+//! 3. Potentially break apart fragments that are still too large to
+//!    fit on a single line. This is implemented in [`break_words`].
+//!
+//! 4. Finally take your fragments and put them into lines. There are
+//!    two algorithms for this: [`wrap_optimal_fit`] and
+//!    [`wrap_first_fit`]. The former produces better line breaks, the
+//!    latter is faster.
+//!
+//! 5. Iterate through the slices returned by the wrapping functions
+//!    and construct your lines of output.
+//!
+//! Please [open an issue](https://github.com/mgeisler/textwrap/) if
+//! the functionality here is not sufficient or if you have ideas for
+//! improving it. We would love to hear from you!
 
 use crate::{Options, WordSplitter};
 use std::cell::RefCell;
@@ -653,9 +679,9 @@ pub fn wrap_optimal_fit<'a, T: Fragment, F: Fn(usize) -> usize>(
 
     let line_numbers = LineNumbers::new(fragments.len());
 
-    let minima = smawk::online_column_minima(0, widths.len(), |values, i, j| {
+    let minima = smawk::online_column_minima(0, widths.len(), |minima, i, j| {
         // Line number for fragment `i`.
-        let line_number = line_numbers.get(i, &values);
+        let line_number = line_numbers.get(i, &minima);
         let target_width = std::cmp::max(1, line_widths(line_number));
 
         // Compute the width of a line spanning fragments[i..j] in
@@ -669,7 +695,7 @@ pub fn wrap_optimal_fit<'a, T: Fragment, F: Fn(usize) -> usize>(
         // breaking before fragments[i].
         //
         // First, every extra line cost NLINE_PENALTY.
-        let mut cost = values[i].1 + NLINE_PENALTY;
+        let mut cost = minima[i].1 + NLINE_PENALTY;
 
         // Next, we add a penalty depending on the line length.
         if line_width > target_width {
