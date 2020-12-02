@@ -53,3 +53,8 @@ jobs:
 
       - name: Run tests
         run: cargo test --all-features
+
+      - name: Build documentation
+        env:
+          RUSTDOCFLAGS: --deny broken_intra_doc_links
+        run: cargo doc --all-features --no-deps
