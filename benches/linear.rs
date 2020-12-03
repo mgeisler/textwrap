@@ -23,12 +23,28 @@ pub fn benchmark(c: &mut Criterion) {
     let mut group = c.benchmark_group("String lengths");
     for length in [100, 200, 400, 800, 1600, 3200, 6400].iter() {
         let text = lorem_ipsum(*length);
-        let options = textwrap::Options::new(LINE_LENGTH);
-        group.bench_with_input(BenchmarkId::new("fill", length), &text, |b, text| {
-            b.iter(|| textwrap::fill(text, &options));
-        });
+        let options = textwrap::Options::new(LINE_LENGTH)
+            .wrap_algorithm(textwrap::core::WrapAlgorithm::OptimalFit);
+        group.bench_with_input(
+            BenchmarkId::new("fill_optimal_fit", length),
+            &text,
+            |b, text| {
+                b.iter(|| textwrap::fill(text, &options));
+            },
+        );
 
-        let options: textwrap::Options = options.splitter(Box::new(textwrap::HyphenSplitter));
+        let options = textwrap::Options::new(LINE_LENGTH)
+            .wrap_algorithm(textwrap::core::WrapAlgorithm::FirstFit);
+        group.bench_with_input(
+            BenchmarkId::new("fill_first_fit", length),
+            &text,
+            |b, text| {
+                b.iter(|| textwrap::fill(text, &options));
+            },
+        );
+
+        let options: textwrap::Options =
+            textwrap::Options::new(LINE_LENGTH).splitter(Box::new(textwrap::HyphenSplitter));
         group.bench_with_input(BenchmarkId::new("fill_boxed", length), &text, |b, text| {
             b.iter(|| textwrap::fill(text, &options));
         });

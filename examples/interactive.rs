@@ -19,6 +19,7 @@ mod unix_only {
     use termion::raw::{IntoRawMode, RawTerminal};
     use termion::screen::AlternateScreen;
     use termion::{color, cursor, style};
+    use textwrap::core::WrapAlgorithm::{FirstFit, OptimalFit};
     use textwrap::{wrap, HyphenSplitter, NoHyphenation, Options, WordSplitter};
 
     #[cfg(feature = "hyphenation")]
@@ -97,6 +98,16 @@ mod unix_only {
             cursor::Goto(left_col, left_row),
             style::Bold,
             splitter_label,
+            style::Reset,
+        )?;
+        left_row += 1;
+
+        write!(
+            stdout,
+            "{}- algorithm: {}{:?}{} (toggle with Ctrl-o)",
+            cursor::Goto(left_col, left_row),
+            style::Bold,
+            options.wrap_algorithm,
             style::Reset,
         )?;
         left_row += 1;
@@ -232,6 +243,12 @@ mod unix_only {
                 Key::Left => options.width = options.width.saturating_sub(1),
                 Key::Right => options.width = options.width.saturating_add(1),
                 Key::Ctrl('b') => options.break_words = !options.break_words,
+                Key::Ctrl('o') => {
+                    options.wrap_algorithm = match options.wrap_algorithm {
+                        OptimalFit => FirstFit,
+                        FirstFit => OptimalFit,
+                    }
+                }
                 Key::Ctrl('s') => {
                     let idx = idx_iter.next().unwrap();
                     std::mem::swap(&mut options.splitter, &mut splitters[idx]);

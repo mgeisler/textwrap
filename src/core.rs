@@ -3,8 +3,35 @@
 //! The functions and structs in this module can be used to implement
 //! advanced wrapping functionality when the [`wrap`](super::wrap) and
 //! [`fill`](super::fill) function don't do what you want.
+//!
+//! In general, you want to follow these steps when wrapping
+//! something:
+//!
+//! 1. Split your input into [`Fragment`]s. These are abstract blocks
+//!    of text or content which can be wrapped into lines. You can use
+//!    [`find_words`] to do this for text.
+//!
+//! 2. Potentially split your fragments into smaller pieces. This
+//!    allows you to implement things like hyphenation. If wrapping
+//!    text, [`split_words`] can help you do this.
+//!
+//! 3. Potentially break apart fragments that are still too large to
+//!    fit on a single line. This is implemented in [`break_words`].
+//!
+//! 4. Finally take your fragments and put them into lines. There are
+//!    two algorithms for this: [`wrap_optimal_fit`] and
+//!    [`wrap_first_fit`]. The former produces better line breaks, the
+//!    latter is faster.
+//!
+//! 5. Iterate through the slices returned by the wrapping functions
+//!    and construct your lines of output.
+//!
+//! Please [open an issue](https://github.com/mgeisler/textwrap/) if
+//! the functionality here is not sufficient or if you have ideas for
+//! improving it. We would love to hear from you!
 
 use crate::{Options, WordSplitter};
+use std::cell::RefCell;
 use unicode_width::UnicodeWidthChar;
 use unicode_width::UnicodeWidthStr;
 
@@ -156,18 +183,21 @@ impl<'a> Word<'a> {
 }
 
 impl Fragment for Word<'_> {
+    #[inline]
     fn width(&self) -> usize {
         self.width
     }
 
     // We assume the whitespace consist of ' ' only. This allows us to
     // compute the display width in constant time.
+    #[inline]
     fn whitespace_width(&self) -> usize {
         self.whitespace.len()
     }
 
     // We assume the penalty is `""` or `"-"`. This allows us to
     // compute the display width in constant time.
+    #[inline]
     fn penalty_width(&self) -> usize {
         self.penalty.len()
     }
@@ -305,14 +335,85 @@ where
     shortened_words
 }
 
-/// Wrap abstract fragments into lines of different widths.
+/// Wrapping algorithms.
 ///
-/// The `line_widths` maps the line number to the desired width. This
-/// can be used to implement hanging indentation.
+/// After a text has been broken into [`Fragment`]s, the one now has
+/// to decide how to break the fragments into lines. The simplest
+/// algorithm for this is implemented by [`wrap_first_fit`]: it uses
+/// no look-ahead and simply adds fragments to the line as long as
+/// they fit. However, this can lead to poor line breaks if a large
+/// fragment almost-but-not-quite fits on a line. When that happens,
+/// the fragment is moved to the next line and it will leave behind a
+/// large gap. A more advanced algorithm, implemented by
+/// [`wrap_optimal_fit`], will take this into account. The optimal-fit
+/// algorithm considers all possible line breaks and will attempt to
+/// minimize the gaps left behind by overly short lines.
+///
+/// While both algorithms run in linear time, the first-fit algorithm
+/// is about 4 times faster than the optimal-fit algorithm.
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub enum WrapAlgorithm {
+    /// Use an advanced algorithm which considers the entire paragraph
+    /// to find optimal line breaks. Implemented by
+    /// [`wrap_optimal_fit`].
+    OptimalFit,
+    /// Use a fast and simple algorithm with no look-ahead to find
+    /// line breaks. Implemented by [`wrap_first_fit`].
+    FirstFit,
+}
+
+/// Wrap abstract fragments into lines with a first-fit algorithm.
+///
+/// The `line_widths` map line numbers (starting from 0) to a target
+/// line width. This can be used to implement hanging indentation.
 ///
 /// The fragments must already have been split into the desired
 /// widths, this function will not (and cannot) attempt to split them
 /// further when arranging them into lines.
+///
+/// # First-Fit Algorithm
+///
+/// This implements a simple “greedy” algorithm: accumulate fragments
+/// one by one and when a fragment no longer fits, start a new line.
+/// There is no look-ahead, we simply take first fit of the fragments
+/// we find.
+///
+/// While fast and predictable, this algorithm can produce poor line
+/// breaks when a long fragment is moved to a new line, leaving behind
+/// a large gap:
+///
+/// ```
+/// use textwrap::core::{find_words, wrap_first_fit, wrap_optimal_fit, Word};
+///
+/// // Helper to convert wrapped lines to a Vec<String>.
+/// fn lines_to_strings(lines: Vec<&[Word<'_>]>) -> Vec<String> {
+///     lines.iter().map(|line| {
+///         line.iter().map(|word| &**word).collect::<Vec<_>>().join(" ")
+///     }).collect::<Vec<_>>()
+/// }
+///
+/// let text = "These few words will unfortunately not wrap nicely.";
+/// let words = find_words(text).collect::<Vec<_>>();
+/// assert_eq!(lines_to_strings(wrap_first_fit(&words, |_| 15)),
+///            vec!["These few words",
+///                 "will",  // <-- short line
+///                 "unfortunately",
+///                 "not wrap",
+///                 "nicely."]);
+///
+/// // We can avoid the short line if we look ahead:
+/// assert_eq!(lines_to_strings(wrap_optimal_fit(&words, |_| 15)),
+///            vec!["These few",
+///                 "words will",
+///                 "unfortunately",
+///                 "not wrap",
+///                 "nicely."]);
+/// ```
+///
+/// The [`wrap_optimal_fit`] function was used above to get better
+/// line breaks. It uses an advanced algorithm which tries to avoid
+/// short lines. This function is about 4 times faster than
+/// [`wrap_optimal_fit`].
 ///
 /// # Examples
 ///
@@ -330,7 +431,7 @@ where
 /// on your estimates. You can model this with a program like this:
 ///
 /// ```
-/// use textwrap::core::{wrap_fragments, Fragment};
+/// use textwrap::core::{wrap_first_fit, Fragment};
 ///
 /// #[derive(Debug)]
 /// struct Task<'a> {
@@ -361,7 +462,7 @@ where
 ///
 /// fn assign_days<'a>(tasks: &[Task<'a>], day_length: usize) -> Vec<(usize, Vec<&'a str>)> {
 ///     let mut days = Vec::new();
-///     for day in wrap_fragments(&tasks, |i| day_length) {
+///     for day in wrap_first_fit(&tasks, |i| day_length) {
 ///         let last = day.last().unwrap();
 ///         let work_hours: usize = day.iter().map(|t| t.hours + t.sweep).sum();
 ///         let names = day.iter().map(|t| t.name).collect::<Vec<_>>();
@@ -396,7 +497,7 @@ where
 ///
 /// Apologies to anyone who actually knows how to build a house and
 /// knows how long each step takes :-)
-pub fn wrap_fragments<T: Fragment, F: Fn(usize) -> usize>(
+pub fn wrap_first_fit<T: Fragment, F: Fn(usize) -> usize>(
     fragments: &[T],
     line_widths: F,
 ) -> Vec<&[T]> {
@@ -414,6 +515,227 @@ pub fn wrap_fragments<T: Fragment, F: Fn(usize) -> usize>(
         width += fragment.width() + fragment.whitespace_width();
     }
     lines.push(&fragments[start..]);
+    lines
+}
+
+/// Cache for line numbers. This is necessary to avoid a O(n**2)
+/// behavior when computing line numbers in [`wrap_optimal_fit`].
+struct LineNumbers {
+    line_numbers: RefCell<Vec<usize>>,
+}
+
+impl LineNumbers {
+    fn new(size: usize) -> Self {
+        let mut line_numbers = Vec::with_capacity(size);
+        line_numbers.push(0);
+        LineNumbers {
+            line_numbers: RefCell::new(line_numbers),
+        }
+    }
+
+    fn get(&self, i: usize, minima: &[(usize, i32)]) -> usize {
+        while self.line_numbers.borrow_mut().len() < i + 1 {
+            let pos = self.line_numbers.borrow().len();
+            let line_number = 1 + self.get(minima[pos].0, &minima);
+            self.line_numbers.borrow_mut().push(line_number);
+        }
+
+        self.line_numbers.borrow()[i]
+    }
+}
+
+/// Per-line penalty. This is added for every line, which makes it
+/// expensive to output more lines than the minimum required.
+const NLINE_PENALTY: i32 = 1000;
+
+/// Per-character cost for lines that overflow the target line width.
+///
+/// With a value of 50², every single character costs as much as
+/// leaving a gap of 50 characters behind. This is becuase we assign
+/// as cost of `gap * gap` to a short line. This means that we can
+/// overflow the line by 1 character in extreme cases:
+///
+/// ```
+/// use textwrap::core::{wrap_optimal_fit, Word};
+///
+/// let short = "foo ";
+/// let long = "x".repeat(50);
+/// let fragments = vec![Word::from(short), Word::from(&long)];
+///
+/// // Perfect fit, both words are on a single line with no overflow.
+/// let wrapped = wrap_optimal_fit(&fragments, |_| short.len() + long.len());
+/// assert_eq!(wrapped, vec![&[Word::from(short), Word::from(&long)]]);
+///
+/// // The words no longer fit, yet we get a single line back. While
+/// // the cost of overflow (`1 * 2500`) is the same as the cost of the
+/// // gap (`50 * 50 = 2500`), the tie is broken by `NLINE_PENALTY`
+/// // which makes it cheaper to overflow than to use two lines.
+/// let wrapped = wrap_optimal_fit(&fragments, |_| short.len() + long.len() - 1);
+/// assert_eq!(wrapped, vec![&[Word::from(short), Word::from(&long)]]);
+///
+/// // The cost of overflow would be 2 * 2500, whereas the cost of the
+/// // gap is only `49 * 49 + NLINE_PENALTY = 2401 + 1000 = 3401`. We
+/// // therefore get two lines.
+/// let wrapped = wrap_optimal_fit(&fragments, |_| short.len() + long.len() - 2);
+/// assert_eq!(wrapped, vec![&[Word::from(short)],
+///                          &[Word::from(&long)]]);
+/// ```
+///
+/// This only happens if the overflowing word is 50 characters long
+/// _and_ if it happens to overflow the line by exactly one character.
+/// If it overflows by more than one character, the overflow penalty
+/// will quickly outgrow the cost of the gap, as seen above.
+const OVERFLOW_PENALTY: i32 = 50 * 50;
+
+/// The last line is short if it is less than 1/4 of the target width.
+const SHORT_LINE_FRACTION: usize = 4;
+
+/// Penalize a short last line.
+const SHORT_LAST_LINE_PENALTY: i32 = 25;
+
+/// Penalty for lines ending with a hyphen.
+const HYPHEN_PENALTY: i32 = 25;
+
+/// Wrap abstract fragments into lines with an optimal-fit algorithm.
+///
+/// The `line_widths` map line numbers (starting from 0) to a target
+/// line width. This can be used to implement hanging indentation.
+///
+/// The fragments must already have been split into the desired
+/// widths, this function will not (and cannot) attempt to split them
+/// further when arranging them into lines.
+///
+/// # Optimal-Fit Algorithm
+///
+/// The algorithm considers all possible break points and picks the
+/// breaks which minimizes the gaps at the end of each line. More
+/// precisely, the algorithm assigns a cost or penalty to each break
+/// point, determined by `cost = gap * gap` where `gap = target_width -
+/// line_width`. Shorter lines are thus penalized more heavily since
+/// they leave behind a larger gap.
+///
+/// We can illustrate this with the text “To be, or not to be: that is
+/// the question”. We will be wrapping it in a narrow column with room
+/// for only 10 characters. The [greedy algorithm](wrap_first_fit)
+/// will produce these lines, each annotated with the corresponding
+/// penalty:
+///
+/// ```text
+/// "To be, or"   1² =  1
+/// "not to be:"  0² =  0
+/// "that is"     3² =  9
+/// "the"         7² = 49
+/// "question"    2² =  4
+/// ```
+///
+/// We see that line four with “the” leaves a gap of 7 columns, which
+/// gives it a penalty of 49. The sum of the penalties is 63.
+///
+/// There are 10 words, which means that there are `2_u32.pow(9)` or
+/// 512 different ways to typeset it. We can compute
+/// the sum of the penalties for each possible line break and search
+/// for the one with the lowest sum:
+///
+/// ```text
+/// "To be,"     4² = 16
+/// "or not to"  1² =  1
+/// "be: that"   2² =  4
+/// "is the"     4² = 16
+/// "question"   2² =  4
+/// ```
+///
+/// The sum of the penalties is 41, which is better than what the
+/// greedy algorithm produced.
+///
+/// Searching through all possible combinations would normally be
+/// prohibitively slow. However, it turns out that the problem can be
+/// formulated as the task of finding column minima in a cost matrix.
+/// This matrix has a special form (totally monotone) which lets us
+/// use a [linear-time algorithm called
+/// SMAWK](https://lib.rs/crates/smawk) to find the optimal break
+/// points.
+///
+/// This means that the time complexity remains O(_n_) where _n_ is
+/// the number of words. Compared to [`wrap_first_fit`], this function
+/// is about 4 times slower.
+///
+/// The use of penalties is inspired by the line breaking algorithm
+/// used TeX, described in the 1981 article [_Breaking Paragraphs into
+/// Lines_](http://www.eprg.org/G53DOC/pdfs/knuth-plass-breaking.pdf)
+/// by Knuth and Plass. The implementation here is based on [Python
+/// code by David
+/// Eppstein](https://github.com/jfinkels/PADS/blob/master/pads/wrap.py).
+pub fn wrap_optimal_fit<'a, T: Fragment, F: Fn(usize) -> usize>(
+    fragments: &'a [T],
+    line_widths: F,
+) -> Vec<&'a [T]> {
+    let mut widths = Vec::with_capacity(fragments.len() + 1);
+    let mut width = 0;
+    widths.push(width);
+    for fragment in fragments {
+        width += fragment.width() + fragment.whitespace_width();
+        widths.push(width);
+    }
+
+    let line_numbers = LineNumbers::new(fragments.len());
+
+    let minima = smawk::online_column_minima(0, widths.len(), |minima, i, j| {
+        // Line number for fragment `i`.
+        let line_number = line_numbers.get(i, &minima);
+        let target_width = std::cmp::max(1, line_widths(line_number));
+
+        // Compute the width of a line spanning fragments[i..j] in
+        // constant time. We need to adjust widths[j] by subtracting
+        // the whitespace of fragment[j-i] and then add the penalty.
+        let line_width = widths[j] - widths[i] - fragments[j - 1].whitespace_width()
+            + fragments[j - 1].penalty_width();
+
+        // We compute cost of the line containing fragments[i..j]. We
+        // start with values[i].1, which is the optimal cost for
+        // breaking before fragments[i].
+        //
+        // First, every extra line cost NLINE_PENALTY.
+        let mut cost = minima[i].1 + NLINE_PENALTY;
+
+        // Next, we add a penalty depending on the line length.
+        if line_width > target_width {
+            // Lines that overflow get a hefty penalty.
+            let overflow = (line_width - target_width) as i32;
+            cost += overflow * OVERFLOW_PENALTY;
+        } else if j < fragments.len() {
+            // Other lines (except for the last line) get a milder
+            // penalty which depend on the size of the gap.
+            let gap = (target_width - line_width) as i32;
+            cost += gap * gap;
+        } else if i + 1 == j && line_width < target_width / SHORT_LINE_FRACTION {
+            // The last line can have any size gap, but we do add a
+            // penalty if the line is very short (typically because it
+            // contains just a single word).
+            cost += SHORT_LAST_LINE_PENALTY;
+        }
+
+        // Finally, we discourage hyphens.
+        if fragments[j - 1].penalty_width() > 0 {
+            // TODO: this should use a penalty value from the fragment
+            // instead.
+            cost += HYPHEN_PENALTY;
+        }
+
+        cost
+    });
+
+    let mut lines = Vec::with_capacity(line_numbers.get(fragments.len(), &minima));
+    let mut pos = fragments.len();
+    loop {
+        let prev = minima[pos].0;
+        lines.push(&fragments[prev..pos]);
+        pos = prev;
+        if pos == 0 {
+            break;
+        }
+    }
+
+    lines.reverse();
     lines
 }
 
