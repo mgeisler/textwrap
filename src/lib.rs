@@ -864,7 +864,7 @@ mod tests {
         // Whitespace is only significant inside a line. After a line
         // gets too long and is broken, the first word starts in
         // column zero and is not indented.
-        assert_eq!(wrap("foo     bar     baz", 5), vec!["foo", "bar", "baz"]);
+        assert_eq!(wrap("foo     bar     baz  ", 5), vec!["foo", "bar", "baz"]);
     }
 
     #[test]
