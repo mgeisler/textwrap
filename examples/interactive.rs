@@ -173,15 +173,26 @@ mod unix_only {
             lines.push("".into());
         }
 
-        // Draw margins extended one line above and below the wrapped
-        // text. This serves to indicate the margins if `break_words`
-        // is `false` and `width` is very small.
+        // Draw margins above and below the wrapped text. We draw the
+        // margin before the text so that 1) the text can overwrite
+        // the margin if `break_words` is `false` and `width` is very
+        // small and 2) so the cursor remains at the end of the last
+        // line of text.
         draw_margins(left_row, left_col, options.width as u16, '┌', '┐', stdout)?;
-        let final_row = left_row + lines.len() as u16 + 1;
-        draw_margins(final_row, left_col, options.width as u16, '└', '┘', stdout)?;
         left_row += 1;
+        let final_row = left_row + lines.len() as u16;
+        draw_margins(final_row, left_col, options.width as u16, '└', '┘', stdout)?;
 
+        let (_, rows) = termion::terminal_size()?;
+        write!(stdout, "{}", cursor::Show)?;
         for line in lines {
+            if left_row > rows {
+                // The text does not fits on the terminal -- we hide
+                // the cursor since it's supposed to be "below" the
+                // bottom of the terminal.
+                write!(stdout, "{}", cursor::Hide)?;
+                break;
+            }
             draw_margins(left_row, left_col, options.width as u16, '│', '│', stdout)?;
             write!(stdout, "{}{}", cursor::Goto(left_col, left_row), line)?;
             left_row += 1;
