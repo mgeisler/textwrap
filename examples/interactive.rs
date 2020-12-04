@@ -159,12 +159,20 @@ mod unix_only {
         // Empty line.
         left_row += 1;
 
-        if let Some(line) = lines.last() {
-            // If `text` ends with a newline, the final wrapped line
-            // contains this newline. This will in turn leave the
-            // cursor hanging in the middle of the line. Pushing an
-            // extra empty line fixes this.
-            if line.ends_with('\n') {
+        if let Some(line) = lines.last_mut() {
+            let trailing_whitespace = &text[text.trim_end_matches(' ').len()..];
+            if !trailing_whitespace.is_empty() {
+                // Trailing whitespace is discarded by
+                // `textwrap::wrap`. We reinsert it here. If multiple
+                // spaces are added, this can overflow the margins
+                // which look a bit odd. Handling this would require
+                // some more tinkering...
+                *line = format!("{}{}", line, trailing_whitespace).into();
+            } else if line.ends_with('\n') {
+                // If `text` ends with a newline, the final wrapped line
+                // contains this newline. This will in turn leave the
+                // cursor hanging in the middle of the line. Pushing an
+                // extra empty line fixes this.
                 lines.push("".into());
             }
         } else {
