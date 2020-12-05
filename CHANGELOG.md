@@ -3,11 +3,159 @@
 This file lists the most important changes made in each release of
 `textwrap`.
 
-## Unreleased
+## Version 0.13.0 — December 5th, 2020
 
-* Added a new interactive demo, which demonstrates the features of
-  `textwrap`. Clone the repository and run `cargo run --example
-  interactive` to try it (Linux only).
+This is a major release which rewrites the core logic, adds many new
+features, and fixes a couple of bugs. Most programs which use
+`textwrap` stays the same, incompatibilities and upgrade notes are
+given below.
+
+Clone the repository and run the following to explore the new features
+in an interactive demo (Linux only):
+
+```sh
+$ cargo run --example interactive --all-features
+```
+
+### Bug Fixes
+
+#### Rewritten core wrapping algorithm
+
+* [#221](https://github.com/mgeisler/textwrap/pull/221): Reformulate
+  wrapping in terms of words with whitespace and penalties.
+
+The core wrapping algorithm has been completely rewritten. This fixed
+bugs and simplified the code, while also making it possible to use
+`textwrap` outside the context of the terminal.
+
+As part of this, trailing whitespace is now discarded consistently
+from wrapped lines. Before we would inconsistently remove whitespace
+at the end of wrapped lines, except for the last. Leading whitespace
+is still preserved.
+
+### New Features
+
+#### Optimal-fit wrapping
+
+* [#234](https://github.com/mgeisler/textwrap/pull/234): Introduce
+  wrapping using an optimal-fit algorithm.
+
+This release adds support for new wrapping algorithm which finds a
+globally optimal set of line breaks, taking certain penalties into
+account. As an example, the old algorithm would produce
+
+    "To be, or"
+    "not to be:"
+    "that is"
+    "the"
+    "question"
+
+Notice how the fourth line with “the” is very short. The new algorithm
+shortens the previous lines slightly to produce fewer short lines:
+
+    "To be,"
+    "or not to"
+    "be: that"
+    "is the"
+    "question"
+
+Use the new `textwrap::core::WrapAlgorithm` enum to select between the
+new and old algorithm. By default, the new algorithm is used.
+
+The optimal-fit algorithm is inspired by the line breaking algorithm
+used in TeX, described in the 1981 article [_Breaking Paragraphs into
+Lines_](http://www.eprg.org/G53DOC/pdfs/knuth-plass-breaking.pdf) by
+Knuth and Plass.
+
+#### In-place wrapping
+
+* [#226](https://github.com/mgeisler/textwrap/pull/226): Add a
+  `fill_inplace` function.
+
+When the text you want to fill is already a temporary `String`, you
+can now mutate it in-place with `fill_inplace`:
+
+```rust
+let mut greeting = format!("Greetings {}, welcome to the game! You have {} lives left.",
+                           player.name, player.lives);
+fill_inplace(&mut greeting, line_width);
+```
+
+This is faster than calling `fill` and it will reuse the memory
+already allocated for the string.
+
+### Changed Features
+
+#### `Wrapper` is replaced with `Options`
+
+* [#213](https://github.com/mgeisler/textwrap/pull/213): Simplify API
+  with only top-level functions.
+* [#215](https://github.com/mgeisler/textwrap/pull/215): Reintroducing
+  the type parameter on `Options` (previously known as `Wrapper`).
+* [#219](https://github.com/mgeisler/textwrap/pull/219): Allow using
+  trait objects with `fill` & `wrap`.
+* [#227](https://github.com/mgeisler/textwrap/pull/227): Replace
+  `WrapOptions` with `Into<Options>`.
+
+The `Wrapper` struct held the options (line width, indentation, etc)
+for wrapping text. It was also the entry point for actually wrapping
+the text via its methods such as `wrap`, `wrap_iter`,
+`into_wrap_iter`, and `fill` methods.
+
+The struct has been replaced by a simpler `Options` struct which only
+holds options. The `Wrapper` methods are gone, their job has been
+taken over by the top-level `wrap` and `fill` functions. The signature
+of these functions have changed from
+
+```rust
+fn fill(s: &str, width: usize) -> String;
+
+fn wrap(s: &str, width: usize) -> Vec<Cow<'_, str>>;
+```
+
+to the more general
+
+```rust
+fn fill<'a, S, Opt>(text: &str, options: Opt) -> String
+where
+    S: WordSplitter,
+    Opt: Into<Options<'a, S>>;
+
+fn wrap<'a, S, Opt>(text: &str, options: Opt) -> Vec<Cow<'_, str>>
+where
+    S: WordSplitter,
+    Opt: Into<Options<'a, S>>;
+```
+
+The `Into<Options<'a, S>` bound allows you to pass an `usize` (which
+is interpreted as the line width) *and* a full `Options` object. This
+allows the new functions to work like the old, plus you can now fully
+customize the behavior of the wrapping via `Options` when needed.
+
+Code that call `textwrap::wrap` or `textwrap::fill` can remain
+unchanged. Code that calls into `Wrapper::wrap` or `Wrapper::fill`
+will need to be update. This is a mechanical change, please see
+[#213](https://github.com/mgeisler/textwrap/pull/213) for examples.
+
+Thanks to @CryptJar and @Koxiat for their support in the PRs above!
+
+### Removed Features
+
+* The `wrap_iter` and `into_wrap_iter` methods are gone. This means
+  that lazy iteration is no longer supported: you always get all
+  wrapped lines back as a `Vec`. This was done to simplify the code
+  and to support the optimal-fit algorithm.
+
+  The first-fit algorithm could still be implemented in an incremental
+  fashion. Please let us know if this is important to you.
+
+### Other Changes
+
+* [#206](https://github.com/mgeisler/textwrap/pull/206): Change
+  `Wrapper.splitter` from `T: WordSplitter` to `Box<dyn
+  WordSplitter>`.
+* [#216](https://github.com/mgeisler/textwrap/pull/216): Forbid the
+  use of unsafe code.
 
 ## Version 0.12.1 — July 3rd, 2020
 

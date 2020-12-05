@@ -84,7 +84,7 @@
 //!
 //! [textwrap-macros]: https://docs.rs/textwrap-macros/
 
-#![doc(html_root_url = "https://docs.rs/textwrap/0.12.1")]
+#![doc(html_root_url = "https://docs.rs/textwrap/0.13.0")]
 #![forbid(unsafe_code)] // See https://github.com/mgeisler/textwrap/issues/210
 #![deny(missing_docs)]
 #![deny(missing_debug_implementations)]
