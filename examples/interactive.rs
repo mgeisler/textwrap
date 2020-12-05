@@ -210,8 +210,6 @@ mod unix_only {
     }
 
     pub fn main() -> Result<(), io::Error> {
-        let initial_width = 20;
-
         let mut labels = vec![
             String::from("HyphenSplitter"),
             String::from("NoHyphenation"),
@@ -240,15 +238,24 @@ mod unix_only {
         }
 
         let mut label = labels.pop().unwrap();
-        let mut options: Options = Options::new(initial_width).splitter(Box::new(HyphenSplitter));
+        let mut options: Options = Options::new(35).splitter(Box::new(HyphenSplitter));
         options.break_words = false;
         options.splitter = splitters.pop().unwrap();
 
         let mut idx_iter = (0..splitters.len()).collect::<Vec<_>>().into_iter().cycle();
 
         let mut text = String::from(
-            "Welcome to the interactive word-wrapping demo! Use the arrow \
-        keys to change the line length and try typing your own text!",
+            "Welcome to the interactive demo! The following is from The \
+            Emperor’s New Clothes by Hans Christian Andersen. You can edit the \
+            text!\n\n\
+            Many years ago there was an Emperor, who was so excessively fond \
+            of new clothes that he spent all his money on them. He cared \
+            nothing about his soldiers, nor for the theatre, nor for driving \
+            in the woods except for the sake of showing off his new clothes. \
+            He had a costume for every hour in the day, and instead of saying, \
+            as one does about any other king or emperor, ‘He is in his council \
+            chamber,’ here one always said, ‘The Emperor is in his \
+            dressing-room.’",
         );
 
         let stdin = io::stdin();
