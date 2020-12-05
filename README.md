@@ -5,10 +5,9 @@
 [![](https://img.shields.io/crates/v/textwrap.svg)][crates-io]
 [![](https://docs.rs/textwrap/badge.svg)][api-docs]
 
-Textwrap is a small Rust crate for word wrapping text. You can use it
-to format strings for display in commandline applications. The crate
-name and interface is inspired by
-the [Python textwrap module][py-textwrap].
+Textwrap is a library for word wrapping text. You can use it to format
+strings for display in commandline applications. The crate name and
+interface is inspired by the [Python textwrap module][py-textwrap].
 
 ## Usage
 
@@ -18,8 +17,8 @@ To use `textwrap`, add this to your `Cargo.toml` file:
 textwrap = "0.12"
 ```
 
-This gives you the text wrapping without of the optional features
-listed next.
+This gives you the text wrapping without of the optional Cargo
+features listed next.
 
 ### `hyphenation`
 
@@ -54,23 +53,46 @@ Please see the [`termwidth` example] for how to use this feature.
 
 ## Getting Started
 
-Word wrapping single strings is easy using the `fill` function:
+Word wrapping is easy using the `fill` function:
+
 ```rust
 fn main() {
-    let text = "textwrap: a small library for wrapping text.";
-    println!("{}", textwrap::fill(text, 18));
+    let text = "textwrap: an efficient and powerful library for wrapping text.";
+    println!("{}", textwrap::fill(text, 28));
 }
 ```
-The output is
+
+The output is wrapped within 28 columns:
+
 ```
-textwrap: a small
-library for
+textwrap: an efficient
+and powerful library for
 wrapping text.
 ```
 
-If you enable the `hyphenation` feature, you get support for automatic
-hyphenation for [about 70 languages][patterns] via high-quality TeX
-hyphenation patterns.
+Sharp-eyed readers will notice that the first line is 22 columns wide.
+So why is the word “and” put in the second line when there is space
+for it in the first line?
+
+The explanation is that textwrap does not just wrap text one line at a
+time. Instead, it uses an optimal-fit algorithm which looks ahead and
+chooses line breaks which minimize the gaps left at ends of lines.
+
+Without look ahead, the first line would be longer and the text would
+look like this:
+
+```
+textwrap: an efficient and
+powerful library for
+wrapping text.
+```
+
+The second line is now shorter and the text is more ragged. The kind
+of wrapping can be configured via `Option::wrap_algorithm`.
+
+If you enable the `hyphenation` Cargo feature, you get support for
+automatic hyphenation for [about 70 languages][patterns] via
+high-quality TeX hyphenation patterns.
 
 Your program must load the hyphenation pattern and configure
 `Options::splitter` to use it:
@@ -81,25 +103,25 @@ use textwrap::Options;
 
 fn main() {
     let hyphenator = Standard::from_embedded(Language::EnglishUS).unwrap();
-    let options = Options::new(18).splitter(Box::new(hyphenator));
-    let text = "textwrap: a small library for wrapping text.";
+    let options = Options::new(28).splitter(hyphenator);
+    let text = "textwrap: an efficient and powerful library for wrapping text.";
     println!("{}", fill(text, &options);
 }
 ```
 
 The output now looks like this:
 ```
-textwrap: a small
-library for wrap-
+textwrap: an efficient and
+powerful library for wrap-
 ping text.
 ```
 
 The US-English hyphenation patterns are embedded when you enable the
 `hyphenation` feature. They are licensed under a [permissive
-license][en-us license] and take up about 88 KB of space in your
-application. If you need hyphenation for other languages, you need to
-download a [precompiled `.bincode` file][bincode] and load it
-yourself. Please see the [`hyphenation` documentation] for details.
+license][en-us license] and take up about 88 KB in your binary. If you
+need hyphenation for other languages, you need to download a
+[precompiled `.bincode` file][bincode] and load it yourself. Please
+see the [`hyphenation` documentation] for details.
 
 ## Wrapping Strings at Compile Time
 
@@ -109,92 +131,24 @@ procedural macros from the [`textwrap-macros` crate].
 
 ## Examples
 
-The library comes with some small example programs that shows various
-features.
+The library comes with [a
+collection](https://github.com/mgeisler/textwrap/tree/master/examples)
+of small example programs that shows various features. You’re invited
+to clone the repository and try them out for yourself!
 
-### Layout Example
+Of special note is the `interactive` example. This is a demo program
+which demonstrates most of the available features: you can enter text
+and adjust the width at which it is wrapped interactively. You can
+also adjust the `Options` used to see the effect of different
+`WordSplitter`s and wrap algorithms.
 
-The `layout` example shows how a fixed example string is wrapped at
-different widths. Run the example with:
+Run the demo with
 
-```shell
-$ cargo run --features hyphenation --example layout
+```sh
+$ cargo run --example interactive
 ```
 
-The program will use the following string:
-
-> Memory safety without garbage collection. Concurrency without data
-> races. Zero-cost abstractions.
-
-The string is wrapped at all widths between 15 and 60 columns. With
-narrow columns the output looks like this:
-
-```
-.--- Width: 15 ---.
-| Memory safety   |
-| without garbage |
-| collection.     |
-| Concurrency     |
-| without data    |
-| races. Zero-    |
-| cost abstrac-   |
-| tions.          |
-.--- Width: 16 ----.
-| Memory safety    |
-| without garbage  |
-| collection. Con- |
-| currency without |
-| data races. Ze-  |
-| ro-cost abstrac- |
-| tions.           |
-```
-
-Later, longer lines are used and the output now looks like this:
-
-```
-.-------------------- Width: 49 --------------------.
-| Memory safety without garbage collection. Concur- |
-| rency without data races. Zero-cost abstractions. |
-.---------------------- Width: 53 ----------------------.
-| Memory safety without garbage collection. Concurrency |
-| without data races. Zero-cost abstractions.           |
-.------------------------- Width: 59 -------------------------.
-| Memory safety without garbage collection. Concurrency with- |
-| out data races. Zero-cost abstractions.                     |
-```
-
-Notice how words are split at hyphens (such as "zero-cost") but also
-how words are hyphenated using automatic/machine hyphenation.
-
-### Terminal Width Example
-
-The `termwidth` example simply shows how the width can be set
-automatically to the current terminal width. Run it with this command:
-
-```
-$ cargo run --example termwidth
-```
-
-If you run it in a narrow terminal, you'll see output like this:
-```
-Formatted in within 60 columns:
-----
-Memory safety without garbage collection. Concurrency
-without data races. Zero-cost abstractions.
-----
-```
-
-If `stdout` is not connected to the terminal, the program will use a
-default of 80 columns for the width:
-
-```
-$ cargo run --example termwidth | cat
-Formatted in within 80 columns:
-----
-Memory safety without garbage collection. Concurrency without data races. Zero-
-cost abstractions.
-----
-```
+The demo needs a Linux terminal to function.
 
 ## Release History
 
