@@ -17,6 +17,9 @@ keywords = ["text", "formatting", "wrap", "typesetting", "hyphenation"]
 categories = ["text-processing", "command-line-interface"]
 license = "MIT"
 edition = "2018"
+# TODO: Remove
+autoexamples = false
+autobenches = false
 
 [package.metadata.docs.rs]
 all-features = true
@@ -26,14 +29,14 @@ travis-ci = { repository = "mgeisler/textwrap" }
 appveyor = { repository = "mgeisler/textwrap" }
 codecov = { repository = "mgeisler/textwrap" }
 
-[[bench]]
-name = "linear"
-harness = false
+#[[bench]]
+#name = "linear"
+#harness = false
 
 [dependencies]
 unicode-width = "0.1"
 terminal_size = { version = "0.1", optional = true }
-hyphenation = { version = "0.8", optional = true, features = ["embed_en-us"] }
+hyphenation = { version = "0.8", optional = true }
 
 [dev-dependencies]
 lipsum = "0.7"
