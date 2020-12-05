@@ -328,7 +328,7 @@ where
     }
 
     fn size_hint(&self) -> (usize, Option<usize>) {
-        let (min_fragments, max_fragments) = self.fragments.size_hint();
+        let (min_fragments, _) = self.fragments.size_hint();
         let (min_extra_lines, max_extra_lines) = self.widths.size_hint();
         (
             // In the worst-case (i.e. fewest fragments yielded) scenario each fragment will take up
@@ -339,9 +339,8 @@ where
                 // know that the iterator is finished.
                 Some(0)
             } else {
-                // Otherwise, in the best-case (i.e. most fragments yielded) scenario we will be
-                // able to fit all the fragments in.
-                max_fragments
+                // Otherwise, there is the possibility of splitting the next fragments infinitely.
+                None
             },
         )
     }
