@@ -14,7 +14,7 @@ interface is inspired by the [Python textwrap module][py-textwrap].
 To use `textwrap`, add this to your `Cargo.toml` file:
 ```toml
 [dependencies]
-textwrap = "0.12"
+textwrap = "0.13"
 ```
 
 This gives you the text wrapping without of the optional Cargo
@@ -27,7 +27,7 @@ enable the `hyphenation` feature:
 
 ```toml
 [dependencies]
-textwrap = { version = "0.12", features = ["hyphenation"] }
+textwrap = { version = "0.13", features = ["hyphenation"] }
 ```
 
 This gives you hyphenation support for US English. Please see the
@@ -42,7 +42,7 @@ To conveniently wrap text at the current terminal width, enable the
 
 ```toml
 [dependencies]
-textwrap = { version = "0.12", features = ["terminal_size"] }
+textwrap = { version = "0.13", features = ["terminal_size"] }
 ```
 
 Please see the [`termwidth` example] for how to use this feature.

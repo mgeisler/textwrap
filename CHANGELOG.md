@@ -3,7 +3,7 @@
 This file lists the most important changes made in each release of
 `textwrap`.
 
-## Version 0.13.0 — Unreleased
+## Version 0.13.0 — December 5th, 2020
 
 This is a major release which rewrites the core logic, adds many new
 features, and fixes a couple of bugs. Most programs which use
