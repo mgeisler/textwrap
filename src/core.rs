@@ -659,8 +659,9 @@ const HYPHEN_PENALTY: i32 = 25;
 /// the number of words. Compared to [`wrap_first_fit`], this function
 /// is about 4 times slower.
 ///
-/// The use of penalties is inspired by the line breaking algorithm
-/// used TeX, described in the 1981 article [_Breaking Paragraphs into
+/// The optimization of per-line costs over the entire paragraph is
+/// inspired by the line breaking algorithm used in TeX, as described
+/// in the 1981 article [_Breaking Paragraphs into
 /// Lines_](http://www.eprg.org/G53DOC/pdfs/knuth-plass-breaking.pdf)
 /// by Knuth and Plass. The implementation here is based on [Python
 /// code by David
