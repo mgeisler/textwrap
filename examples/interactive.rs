@@ -129,6 +129,20 @@ mod unix_only {
 
         write!(
             stdout,
+            "{}- build: {}{}{}",
+            cursor::Goto(right_col, right_row),
+            style::Bold,
+            if cfg!(debug_assertions) {
+                "debug"
+            } else {
+                "release"
+            },
+            style::Reset,
+        )?;
+        right_row += 1;
+
+        write!(
+            stdout,
             "{}- words: {}{}{}",
             cursor::Goto(right_col, right_row),
             style::Bold,
