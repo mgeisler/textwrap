@@ -33,7 +33,6 @@
 use crate::{Options, WordSplitter};
 use std::cell::RefCell;
 use unicode_width::UnicodeWidthChar;
-use unicode_width::UnicodeWidthStr;
 
 /// The CSI or “Control Sequence Introducer” introduces an ANSI escape
 /// sequence. This is typically used for colored text and will be
@@ -45,6 +44,7 @@ const ANSI_FINAL_BYTE: std::ops::RangeInclusive<char> = '\x40'..='\x7e';
 /// Skip ANSI escape sequences. The `ch` is the current `char`, the
 /// `chars` provide the following characters. The `chars` will be
 /// modified if `ch` is the start of an ANSI escape sequence.
+#[inline]
 fn skip_ansi_escape_sequence<I: Iterator<Item = char>>(ch: char, chars: &mut I) -> bool {
     if ch == CSI.0 && chars.next() == Some(CSI.1) {
         // We have found the start of an ANSI escape code, typically
@@ -57,6 +57,20 @@ fn skip_ansi_escape_sequence<I: Iterator<Item = char>>(ch: char, chars: &mut I) 
         }
     }
     false
+}
+
+/// Compute display with while skipping over ANSI escape sequences.
+#[inline]
+fn width(text: &str) -> usize {
+    let mut chars = text.chars();
+    let mut width = 0;
+    while let Some(ch) = chars.next() {
+        if skip_ansi_escape_sequence(ch, &mut chars) {
+            continue;
+        };
+        width += ch.width().unwrap_or(0);
+    }
+    width
 }
 
 /// A (text) fragment denotes the unit which we wrap into lines.
@@ -109,18 +123,9 @@ impl<'a> Word<'a> {
     /// whitespace part of the word.
     pub fn from(word: &str) -> Word<'_> {
         let trimmed = word.trim_end_matches(' ');
-        let mut chars = trimmed.chars();
-        let mut width = 0;
-        while let Some(ch) = chars.next() {
-            if skip_ansi_escape_sequence(ch, &mut chars) {
-                continue;
-            };
-            width += ch.width().unwrap_or(0);
-        }
-
         Word {
             word: trimmed,
-            width: width,
+            width: width(&trimmed),
             whitespace: &word[trimmed.len()..],
             penalty: "",
         }
@@ -291,7 +296,7 @@ where
                 let need_hyphen = !word[..idx].ends_with('-');
                 let w = Word {
                     word: &word.word[prev..idx],
-                    width: word[prev..idx].width(),
+                    width: width(&word[prev..idx]),
                     whitespace: "",
                     penalty: if need_hyphen { "-" } else { "" },
                 };
@@ -302,7 +307,7 @@ where
             if prev < word.word.len() || prev == 0 {
                 let w = Word {
                     word: &word.word[prev..],
-                    width: word[prev..].width(),
+                    width: width(&word[prev..]),
                     whitespace: word.whitespace,
                     penalty: word.penalty,
                 };
@@ -758,6 +763,13 @@ mod tests {
         let ch = chars.next().unwrap();
         assert!(skip_ansi_escape_sequence(ch, &mut chars));
         assert_eq!(chars.next(), Some('H'));
+    }
+
+    #[test]
+    fn width_works() {
+        assert_eq!("Café Plain".len(), 11); // “é” is two bytes
+        assert_eq!(width("Café Plain"), 10);
+        assert_eq!(width("\u{1b}[31mCafé Rouge\u{1b}[0m"), 10);
     }
 
     #[test]
