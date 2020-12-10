@@ -3,7 +3,7 @@
 This file lists the most important changes made in each release of
 `textwrap`.
 
-## Version 0.13.0 — December 5th, 2020
+## Version 0.13.0 (2020-12-05)
 
 This is a major release which rewrites the core logic, adds many new
 features, and fixes a couple of bugs. Most programs which use
@@ -157,7 +157,7 @@ Thanks to @CryptJar and @Koxiat for their support in the PRs above!
 * [#216](https://github.com/mgeisler/textwrap/pull/216): Forbid the
   use of unsafe code.
 
-## Version 0.12.1 — July 3rd, 2020
+## Version 0.12.1 (2020-07-03)
 
 This is a bugfix release.
 
@@ -167,7 +167,7 @@ This is a bugfix release.
   broken and would cause extra whitespace to be inserted when words
   were longer than the line width.
 
-## Version 0.12.0 — June 26th, 2020
+## Version 0.12.0 (2020-06-26)
 
 The code has been updated to the [Rust 2018 edition][rust-2018] and
 each new release of `textwrap` will only support the latest stable
@@ -185,7 +185,7 @@ US-English. This slims down the dependency.
 * Fixed [#158][issue-158]: Unintended wrapping when using external splitter.
 * Fixed [#177][issue-177]: Update examples to the 2018 edition.
 
-## Version 0.11.0 — December 9th, 2018
+## Version 0.11.0 (2018-12-09)
 
 Due to our dependencies bumping their minimum supported version of
 Rust, the minimum version of Rust we test against is now 1.22.0.
@@ -194,7 +194,7 @@ Rust, the minimum version of Rust we test against is now 1.22.0.
   trailing newlines. Thanks @bbqsrc!
 * Fixed [#151][issue-151]: Release of version with hyphenation 0.7.
 
-## Version 0.10.0 — April 28th, 2018
+## Version 0.10.0 (2018-04-28)
 
 Due to our dependencies bumping their minimum supported version of
 Rust, the minimum version of Rust we test against is now 1.17.0.
@@ -204,7 +204,7 @@ Rust, the minimum version of Rust we test against is now 1.17.0.
 * Fixed [#122][issue-122]: Take newlines into account when wrapping.
 * Fixed [#129][issue-129]: Panic on string with em-dash.
 
-## Version 0.9.0 — October 5th, 2017
+## Version 0.9.0 (2017-10-05)
 
 The dependency on `term_size` is now optional, and by default this
 feature is not enabled. This is a *breaking change* for users of
@@ -217,7 +217,7 @@ Added a regression test for the case where `width` is set to
 
 * Fixed [#101][issue-101]: Make `term_size` an optional dependency.
 
-## Version 0.8.0 — September 4th, 2017
+## Version 0.8.0 (2017-09-04)
 
 The `Wrapper` stuct is now generic over the type of word splitter
 being used. This means less boxing and a nicer API. The
@@ -232,7 +232,7 @@ if you will be iterating over the wrapped lines one by one.
   @hcpl!
 * Fixed [#81][issue-81]: Set `html_root_url`.
 
-## Version 0.7.0 — July 20th, 2017
+## Version 0.7.0 (2017-07-20)
 
 Version 0.7.0 changes the return type of `Wrapper::wrap` from
 `Vec<String>` to `Vec<Cow<'a, str>>`. This means that the output lines
@@ -250,7 +250,7 @@ important for you so we can provide a work around.
 * Fixed [#58][issue-58]: Add a "fast_wrap" function.
 * Fixed [#61][issue-61]: Documentation errors.
 
-## Version 0.6.0 — May 22nd, 2017
+## Version 0.6.0 (2017-05-22)
 
 Version 0.6.0 adds builder methods to `Wrapper` for easy one-line
 initialization and configuration:
@@ -264,7 +264,7 @@ words, not even at existing hyphens.
 
 * Fixed [#28][issue-28]: Support not squeezing whitespace.
 
-## Version 0.5.0 — May 15th, 2017
+## Version 0.5.0 (2017-05-15)
 
 Version 0.5.0 has *breaking API changes*. However, this only affects
 code using the hyphenation feature. The feature is now optional, so
@@ -287,22 +287,22 @@ Other changes include optimizations, so version 0.5.0 is roughly
 * Fixed [#36][issue-36]: Support building without `hyphenation`.
 * Fixed [#39][issue-39]: Respect non-breaking spaces.
 
-## Version 0.4.0 — January 24th, 2017
+## Version 0.4.0 (2017-01-24)
 
 Documented complexities and tested these via `cargo bench`.
 
 * Fixed [#13][issue-13]: Immediatedly add word if it fits.
 * Fixed [#14][issue-14]: Avoid splitting on initial hyphens.
 
-## Version 0.3.0 — January 7th, 2017
+## Version 0.3.0 (2017-01-07)
 
 Added support for automatic hyphenation.
 
-## Version 0.2.0 — December 28th, 2016
+## Version 0.2.0 (2016-12-28)
 
 Introduced `Wrapper` struct. Added support for wrapping on hyphens.
 
-## Version 0.1.0 — December 17th, 2016
+## Version 0.1.0 (2016-12-17)
 
 First public release with support for wrapping strings on whitespace.
 
