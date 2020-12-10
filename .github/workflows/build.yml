@@ -10,51 +10,61 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
+
+  ubuntu:
+    name: Build on Ubuntu
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        os:
-          - ubuntu-latest
-          - windows-latest
         rust:
           - stable
           - nightly
 
-    runs-on: ${{ matrix.os }}
-
     steps:
-      # By default, the "\n" in CHANGELOG.md end up as "\r\n" on disk.
-      # This breaks the version-numbers test since ^...$ no longer
-      # match because the regex crate doesn't treat \r\n as a line
-      # boundary (https://github.com/rust-lang/regex/issues/244).
-      - name: Configure Git line ending handling
-        run: git config --global core.autocrlf input
-
       - name: Checkout repository
         uses: actions/checkout@v2
 
       - name: Install ${{ matrix.rust }} Rust
         run: rustup default ${{ matrix.rust }}
 
-      # This gives us a quick smoke test in case something is
-      # seriously broken. It also gives us valuable information about
-      # the typical compile time.
-      - name: Build with default features
-        run: cargo build
+      - name: Test with default features
+        run: cargo test
 
-      - name: Build with all features
-        run: cargo build --all-features
-
-      # This builds examples and benchmarks. Because benchmarks are a
-      # nightly-only feature, we skip this on stable Rust.
-      - name: Build all targets with all features
-        if: matrix.rust == 'nightly'
-        run: cargo build --all-targets --all-features --benches
-
-      - name: Run tests
+      - name: Test with all features
         run: cargo test --all-features
 
-      - name: Build documentation
+  windows:
+    name: Build on Windows (stable)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Test with default features
+        run: cargo test
+
+  # This builds examples and benchmarks, which are not covered above.
+  build-all:
+    name: Build all targets
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Build all targets
+        run: cargo build --all-targets
+
+      - name: Build all targets with all features
+        run: cargo build --all-targets --all-features
+
+  build-documentation:
+    name: Build documentation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Build documentation and check intra-doc links
         env:
           RUSTDOCFLAGS: --deny broken_intra_doc_links
         run: cargo doc --all-features --no-deps
