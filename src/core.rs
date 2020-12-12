@@ -32,6 +32,8 @@
 
 use crate::{Options, WordSplitter};
 use std::cell::RefCell;
+use std::fmt::{self, Debug, Formatter};
+use std::iter::FusedIterator;
 use unicode_width::UnicodeWidthChar;
 
 /// The CSI or “Control Sequence Introducer” introduces an ANSI escape
@@ -438,7 +440,7 @@ pub enum WrapAlgorithm {
 /// ```
 /// use textwrap::core::{wrap_first_fit, Fragment};
 ///
-/// #[derive(Debug)]
+/// #[derive(Debug, Clone, Copy)]
 /// struct Task<'a> {
 ///     name: &'a str,
 ///     hours: usize,   // Time needed to complete task.
@@ -465,20 +467,32 @@ pub enum WrapAlgorithm {
 ///     Task { name: "Bathrooms",   hours: 2, sweep: 1, cleanup: 2 },
 /// ];
 ///
-/// fn assign_days<'a>(tasks: &[Task<'a>], day_length: usize) -> Vec<(usize, Vec<&'a str>)> {
+/// fn assign_days<'a>(
+///     tasks: impl IntoIterator<Item = Task<'a>>,
+///     day_length: usize
+/// ) -> Vec<(usize, Vec<&'a str>)> {
 ///     let mut days = Vec::new();
-///     for day in wrap_first_fit(&tasks, |i| day_length) {
-///         let last = day.last().unwrap();
-///         let work_hours: usize = day.iter().map(|t| t.hours + t.sweep).sum();
-///         let names = day.iter().map(|t| t.name).collect::<Vec<_>>();
-///         days.push((work_hours - last.sweep + last.cleanup, names));
+///
+///     let mut task_names = Vec::new();
+///     let mut hours = 0;
+///
+///     for (task, last) in wrap_first_fit(tasks, std::iter::repeat(day_length)).terminate_eol() {
+///         task_names.push(task.name);
+///         hours += task.hours;
+///
+///         if last {
+///             days.push((hours + task.cleanup, std::mem::take(&mut task_names)));
+///             hours = 0;
+///         } else {
+///             hours += task.sweep;
+///         }
 ///     }
 ///     days
 /// }
 ///
 /// // With a single crew working 8 hours a day:
 /// assert_eq!(
-///     assign_days(&tasks, 8),
+///     assign_days(tasks.iter().copied(), 8),
 ///     [
 ///         (7, vec!["Foundation"]),
 ///         (8, vec!["Framing", "Plumbing"]),
@@ -491,7 +505,7 @@ pub enum WrapAlgorithm {
 ///
 /// // With two crews working in shifts, 16 hours a day:
 /// assert_eq!(
-///     assign_days(&tasks, 16),
+///     assign_days(tasks.iter().copied(), 16),
 ///     [
 ///         (14, vec!["Foundation", "Framing", "Plumbing"]),
 ///         (15, vec!["Electrical", "Insulation", "Drywall", "Floors"]),
@@ -502,25 +516,228 @@ pub enum WrapAlgorithm {
 ///
 /// Apologies to anyone who actually knows how to build a house and
 /// knows how long each step takes :-)
-pub fn wrap_first_fit<T: Fragment, F: Fn(usize) -> usize>(
-    fragments: &[T],
-    line_widths: F,
-) -> Vec<&[T]> {
-    let mut lines = Vec::new();
-    let mut start = 0;
-    let mut width = 0;
-
-    for (idx, fragment) in fragments.iter().enumerate() {
-        let line_width = line_widths(lines.len());
-        if width + fragment.width() + fragment.penalty_width() > line_width && idx > start {
-            lines.push(&fragments[start..idx]);
-            start = idx;
-            width = 0;
+pub fn wrap_first_fit<F, W>(fragments: F, line_widths: W) -> WrapFirstFit<F::IntoIter, W::IntoIter>
+where
+    F: IntoIterator,
+    <F as IntoIterator>::Item: Fragment,
+    W: IntoIterator<Item = usize>,
+{
+    WrapFirstFit {
+        inner: WrapFirstFitInner {
+            fragments: fragments.into_iter(),
+            line_widths: line_widths.into_iter(),
+            glue: 0,
+            remaining_width: None,
         }
-        width += fragment.width() + fragment.whitespace_width();
+        .peekable(),
+        terminating_eol: false,
     }
-    lines.push(&fragments[start..]);
-    lines
+}
+
+/// Iterator for [`wrap_first_fit`].
+#[must_use = "iterators are lazy and do nothing unless consumed"]
+pub struct WrapFirstFit<F, W>
+where
+    F: Iterator,
+    <F as Iterator>::Item: Fragment,
+    W: Iterator<Item = usize>,
+{
+    inner: std::iter::Peekable<WrapFirstFitInner<F, W>>,
+    terminating_eol: bool,
+}
+
+impl<F, W> WrapFirstFit<F, W>
+where
+    F: Iterator,
+    <F as Iterator>::Item: Fragment,
+    W: Iterator<Item = usize>,
+{
+    /// Add a terminating EOL (i.e, have the last fragment return `true` in its tuple).
+    pub fn terminate_eol(self) -> Self {
+        Self {
+            terminating_eol: true,
+            ..self
+        }
+    }
+}
+
+impl<F, W> Iterator for WrapFirstFit<F, W>
+where
+    F: Iterator,
+    <F as Iterator>::Item: Fragment,
+    W: Iterator<Item = usize>,
+{
+    type Item = (<F as Iterator>::Item, bool);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let (_, fragment) = self.inner.next()?;
+        let eol = self
+            .inner
+            .peek()
+            .map(|&(newline, _)| newline)
+            .unwrap_or(self.terminating_eol);
+        Some((fragment, eol))
+    }
+}
+impl<F, W> FusedIterator for WrapFirstFit<F, W>
+where
+    F: FusedIterator,
+    <F as Iterator>::Item: Fragment,
+    W: FusedIterator<Item = usize>,
+{
+}
+
+// Manual Debug impl so that `<F as Iterator>::Item: Debug`.
+impl<F, W> Debug for WrapFirstFit<F, W>
+where
+    F: Iterator + Debug,
+    <F as Iterator>::Item: Fragment + Debug,
+    W: Iterator<Item = usize> + Debug,
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        f.debug_struct("WrapFirstFit")
+            .field("inner", &self.inner)
+            .finish()
+    }
+}
+
+// Manual Clone impl so that `<F as Iterator>::Item: Clone`.
+impl<F, W> Clone for WrapFirstFit<F, W>
+where
+    F: Iterator + Clone,
+    <F as Iterator>::Item: Fragment + Clone,
+    W: Iterator<Item = usize> + Clone,
+{
+    fn clone(&self) -> Self {
+        Self {
+            inner: self.inner.clone(),
+            terminating_eol: self.terminating_eol,
+        }
+    }
+}
+
+/// Inner iterator used in [`WrapFirstFit`].
+///
+/// This iterates over tuples of whether the fragment starts on a new line, and the fragment
+/// itself.
+struct WrapFirstFitInner<F, W>
+where
+    F: Iterator,
+    <F as Iterator>::Item: Fragment,
+    W: Iterator<Item = usize>,
+{
+    fragments: F,
+    line_widths: W,
+    /// The glue of the previous fragment on the line.
+    glue: usize,
+    /// The remaining width in the current line. `None` if the line overflows, so not even a
+    /// zero-width fragment can fit on it (unlike `Some(0)` where it can).
+    remaining_width: Option<usize>,
+}
+
+impl<F, W> Iterator for WrapFirstFitInner<F, W>
+where
+    F: Iterator,
+    <F as Iterator>::Item: Fragment,
+    W: Iterator<Item = usize>,
+{
+    type Item = (bool, <F as Iterator>::Item);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let fragment = self.fragments.next()?;
+
+        let new_remaining_width = self
+            .remaining_width
+            .and_then(|width| width.checked_sub(self.glue))
+            .and_then(|width| width.checked_sub(fragment.width()))
+            // Require the penalty to fit on the line; although in theory this can provide
+            // suboptimal line wrapping, it avoids infinite lookahead and backtracking.
+            .filter(|&width| width >= fragment.penalty_width());
+
+        self.glue = fragment.whitespace_width();
+
+        Some(match new_remaining_width {
+            // The line has not overflowed.
+            Some(remaining_width) => {
+                self.remaining_width = Some(remaining_width);
+                (false, fragment)
+            }
+            // The line has overflowed; move the fragment to the next line.
+            None => {
+                let line_width = match self.line_widths.next() {
+                    Some(width) => width,
+                    None => {
+                        self.remaining_width = None;
+                        return None;
+                    }
+                };
+
+                let new_remaining_width = line_width
+                    .checked_sub(fragment.width())
+                    .filter(|&width| width >= fragment.penalty_width());
+                self.remaining_width = new_remaining_width;
+                (true, fragment)
+            }
+        })
+    }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        let (min_fragments, _) = self.fragments.size_hint();
+        let (min_extra_lines, max_extra_lines) = self.line_widths.size_hint();
+        (
+            // In the worst-case (i.e. fewest fragments yielded) scenario each fragment will take up
+            // one line.
+            std::cmp::min(min_extra_lines, min_fragments),
+            if max_extra_lines == Some(0) && self.remaining_width.is_none() {
+                // If there are no more lines and there is no more space on the current line, we
+                // know that the iterator is finished.
+                Some(0)
+            } else {
+                // Otherwise, there can be an unlimited number of lines.
+                None
+            },
+        )
+    }
+}
+impl<F, W> FusedIterator for WrapFirstFitInner<F, W>
+where
+    F: FusedIterator,
+    <F as Iterator>::Item: Fragment,
+    W: FusedIterator<Item = usize>,
+{
+}
+
+// Manual Debug impl so that `<F as Iterator>::Item: Debug`.
+impl<F, W> Debug for WrapFirstFitInner<F, W>
+where
+    F: Iterator + Debug,
+    <F as Iterator>::Item: Fragment + Debug,
+    W: Iterator<Item = usize> + Debug,
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        f.debug_struct("WrapFirstFitInner")
+            .field("fragments", &self.fragments)
+            .field("line_widths", &self.line_widths)
+            .field("glue", &self.glue)
+            .field("remaining_width", &self.remaining_width)
+            .finish()
+    }
+}
+// Manual Clone impl so that `<F as Iterator>::Item: Clone`.
+impl<F, W> Clone for WrapFirstFitInner<F, W>
+where
+    F: Iterator + Clone,
+    <F as Iterator>::Item: Fragment + Clone,
+    W: Iterator<Item = usize> + Clone,
+{
+    fn clone(&self) -> Self {
+        Self {
+            fragments: self.fragments.clone(),
+            line_widths: self.line_widths.clone(),
+            glue: self.glue,
+            remaining_width: self.remaining_width,
+        }
+    }
 }
 
 /// Cache for line numbers. This is necessary to avoid a O(n**2)

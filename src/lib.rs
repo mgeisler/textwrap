@@ -656,7 +656,10 @@ where
         let line_lengths = |i| if i == 0 { initial_width } else { subsequent_width };
         let wrapped_words = match options.wrap_algorithm {
             core::WrapAlgorithm::OptimalFit => core::wrap_optimal_fit(&broken_words, line_lengths),
-            core::WrapAlgorithm::FirstFit => core::wrap_first_fit(&broken_words, line_lengths),
+            core::WrapAlgorithm::FirstFit => {
+                //core::wrap_first_fit(&broken_words, line_lengths);
+                todo!()
+            }
         };
 
         let mut idx = 0;
@@ -759,30 +762,21 @@ where
 /// Please see the [`linear`
 /// benchmark](https://github.com/mgeisler/textwrap/blob/master/benches/linear.rs)
 /// for details.
+// TODO: Make this take an &mut str
 pub fn fill_inplace(text: &mut String, width: usize) {
     let mut indices = Vec::new();
 
     let mut offset = 0;
     for line in text.split('\n') {
-        let words = core::find_words(line).collect::<Vec<_>>();
-        let wrapped_words = core::wrap_first_fit(&words, |_| width);
+        for (word, eol) in core::wrap_first_fit(core::find_words(line), std::iter::repeat(width)) {
+            offset += word.len() + word.whitespace.len();
 
-        let mut line_offset = offset;
-        for words in &wrapped_words[..wrapped_words.len() - 1] {
-            let line_len = words
-                .iter()
-                .map(|word| word.len() + word.whitespace.len())
-                .sum::<usize>();
-
-            line_offset += line_len;
-            // We've advanced past all ' ' characters -- want to move
-            // one ' ' backwards and insert our '\n' there.
-            indices.push(line_offset - 1);
+            if eol {
+                // The previous character was a space, replace it with a newline.
+                indices.push(offset - 1);
+            }
         }
-
-        // Advance past entire line, plus the '\n' which was removed
-        // by the split call above.
-        offset += line.len() + 1;
+        offset += 1;
     }
 
     let mut bytes = std::mem::take(text).into_bytes();
