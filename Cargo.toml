@@ -10,6 +10,7 @@ keywords = ["text", "formatting", "wrap", "typesetting", "hyphenation"]
 categories = ["text-processing", "command-line-interface"]
 license = "MIT"
 edition = "2018"
+exclude = [".github/", ".gitignore", "benches/", "examples/"]
 
 [package.metadata.docs.rs]
 all-features = true
