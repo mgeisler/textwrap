@@ -258,8 +258,12 @@ mod unix_only {
 
         let mut idx_iter = (0..splitters.len()).collect::<Vec<_>>().into_iter().cycle();
 
-        let mut text = String::from(
-            "Welcome to the interactive demo! The following is from The \
+        let args = std::env::args().collect::<Vec<_>>();
+        let mut text = if args.len() > 1 {
+            args[1..].join(" ")
+        } else {
+            String::from(
+                "Welcome to the interactive demo! The following is from The \
             Emperor’s New Clothes by Hans Christian Andersen. You can edit the \
             text!\n\n\
             Many years ago there was an Emperor, who was so excessively fond \
@@ -270,7 +274,8 @@ mod unix_only {
             as one does about any other king or emperor, ‘He is in his council \
             chamber,’ here one always said, ‘The Emperor is in his \
             dressing-room.’",
-        );
+            )
+        };
 
         let stdin = io::stdin();
         let mut screen = AlternateScreen::from(io::stdout().into_raw_mode()?);
