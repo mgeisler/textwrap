@@ -1,0 +1,30 @@
+
+[package]
+name = "textwrap-fuzz"
+version = "0.0.0"
+authors = ["Automatically generated"]
+publish = false
+edition = "2018"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.3"
+textwrap = { path = ".." }
+
+# Prevent this from interfering with workspaces
+[workspace]
+members = ["."]
+
+[[bin]]
+name = "fill_optimal_fit"
+path = "fuzz_targets/fill_optimal_fit.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fill_first_fit"
+path = "fuzz_targets/fill_first_fit.rs"
+test = false
+doc = false
