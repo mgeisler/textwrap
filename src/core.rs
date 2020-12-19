@@ -98,6 +98,18 @@ pub trait Fragment: std::fmt::Debug {
     fn penalty_width(&self) -> usize;
 }
 
+impl<'a, F: Fragment + ?Sized> Fragment for &'a F {
+    fn width(&self) -> usize {
+        (*self).width()
+    }
+    fn whitespace_width(&self) -> usize {
+        (*self).whitespace_width()
+    }
+    fn penalty_width(&self) -> usize {
+        (*self).penalty_width()
+    }
+}
+
 /// A piece of wrappable text, including any trailing whitespace.
 ///
 /// A `Word` is an example of a [`Fragment`], so it has a width,
@@ -393,15 +405,23 @@ pub enum WrapAlgorithm {
 /// use textwrap::core::{find_words, wrap_first_fit, wrap_optimal_fit, Word};
 ///
 /// // Helper to convert wrapped lines to a Vec<String>.
-/// fn lines_to_strings(lines: Vec<&[Word<'_>]>) -> Vec<String> {
-///     lines.iter().map(|line| {
-///         line.iter().map(|word| &**word).collect::<Vec<_>>().join(" ")
-///     }).collect::<Vec<_>>()
+/// fn lines_to_strings<'a>(words: impl Iterator<Item = (&'a Word<'a>, bool)>) -> Vec<String> {
+///     let mut lines = Vec::new();
+///     let mut line = String::new();
+///     for (word, eol) in words {
+///         line.push_str(&word);
+///         if eol {
+///             lines.push(std::mem::take(&mut line));
+///         } else {
+///             line.push(' ');
+///         }
+///     }
+///     lines
 /// }
 ///
 /// let text = "These few words will unfortunately not wrap nicely.";
 /// let words = find_words(text).collect::<Vec<_>>();
-/// assert_eq!(lines_to_strings(wrap_first_fit(&words, |_| 15)),
+/// assert_eq!(lines_to_strings(wrap_first_fit(&words, |_| 15).terminate_eol()),
 ///            vec!["These few words",
 ///                 "will",  // <-- short line
 ///                 "unfortunately",
@@ -409,7 +429,7 @@ pub enum WrapAlgorithm {
 ///                 "nicely."]);
 ///
 /// // We can avoid the short line if we look ahead:
-/// assert_eq!(lines_to_strings(wrap_optimal_fit(&words, |_| 15)),
+/// assert_eq!(lines_to_strings(wrap_optimal_fit(&words, |_| 15).terminate_eol()),
 ///            vec!["These few",
 ///                 "words will",
 ///                 "unfortunately",
@@ -476,7 +496,7 @@ pub enum WrapAlgorithm {
 ///     let mut task_names = Vec::new();
 ///     let mut hours = 0;
 ///
-///     for (task, last) in wrap_first_fit(tasks, std::iter::repeat(day_length)).terminate_eol() {
+///     for (task, last) in wrap_first_fit(tasks, |_| day_length).terminate_eol() {
 ///         task_names.push(task.name);
 ///         hours += task.hours;
 ///
@@ -516,16 +536,17 @@ pub enum WrapAlgorithm {
 ///
 /// Apologies to anyone who actually knows how to build a house and
 /// knows how long each step takes :-)
-pub fn wrap_first_fit<F, W>(fragments: F, line_widths: W) -> WrapFirstFit<F::IntoIter, W::IntoIter>
+pub fn wrap_first_fit<F, W>(fragments: F, line_widths: W) -> WrapFirstFit<F::IntoIter, W>
 where
     F: IntoIterator,
     <F as IntoIterator>::Item: Fragment,
-    W: IntoIterator<Item = usize>,
+    W: Fn(usize) -> usize,
 {
     WrapFirstFit {
         inner: WrapFirstFitInner {
             fragments: fragments.into_iter(),
-            line_widths: line_widths.into_iter(),
+            line_widths,
+            line_number: 0,
             glue: 0,
             remaining_width: None,
         }
@@ -540,7 +561,7 @@ pub struct WrapFirstFit<F, W>
 where
     F: Iterator,
     <F as Iterator>::Item: Fragment,
-    W: Iterator<Item = usize>,
+    W: Fn(usize) -> usize,
 {
     inner: std::iter::Peekable<WrapFirstFitInner<F, W>>,
     terminating_eol: bool,
@@ -550,9 +571,10 @@ impl<F, W> WrapFirstFit<F, W>
 where
     F: Iterator,
     <F as Iterator>::Item: Fragment,
-    W: Iterator<Item = usize>,
+    W: Fn(usize) -> usize,
 {
-    /// Add a terminating EOL (i.e, have the last fragment return `true` in its tuple).
+    /// Add a terminating EOL (i.e, have the last fragment return
+    /// `true` in its tuple).
     pub fn terminate_eol(self) -> Self {
         Self {
             terminating_eol: true,
@@ -565,7 +587,7 @@ impl<F, W> Iterator for WrapFirstFit<F, W>
 where
     F: Iterator,
     <F as Iterator>::Item: Fragment,
-    W: Iterator<Item = usize>,
+    W: Fn(usize) -> usize,
 {
     type Item = (<F as Iterator>::Item, bool);
 
@@ -579,34 +601,46 @@ where
         Some((fragment, eol))
     }
 }
+impl<F, W> ExactSizeIterator for WrapFirstFit<F, W>
+where
+    F: ExactSizeIterator,
+    <F as Iterator>::Item: Fragment,
+    W: Fn(usize) -> usize,
+{
+    fn len(&self) -> usize {
+        self.inner.len()
+    }
+}
+
 impl<F, W> FusedIterator for WrapFirstFit<F, W>
 where
     F: FusedIterator,
     <F as Iterator>::Item: Fragment,
-    W: FusedIterator<Item = usize>,
+    W: Fn(usize) -> usize,
 {
 }
 
-// Manual Debug impl so that `<F as Iterator>::Item: Debug`.
+// Manual impl so that `<F as Iterator>::Item: Debug`.
 impl<F, W> Debug for WrapFirstFit<F, W>
 where
     F: Iterator + Debug,
     <F as Iterator>::Item: Fragment + Debug,
-    W: Iterator<Item = usize> + Debug,
+    W: Fn(usize) -> usize + Debug,
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         f.debug_struct("WrapFirstFit")
             .field("inner", &self.inner)
+            .field("terminating_eol", &self.terminating_eol)
             .finish()
     }
 }
 
-// Manual Clone impl so that `<F as Iterator>::Item: Clone`.
+// Manual impl so that `<F as Iterator>::Item: Clone`.
 impl<F, W> Clone for WrapFirstFit<F, W>
 where
     F: Iterator + Clone,
     <F as Iterator>::Item: Fragment + Clone,
-    W: Iterator<Item = usize> + Clone,
+    W: Fn(usize) -> usize + Clone,
 {
     fn clone(&self) -> Self {
         Self {
@@ -618,16 +652,13 @@ where
 
 /// Inner iterator used in [`WrapFirstFit`].
 ///
-/// This iterates over tuples of whether the fragment starts on a new line, and the fragment
-/// itself.
-struct WrapFirstFitInner<F, W>
-where
-    F: Iterator,
-    <F as Iterator>::Item: Fragment,
-    W: Iterator<Item = usize>,
-{
+/// This iterates over tuples of whether the fragment starts on a new
+/// line, and the fragment itself.
+#[derive(Debug, Clone)]
+struct WrapFirstFitInner<F, W> {
     fragments: F,
     line_widths: W,
+    line_number: usize,
     /// The glue of the previous fragment on the line.
     glue: usize,
     /// The remaining width in the current line. `None` if the line overflows, so not even a
@@ -639,7 +670,7 @@ impl<F, W> Iterator for WrapFirstFitInner<F, W>
 where
     F: Iterator,
     <F as Iterator>::Item: Fragment,
-    W: Iterator<Item = usize>,
+    W: Fn(usize) -> usize,
 {
     type Item = (bool, <F as Iterator>::Item);
 
@@ -664,13 +695,8 @@ where
             }
             // The line has overflowed; move the fragment to the next line.
             None => {
-                let line_width = match self.line_widths.next() {
-                    Some(width) => width,
-                    None => {
-                        self.remaining_width = None;
-                        return None;
-                    }
-                };
+                let line_width = (self.line_widths)(self.line_number);
+                self.line_number += 1;
 
                 let new_remaining_width = line_width
                     .checked_sub(fragment.width())
@@ -682,67 +708,23 @@ where
     }
 
     fn size_hint(&self) -> (usize, Option<usize>) {
-        let (min_fragments, _) = self.fragments.size_hint();
-        let (min_extra_lines, max_extra_lines) = self.line_widths.size_hint();
-        (
-            // In the worst-case (i.e. fewest fragments yielded) scenario each fragment will take up
-            // one line.
-            std::cmp::min(min_extra_lines, min_fragments),
-            if max_extra_lines == Some(0) && self.remaining_width.is_none() {
-                // If there are no more lines and there is no more space on the current line, we
-                // know that the iterator is finished.
-                Some(0)
-            } else {
-                // Otherwise, there can be an unlimited number of lines.
-                None
-            },
-        )
+        self.fragments.size_hint()
     }
 }
-impl<F, W> FusedIterator for WrapFirstFitInner<F, W>
+impl<F: ExactSizeIterator, W> ExactSizeIterator for WrapFirstFitInner<F, W>
 where
-    F: FusedIterator,
-    <F as Iterator>::Item: Fragment,
-    W: FusedIterator<Item = usize>,
+    Self: Iterator,
 {
+    fn len(&self) -> usize {
+        self.fragments.len()
+    }
 }
+impl<F: FusedIterator, W> FusedIterator for WrapFirstFitInner<F, W> where Self: Iterator {}
 
-// Manual Debug impl so that `<F as Iterator>::Item: Debug`.
-impl<F, W> Debug for WrapFirstFitInner<F, W>
-where
-    F: Iterator + Debug,
-    <F as Iterator>::Item: Fragment + Debug,
-    W: Iterator<Item = usize> + Debug,
-{
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        f.debug_struct("WrapFirstFitInner")
-            .field("fragments", &self.fragments)
-            .field("line_widths", &self.line_widths)
-            .field("glue", &self.glue)
-            .field("remaining_width", &self.remaining_width)
-            .finish()
-    }
-}
-// Manual Clone impl so that `<F as Iterator>::Item: Clone`.
-impl<F, W> Clone for WrapFirstFitInner<F, W>
-where
-    F: Iterator + Clone,
-    <F as Iterator>::Item: Fragment + Clone,
-    W: Iterator<Item = usize> + Clone,
-{
-    fn clone(&self) -> Self {
-        Self {
-            fragments: self.fragments.clone(),
-            line_widths: self.line_widths.clone(),
-            glue: self.glue,
-            remaining_width: self.remaining_width,
-        }
-    }
-}
-
-/// Cache for line numbers. This is necessary to avoid a O(n**2)
+/// Cache for line numbers.  This is necessary to avoid a O(n**2)
 /// behavior when computing line numbers in [`wrap_optimal_fit`].
 struct LineNumbers {
+    /// The line number of each fragment.
     line_numbers: RefCell<Vec<usize>>,
 }
 
@@ -755,14 +737,26 @@ impl LineNumbers {
         }
     }
 
+    /// Get the line number of the line beginning with the fragment index `i`.
     fn get(&self, i: usize, minima: &[(usize, i32)]) -> usize {
-        while self.line_numbers.borrow_mut().len() < i + 1 {
-            let pos = self.line_numbers.borrow().len();
-            let line_number = 1 + self.get(minima[pos].0, &minima);
-            self.line_numbers.borrow_mut().push(line_number);
+        let mut line_numbers = self.line_numbers.borrow_mut();
+
+        while line_numbers.len() <= i {
+            // Get the index of the fragment that started the previous line; this is the
+            // fragment where the cost of the line from that fragment to fragment
+            // `line_numbers.len()` (these costs are stored in column `line_numbers.len()`) is
+            // lowest.
+            let previous_line_start_index = minima[line_numbers.len()].0;
+
+            // Get the line number of the previous line.
+            let previous_line_number = line_numbers[previous_line_start_index];
+
+            // The `line_numbers.len()`th fragment is on the next line.
+            let line_number = 1 + previous_line_number;
+            line_numbers.push(line_number);
         }
 
-        self.line_numbers.borrow()[i]
+        line_numbers[i]
     }
 }
 
@@ -782,25 +776,26 @@ const NLINE_PENALTY: i32 = 1000;
 ///
 /// let short = "foo ";
 /// let long = "x".repeat(50);
-/// let fragments = vec![Word::from(short), Word::from(&long)];
+/// let short_word = Word::from(short);
+/// let long_word = Word::from(&long);
+/// let fragments = vec![short_word, long_word];
 ///
 /// // Perfect fit, both words are on a single line with no overflow.
-/// let wrapped = wrap_optimal_fit(&fragments, |_| short.len() + long.len());
-/// assert_eq!(wrapped, vec![&[Word::from(short), Word::from(&long)]]);
+/// let wrapped = wrap_optimal_fit(&fragments, |_| short.len() + long.len()).into_vec();
+/// assert_eq!(wrapped, vec![(&short_word, false), (&long_word, false)]);
 ///
 /// // The words no longer fit, yet we get a single line back. While
 /// // the cost of overflow (`1 * 2500`) is the same as the cost of the
 /// // gap (`50 * 50 = 2500`), the tie is broken by `NLINE_PENALTY`
 /// // which makes it cheaper to overflow than to use two lines.
-/// let wrapped = wrap_optimal_fit(&fragments, |_| short.len() + long.len() - 1);
-/// assert_eq!(wrapped, vec![&[Word::from(short), Word::from(&long)]]);
+/// let wrapped = wrap_optimal_fit(&fragments, |_| short.len() + long.len() - 1).into_vec();
+/// assert_eq!(wrapped, vec![(&short_word, false), (&long_word, false)]);
 ///
 /// // The cost of overflow would be 2 * 2500, whereas the cost of the
 /// // gap is only `49 * 49 + NLINE_PENALTY = 2401 + 1000 = 3401`. We
 /// // therefore get two lines.
-/// let wrapped = wrap_optimal_fit(&fragments, |_| short.len() + long.len() - 2);
-/// assert_eq!(wrapped, vec![&[Word::from(short)],
-///                          &[Word::from(&long)]]);
+/// let wrapped = wrap_optimal_fit(&fragments, |_| short.len() + long.len() - 2).into_vec();
+/// assert_eq!(wrapped, vec![(&short_word, true), (&long_word, false)]);
 /// ```
 ///
 /// This only happens if the overflowing word is 50 characters long
@@ -870,16 +865,39 @@ const HYPHEN_PENALTY: i32 = 25;
 /// greedy algorithm produced.
 ///
 /// Searching through all possible combinations would normally be
-/// prohibitively slow. However, it turns out that the problem can be
-/// formulated as the task of finding column minima in a cost matrix.
-/// This matrix has a special form (totally monotone) which lets us
-/// use a [linear-time algorithm called
-/// SMAWK](https://lib.rs/crates/smawk) to find the optimal break
-/// points.
+/// prohibitively slow - there are 2^n combinations. However, this can
+/// be optimized to linear time by making use of a cost matrix and
+/// SMAWK. That being said, it is approximately four times slower
+/// than [`wrap_first_fit`].
 ///
-/// This means that the time complexity remains O(_n_) where _n_ is
-/// the number of words. Compared to [`wrap_first_fit`], this function
-/// is about 4 times slower.
+/// The cost matrix is a square matrix whose rows represent the
+/// potential start of each line and whose columns represent the
+/// potential end of each line. As such, only the area of the matrix
+/// above the main axis will ever be filled in. Each filled in cell
+/// contains the calculated cost of a line that begins with the
+/// fragment in the row and ends with the fragment in the column,
+/// where a higher cost indicates more whitespace and thus a less
+/// aesthetically pleasing line. For example, the cost matrix for the
+/// string `"foo bar baz quux"` looks like this (cost values omitted):
+///
+/// ```text
+/// +------+------+------+------+------+
+/// |      | Foo  | Bar  | Baz  | Quux |
+/// +------+------+------+------+------+
+/// | Foo  | N/A  |      |      |      |
+/// +------+------+------+------+------+
+/// | Bar  | N/A  | N/A  |      |      |
+/// +------+------+------+------+------+
+/// | Baz  | N/A  | N/A  | N/A  |      |
+/// +------+------+------+------+------+
+/// | Quux | N/A  | N/A  | N/A  | N/A  |
+/// +------+------+------+------+------+
+/// ```
+///
+/// It is then simply a task of finding the minimum cost value in each
+/// column. Luckily, this matrix is totally monotone which allows us
+/// to use a [linear-time algorithm called SMAWK](::smawk) to compute
+/// it efficiently.
 ///
 /// The optimization of per-line costs over the entire paragraph is
 /// inspired by the line breaking algorithm used in TeX, as described
@@ -888,30 +906,60 @@ const HYPHEN_PENALTY: i32 = 25;
 /// by Knuth and Plass. The implementation here is based on [Python
 /// code by David
 /// Eppstein](https://github.com/jfinkels/PADS/blob/master/pads/wrap.py).
-pub fn wrap_optimal_fit<'a, T: Fragment, F: Fn(usize) -> usize>(
-    fragments: &'a [T],
-    line_widths: F,
-) -> Vec<&'a [T]> {
-    let mut widths = Vec::with_capacity(fragments.len() + 1);
-    let mut width = 0;
-    widths.push(width);
-    for fragment in fragments {
-        width += fragment.width() + fragment.whitespace_width();
-        widths.push(width);
+pub fn wrap_optimal_fit<F, W>(
+    fragments: F,
+    line_widths: W,
+) -> WrapOptimalFit<<F as IntoIterator>::Item>
+where
+    F: IntoIterator,
+    <F as IntoIterator>::Item: Fragment,
+    W: Fn(usize) -> usize,
+{
+    struct FragmentData<F> {
+        /// The fragment itself.
+        fragment: F,
+        /// The cumulative width of all the fragments up to and including this one.
+        cu_width: usize,
+        /// The whitespace width of this fragment.
+        whitespace_width: usize,
+        /// The penalty width of this fragment.
+        penalty_width: usize,
     }
+
+    // We precompute some fragment data for use later on.
+    let mut cu_width = 0;
+    let fragments: Vec<_> = fragments
+        .into_iter()
+        .map(|fragment| {
+            let whitespace_width = fragment.whitespace_width();
+            let penalty_width = fragment.penalty_width();
+            cu_width += fragment.width() + whitespace_width;
+            FragmentData {
+                fragment,
+                cu_width,
+                whitespace_width,
+                penalty_width,
+            }
+        })
+        .collect();
 
     let line_numbers = LineNumbers::new(fragments.len());
 
-    let minima = smawk::online_column_minima(0, widths.len(), |minima, i, j| {
+    let minima = smawk::online_column_minima(0, fragments.len() + 1, |minima, i, j| {
         // Line number for fragment `i`.
         let line_number = line_numbers.get(i, &minima);
         let target_width = std::cmp::max(1, line_widths(line_number));
 
+        // The last fragment of the range fragments[i..j].
+        let last_fragment = &fragments[j - 1];
+
         // Compute the width of a line spanning fragments[i..j] in
         // constant time. We need to adjust widths[j] by subtracting
         // the whitespace of fragment[j-i] and then add the penalty.
-        let line_width = widths[j] - widths[i] - fragments[j - 1].whitespace_width()
-            + fragments[j - 1].penalty_width();
+        let line_width = last_fragment.cu_width
+            - i.checked_sub(1).map(|i| fragments[i].cu_width).unwrap_or(0)
+            - last_fragment.whitespace_width
+            + last_fragment.penalty_width;
 
         // We compute cost of the line containing fragments[i..j]. We
         // start with values[i].1, which is the optimal cost for
@@ -938,7 +986,7 @@ pub fn wrap_optimal_fit<'a, T: Fragment, F: Fn(usize) -> usize>(
         }
 
         // Finally, we discourage hyphens.
-        if fragments[j - 1].penalty_width() > 0 {
+        if last_fragment.penalty_width > 0 {
             // TODO: this should use a penalty value from the fragment
             // instead.
             cost += HYPHEN_PENALTY;
@@ -947,20 +995,64 @@ pub fn wrap_optimal_fit<'a, T: Fragment, F: Fn(usize) -> usize>(
         cost
     });
 
-    let mut lines = Vec::with_capacity(line_numbers.get(fragments.len(), &minima));
-    let mut pos = fragments.len();
-    loop {
-        let prev = minima[pos].0;
-        lines.push(&fragments[prev..pos]);
-        pos = prev;
-        if pos == 0 {
-            break;
-        }
-    }
+    let mut line_start = minima[fragments.len()].0;
 
-    lines.reverse();
-    lines
+    WrapOptimalFit {
+        fragments: fragments
+            .into_iter()
+            .enumerate()
+            .rev()
+            .map(|(i, data)| {
+                let eol = i + 1 == line_start;
+                if eol {
+                    line_start = minima[line_start].0;
+                }
+                (data.fragment, eol)
+            })
+            .collect(),
+    }
 }
+
+/// Iterator for [`wrap_optimal_fit`].
+#[derive(Debug, Clone)]
+#[must_use = "iterators are lazy and do nothing unless consumed"]
+pub struct WrapOptimalFit<F> {
+    /// A reversed list of fragments and eols.
+    fragments: Vec<(F, bool)>,
+}
+
+impl<F> WrapOptimalFit<F> {
+    /// Add a terminating EOL (i.e, have the last fragment return `true` in its tuple).
+    pub fn terminate_eol(mut self) -> Self {
+        if let Some((_, eol)) = &mut self.fragments.first_mut() {
+            *eol = true;
+        }
+        self
+    }
+    /// Get the rest of the fragments as a vector. This is more efficient than collecting into a
+    /// vector.
+    pub fn into_vec(mut self) -> Vec<(F, bool)> {
+        self.fragments.reverse();
+        self.fragments
+    }
+}
+
+impl<F> Iterator for WrapOptimalFit<F> {
+    type Item = (F, bool);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.fragments.pop()
+    }
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        (self.len(), Some(self.len()))
+    }
+}
+impl<F> ExactSizeIterator for WrapOptimalFit<F> {
+    fn len(&self) -> usize {
+        self.fragments.len()
+    }
+}
+impl<F> FusedIterator for WrapOptimalFit<F> {}
 
 #[cfg(test)]
 mod tests {

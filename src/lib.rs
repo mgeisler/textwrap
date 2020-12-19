@@ -652,60 +652,62 @@ where
             split_words.collect::<Vec<_>>()
         };
 
+        if broken_words.is_empty() {
+            lines.push(Cow::Borrowed(""));
+            continue;
+        }
+
         #[rustfmt::skip]
         let line_lengths = |i| if i == 0 { initial_width } else { subsequent_width };
+        // This currently isn't as efficient as it could be as we collect into a vec even when it
+        // isn't necessary.
         let wrapped_words = match options.wrap_algorithm {
-            core::WrapAlgorithm::OptimalFit => core::wrap_optimal_fit(&broken_words, line_lengths),
-            core::WrapAlgorithm::FirstFit => {
-                //core::wrap_first_fit(&broken_words, line_lengths);
-                todo!()
-            }
+            core::WrapAlgorithm::OptimalFit => core::wrap_optimal_fit(broken_words, line_lengths)
+                .terminate_eol()
+                .into_vec(),
+            core::WrapAlgorithm::FirstFit => core::wrap_first_fit(broken_words, line_lengths)
+                .terminate_eol()
+                .collect(),
         };
 
-        let mut idx = 0;
-        for words in wrapped_words {
-            let last_word = match words.last() {
-                None => {
-                    lines.push(Cow::from(""));
-                    continue;
+        let mut line_start = 0;
+        let mut line_end = 0;
+
+        for (word, eol) in wrapped_words {
+            // Advance over the word.
+            line_end += word.len();
+
+            if eol {
+                // The result is owned if we have indentation, otherwise
+                // we can simply borrow an empty string.
+                let mut result = if lines.is_empty() && !options.initial_indent.is_empty() {
+                    Cow::Owned(options.initial_indent.to_owned())
+                } else if !lines.is_empty() && !options.subsequent_indent.is_empty() {
+                    Cow::Owned(options.subsequent_indent.to_owned())
+                } else {
+                    // We can use an empty string here since string
+                    // concatenation for `Cow` preserves a borrowed value
+                    // when either side is empty.
+                    Cow::from("")
+                };
+
+                // We assume here that all words are contiguous is `line`; the sum of their lengths
+                // should add up to the length of `line`.
+                result += &line[line_start..line_end];
+
+                if !word.penalty.is_empty() {
+                    result.to_mut().push_str(&word.penalty);
                 }
-                Some(word) => word,
-            };
 
-            // We assume here that all words are contiguous in `line`.
-            // That is, the sum of their lengths should add up to the
-            // length of `line`.
-            let len = words
-                .iter()
-                .map(|word| word.len() + word.whitespace.len())
-                .sum::<usize>()
-                - last_word.whitespace.len();
-
-            // The result is owned if we have indentation, otherwise
-            // we can simply borrow an empty string.
-            let mut result = if lines.is_empty() && !options.initial_indent.is_empty() {
-                Cow::Owned(options.initial_indent.to_owned())
-            } else if !lines.is_empty() && !options.subsequent_indent.is_empty() {
-                Cow::Owned(options.subsequent_indent.to_owned())
-            } else {
-                // We can use an empty string here since string
-                // concatenation for `Cow` preserves a borrowed value
-                // when either side is empty.
-                Cow::from("")
-            };
-
-            result += &line[idx..idx + len];
-
-            if !last_word.penalty.is_empty() {
-                result.to_mut().push_str(&last_word.penalty);
+                lines.push(result);
             }
 
-            lines.push(result);
+            // Advance over the whitespace, even if there was a penalty.
+            line_end += word.whitespace.len();
 
-            // Advance by the length of `result`, plus the length of
-            // `last_word.whitespace` -- even if we had a penalty, we
-            // need to skip over the whitespace.
-            idx += len + last_word.whitespace.len();
+            if eol {
+                line_start = line_end;
+            }
         }
     }
 
@@ -768,7 +770,7 @@ pub fn fill_inplace(text: &mut String, width: usize) {
 
     let mut offset = 0;
     for line in text.split('\n') {
-        for (word, eol) in core::wrap_first_fit(core::find_words(line), std::iter::repeat(width)) {
+        for (word, eol) in core::wrap_first_fit(core::find_words(line), |_| width) {
             offset += word.len() + word.whitespace.len();
 
             if eol {
