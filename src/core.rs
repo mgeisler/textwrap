@@ -547,7 +547,6 @@ where
             fragments: fragments.into_iter(),
             line_widths,
             line_number: 0,
-            glue: 0,
             remaining_width: None,
         }
         .peekable(),
@@ -659,8 +658,6 @@ struct WrapFirstFitInner<F, W> {
     fragments: F,
     line_widths: W,
     line_number: usize,
-    /// The glue of the previous fragment on the line.
-    glue: usize,
     /// The remaining width in the current line. `None` if the line overflows, so not even a
     /// zero-width fragment can fit on it (unlike `Some(0)` where it can).
     remaining_width: Option<usize>,
@@ -676,35 +673,31 @@ where
 
     fn next(&mut self) -> Option<Self::Item> {
         let fragment = self.fragments.next()?;
+        let fragment_width = fragment.width();
 
-        let new_remaining_width = self
+        let inline_remaining_width = self
             .remaining_width
-            .and_then(|width| width.checked_sub(self.glue))
-            .and_then(|width| width.checked_sub(fragment.width()))
+            .and_then(|width| width.checked_sub(fragment_width))
             // Require the penalty to fit on the line; although in theory this can provide
             // suboptimal line wrapping, it avoids infinite lookahead and backtracking.
             .filter(|&width| width >= fragment.penalty_width());
 
-        self.glue = fragment.whitespace_width();
-
-        Some(match new_remaining_width {
+        match inline_remaining_width {
             // The line has not overflowed.
             Some(remaining_width) => {
-                self.remaining_width = Some(remaining_width);
-                (false, fragment)
+                self.remaining_width = remaining_width.checked_sub(fragment.whitespace_width());
             }
             // The line has overflowed; move the fragment to the next line.
             None => {
                 let line_width = (self.line_widths)(self.line_number);
                 self.line_number += 1;
 
-                let new_remaining_width = line_width
-                    .checked_sub(fragment.width())
-                    .filter(|&width| width >= fragment.penalty_width());
-                self.remaining_width = new_remaining_width;
-                (true, fragment)
+                self.remaining_width = line_width
+                    .checked_sub(fragment_width)
+                    .and_then(|width| width.checked_sub(fragment.whitespace_width()));
             }
-        })
+        }
+        Some((inline_remaining_width.is_none(), fragment))
     }
 
     fn size_hint(&self) -> (usize, Option<usize>) {
