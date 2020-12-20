@@ -953,12 +953,14 @@ where
         // The last fragment of the range fragments[i..j].
         let last_fragment = &fragments[j - 1];
 
+        // The cumulative width before fragments[i]. This is the cumulative width before the
+        // fragment `i`, or if `i` is the first fragment, zero.
+        let start_cu_width = i.checked_sub(1).map(|i| fragments[i].cu_width).unwrap_or(0);
+
         // Compute the width of a line spanning fragments[i..j] in
         // constant time. We need to adjust widths[j] by subtracting
         // the whitespace of fragment[j-i] and then add the penalty.
-        let line_width = last_fragment.cu_width
-            - i.checked_sub(1).map(|i| fragments[i].cu_width).unwrap_or(0)
-            - last_fragment.whitespace_width
+        let line_width = last_fragment.cu_width - start_cu_width - last_fragment.whitespace_width
             + last_fragment.penalty_width;
 
         // We compute cost of the line containing fragments[i..j]. We
