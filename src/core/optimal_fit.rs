@@ -1,5 +1,5 @@
 use crate::core::Fragment;
-use std::cell::RefCell;
+use std::cell::{Cell, RefCell};
 
 /// Cache for line numbers. This is necessary to avoid a O(n**2)
 /// behavior when computing line numbers in [`wrap_optimal_fit`].
@@ -16,7 +16,7 @@ impl LineNumbers {
         }
     }
 
-    fn get(&self, i: usize, minima: &[(usize, i32)]) -> usize {
+    fn get<T>(&self, i: usize, minima: &[(usize, T)]) -> usize {
         while self.line_numbers.borrow_mut().len() < i + 1 {
             let pos = self.line_numbers.borrow().len();
             let line_number = 1 + self.get(minima[pos].0, &minima);
@@ -29,7 +29,7 @@ impl LineNumbers {
 
 /// Per-line penalty. This is added for every line, which makes it
 /// expensive to output more lines than the minimum required.
-const NLINE_PENALTY: i32 = 1000;
+const NLINE_PENALTY: usize = 1000;
 
 /// Per-character cost for lines that overflow the target line width.
 ///
@@ -68,16 +68,16 @@ const NLINE_PENALTY: i32 = 1000;
 /// _and_ if it happens to overflow the line by exactly one character.
 /// If it overflows by more than one character, the overflow penalty
 /// will quickly outgrow the cost of the gap, as seen above.
-const OVERFLOW_PENALTY: i32 = 50 * 50;
+const OVERFLOW_PENALTY: usize = 50 * 50;
 
 /// The last line is short if it is less than 1/4 of the target width.
 const SHORT_LINE_FRACTION: usize = 4;
 
 /// Penalize a short last line.
-const SHORT_LAST_LINE_PENALTY: i32 = 25;
+const SHORT_LAST_LINE_PENALTY: usize = 25;
 
 /// Penalty for lines ending with a hyphen.
-const HYPHEN_PENALTY: i32 = 25;
+const HYPHEN_PENALTY: usize = 25;
 
 /// Wrap abstract fragments into lines with an optimal-fit algorithm.
 ///
@@ -157,6 +157,60 @@ pub fn wrap_optimal_fit<'a, T: Fragment, F: Fn(usize) -> usize>(
     fragments: &'a [T],
     line_widths: F,
 ) -> Vec<&'a [T]> {
+    let mut min_idx = 0;
+    let mut max_idx = fragments.len();
+
+    let mut result = Vec::new();
+
+    // We call wrap_optimal_fit_checked on smaller and smaller slices
+    // until we either end up with a single fragment or we find a
+    // slice which can be wrapped without overflow. In either case, we
+    // advance min_idx which ensures that we make progress.
+    loop {
+        match wrap_optimal_fit_checked(&fragments[min_idx..max_idx], &line_widths) {
+            Some(lines) => {
+                let partial_last_line = lines.len() > 1;
+                result.extend(lines);
+                if max_idx == fragments.len() {
+                    return result; // All done!
+                }
+
+                min_idx = max_idx;
+                max_idx = fragments.len();
+
+                // We assume that the last wrapped line is incomplete
+                // and needs to be re-wrapped.
+                if partial_last_line {
+                    let last_line = result.pop().unwrap();
+                    min_idx -= last_line.len();
+                }
+            }
+            None => {
+                if max_idx - min_idx == 1 {
+                    // This single fragment is causing an overflow, so
+                    // we put on its own line.
+                    result.push(&fragments[min_idx..max_idx]);
+                    if max_idx == fragments.len() {
+                        return result; // All done!
+                    }
+
+                    min_idx = max_idx;
+                    max_idx = fragments.len();
+                } else {
+                    max_idx = min_idx + (max_idx - min_idx) / 2;
+                }
+            }
+        }
+    }
+}
+
+/// Wrap abstract fragments into lines with an optimal-fit algorithm.
+/// Returns `None` if an overflow occurs during the penalty
+/// computations. See [`wrap_optimal_fit`].
+fn wrap_optimal_fit_checked<'a, T: Fragment, F: Fn(usize) -> usize>(
+    fragments: &'a [T],
+    line_widths: F,
+) -> Option<Vec<&'a [T]>> {
     let mut widths = Vec::with_capacity(fragments.len() + 1);
     let mut width = 0;
     widths.push(width);
@@ -165,9 +219,14 @@ pub fn wrap_optimal_fit<'a, T: Fragment, F: Fn(usize) -> usize>(
         widths.push(width);
     }
 
-    let line_numbers = LineNumbers::new(fragments.len());
+    if widths.last() < Some(&line_widths(0)) {
+        return Some(vec![fragments]);
+    }
 
-    let minima = smawk::online_column_minima(0, widths.len(), |minima, i, j| {
+    let line_numbers = LineNumbers::new(fragments.len());
+    let detected_overflow = Cell::new(false);
+
+    let cost_fn = |minima: &[(usize, usize)], i, j| -> Option<usize> {
         // Line number for fragment `i`.
         let line_number = line_numbers.get(i, &minima);
         let target_width = std::cmp::max(1, line_widths(line_number));
@@ -175,42 +234,60 @@ pub fn wrap_optimal_fit<'a, T: Fragment, F: Fn(usize) -> usize>(
         // Compute the width of a line spanning fragments[i..j] in
         // constant time. We need to adjust widths[j] by subtracting
         // the whitespace of fragment[j-i] and then add the penalty.
-        let line_width = widths[j] - widths[i] - fragments[j - 1].whitespace_width()
-            + fragments[j - 1].penalty_width();
+        let last_fragment: &T = &fragments[j - 1];
+        let line_width = widths[j] - widths[i] - last_fragment.whitespace_width()
+            + last_fragment.penalty_width();
 
         // We compute cost of the line containing fragments[i..j]. We
         // start with values[i].1, which is the optimal cost for
         // breaking before fragments[i].
         //
         // First, every extra line cost NLINE_PENALTY.
-        let mut cost = minima[i].1 + NLINE_PENALTY;
+        let mut cost = minima[i].1.checked_add(NLINE_PENALTY)?;
 
         // Next, we add a penalty depending on the line length.
         if line_width > target_width {
             // Lines that overflow get a hefty penalty.
-            let overflow = (line_width - target_width) as i32;
-            cost += overflow * OVERFLOW_PENALTY;
+            let overflow: usize = line_width - target_width;
+            cost = cost.checked_add(overflow.checked_mul(OVERFLOW_PENALTY)?)?;
         } else if j < fragments.len() {
             // Other lines (except for the last line) get a milder
             // penalty which depend on the size of the gap.
-            let gap = (target_width - line_width) as i32;
-            cost += gap * gap;
+            let gap: usize = target_width - line_width;
+            cost = cost.checked_add(gap.checked_mul(gap)?)?;
         } else if i + 1 == j && line_width < target_width / SHORT_LINE_FRACTION {
             // The last line can have any size gap, but we do add a
             // penalty if the line is very short (typically because it
             // contains just a single word).
-            cost += SHORT_LAST_LINE_PENALTY;
+            cost = cost.checked_add(SHORT_LAST_LINE_PENALTY)?;
         }
 
         // Finally, we discourage hyphens.
         if fragments[j - 1].penalty_width() > 0 {
             // TODO: this should use a penalty value from the fragment
             // instead.
-            cost += HYPHEN_PENALTY;
+            cost = cost.checked_add(HYPHEN_PENALTY)?;
         }
 
-        cost
+        Some(cost)
+    };
+
+    let minima = smawk::online_column_minima(0, widths.len(), |minima: &[(usize, usize)], i, j| {
+        if detected_overflow.get() {
+            return 0;
+        }
+        match cost_fn(minima, i, j) {
+            Some(cost) => cost,
+            None => {
+                detected_overflow.set(true);
+                0
+            }
+        }
     });
+
+    if detected_overflow.into_inner() {
+        return None;
+    }
 
     let mut lines = Vec::with_capacity(line_numbers.get(fragments.len(), &minima));
     let mut pos = fragments.len();
@@ -224,5 +301,75 @@ pub fn wrap_optimal_fit<'a, T: Fragment, F: Fn(usize) -> usize>(
     }
 
     lines.reverse();
-    lines
+    Some(lines)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[derive(Debug, Eq, PartialEq)]
+    struct BoxGluePenalty(usize);
+
+    #[rustfmt::skip]
+    impl Fragment for BoxGluePenalty {
+        fn width(&self) -> usize { self.0 }
+        fn whitespace_width(&self) -> usize { 1 }
+        fn penalty_width(&self) -> usize { 0 }
+    }
+
+    #[test]
+    fn optimal_fit_single_fragment_overflow() {
+        let fragments = vec![BoxGluePenalty(2 << 60)];
+        let line_widths = |_| 80;
+
+        assert_eq!(wrap_optimal_fit_checked(&fragments, &line_widths), None);
+        assert_eq!(
+            wrap_optimal_fit(&fragments, &line_widths),
+            vec![[BoxGluePenalty(2 << 60)]]
+        );
+    }
+
+    #[test]
+    fn optimal_fit_rewrapping_on_overflow() {
+        let fragments = vec![
+            BoxGluePenalty(1001),
+            BoxGluePenalty(1002),
+            BoxGluePenalty(1003),
+            BoxGluePenalty(1004),
+            BoxGluePenalty(105),     // small fragment
+            BoxGluePenalty(2 << 60), // over-sized fragment
+            BoxGluePenalty(1007),
+            BoxGluePenalty(1008),
+        ];
+        let line_widths = |_| 2500; // Room for two big fragments.
+
+        assert_eq!(wrap_optimal_fit_checked(&fragments, &line_widths), None);
+        // First five fragments fit on two lines and the small 105
+        // fragment is included on the second line:
+        assert_eq!(
+            wrap_optimal_fit_checked(&fragments[..5], &line_widths).unwrap(),
+            vec![
+                vec![BoxGluePenalty(1001), BoxGluePenalty(1002)],
+                vec![
+                    BoxGluePenalty(1003),
+                    BoxGluePenalty(1004),
+                    BoxGluePenalty(105)
+                ]
+            ]
+        );
+        assert_eq!(
+            wrap_optimal_fit(&fragments, &line_widths),
+            vec![
+                vec![BoxGluePenalty(1001), BoxGluePenalty(1002)],
+                vec![
+                    BoxGluePenalty(1003),
+                    BoxGluePenalty(1004),
+                    BoxGluePenalty(105),
+                ],
+                vec![BoxGluePenalty(2 << 60)],
+                vec![BoxGluePenalty(1007), BoxGluePenalty(1008)]
+            ]
+        );
+    }
 }

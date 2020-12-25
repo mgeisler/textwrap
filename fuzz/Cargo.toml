@@ -10,7 +10,7 @@ edition = "2018"
 cargo-fuzz = true
 
 [dependencies]
-libfuzzer-sys = "0.3"
+libfuzzer-sys = { version = "0.3", features = ["arbitrary-derive"] }
 textwrap = { path = ".." }
 
 # Prevent this from interfering with workspaces
@@ -26,5 +26,11 @@ doc = false
 [[bin]]
 name = "fill_first_fit"
 path = "fuzz_targets/fill_first_fit.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "wrap_optimal_fit"
+path = "fuzz_targets/wrap_optimal_fit.rs"
 test = false
 doc = false

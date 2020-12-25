@@ -945,8 +945,13 @@ mod tests {
     }
 
     #[test]
-    fn max_width() {
+    fn max_width_usize() {
         assert_eq!(wrap("foo bar", usize::max_value()), vec!["foo bar"]);
+    }
+
+    #[test]
+    fn max_width_usize_issue_247() {
+        assert_eq!(wrap("x y", 515566821223), vec!["x y"]);
     }
 
     #[test]
