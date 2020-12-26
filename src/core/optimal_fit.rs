@@ -151,6 +151,11 @@ const HYPHEN_PENALTY: usize = 25;
 /// code by David
 /// Eppstein](https://github.com/jfinkels/PADS/blob/master/pads/wrap.py).
 ///
+/// # Panics
+///
+/// The total width of all fragments must fit inside an `usize`
+/// (including the whitespace and penalty widths).
+///
 /// **Note:** Only available when the `smawk` Cargo feature is
 /// enabled.
 pub fn wrap_optimal_fit<'a, T: Fragment, F: Fn(usize) -> usize>(

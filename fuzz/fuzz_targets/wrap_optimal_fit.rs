@@ -23,6 +23,8 @@ fuzz_target!(|input: (Vec<BoxGluePenalty>, u64)| {
             .and_then(|sum| sum.checked_add(f.penalty_width()))
     });
     if total_width.is_none() {
+        // The total width overflows usize — this is not supported so
+        // return here to avoid a crash.
         return;
     }
 
