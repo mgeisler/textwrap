@@ -56,9 +56,9 @@
 //! # Displayed Width vs Byte Size
 //!
 //! To word wrap text, one must know the width of each word so one can
-//! know when to break lines. This library measures the width of text
-//! using the _displayed width_ (computed via [UnicodeWidthStr]), not
-//! the size in bytes.
+//! know when to break lines. This library will by default measure the
+//! width of text using the _displayed width_, not the size in bytes.
+//! The `unicode-width` Cargo feature controls this.
 //!
 //! This is important for non-ASCII text. ASCII characters such as `a`
 //! and `!` are simple and take up one column each. This means that
@@ -69,11 +69,32 @@
 //!
 //! This is why we take care to use the displayed width instead of the
 //! byte count when computing line lengths. All functions in this
-//! library handle Unicode characters like this.
+//! library handle Unicode characters like this when the
+//! `unicode-width` Cargo feature is enabled (it is enabled by
+//! default).
 //!
 //! # Cargo Features
 //!
-//! The textwrap library has two optional features:
+//! The textwrap library can be slimmed down as needed via a number of
+//! Cargo features. This means you only pay for the features you
+//! actually use.
+//!
+//! ## Default Features
+//!
+//! These features are enabled by default:
+//!
+//! * `unicode-width`: enables correct width computation of non-ASCII
+//!   characters via the [unicode-width] crate. Without this feature,
+//!   every [`char`] is 1 column wide.
+//!
+//!   This feature can be disabled if you only need to wrap ASCII
+//!   text, or if the functions in [`core`] are used directly with
+//!   [`core::Fragment`]s for which the widths have been computed in
+//!   other ways.
+//!
+//! ## Optional Features
+//!
+//! These Cargo features enable new functionality:
 //!
 //! * `terminal_size`: enables automatic detection of the terminal
 //!   width via the [terminal_size] crate. See the
@@ -82,6 +103,7 @@
 //! * `hyphenation`: enables language-sensitive hyphenation via the
 //!   [hyphenation] crate. See the [`WordSplitter`] trait for details.
 //!
+//! [unicode-width]: https://docs.rs/unicode-width/
 //! [textwrap-macros]: https://docs.rs/textwrap-macros/
 
 #![doc(html_root_url = "https://docs.rs/textwrap/0.13.1")]
@@ -91,7 +113,6 @@
 #![allow(clippy::redundant_field_names)]
 
 use std::borrow::Cow;
-use unicode_width::UnicodeWidthStr;
 
 mod indentation;
 pub use crate::indentation::dedent;
@@ -628,10 +649,12 @@ where
 {
     let options = options.into();
 
-    let initial_width = options.width.saturating_sub(options.initial_indent.width());
+    let initial_width = options
+        .width
+        .saturating_sub(core::display_width(options.initial_indent));
     let subsequent_width = options
         .width
-        .saturating_sub(options.subsequent_indent.width());
+        .saturating_sub(core::display_width(options.subsequent_indent));
 
     let mut lines = Vec::new();
     for line in text.split('\n') {
@@ -885,6 +908,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "unicode-width")]
     fn wide_character_handling() {
         assert_eq!(wrap("Hello, World!", 15), vec!["Hello, World!"]);
         assert_eq!(
@@ -910,7 +934,8 @@ mod tests {
     }
 
     #[test]
-    fn indent_first() {
+    #[cfg(feature = "unicode-width")]
+    fn indent_first_emoji() {
         let options = Options::new(10).initial_indent("👉👉");
         assert_eq!(
             wrap("x x x x x x x x x x x x x", &options),
@@ -1147,8 +1172,16 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "unicode-width")]
     fn break_words_wide_characters() {
         assert_eq!(wrap("Ｈｅｌｌｏ", 5), vec!["Ｈｅ", "ｌｌ", "ｏ"]);
+    }
+
+    #[test]
+    #[cfg(not(feature = "unicode-width"))]
+    fn break_words_wide_characters() {
+        // Each `char` takes up one column.
+        assert_eq!(wrap("Ｈｅｌｌｏ", 5), vec!["Ｈｅｌｌｏ"]);
     }
 
     #[test]

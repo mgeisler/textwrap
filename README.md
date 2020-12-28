@@ -17,35 +17,13 @@ To use `textwrap`, add this to your `Cargo.toml` file:
 textwrap = "0.13"
 ```
 
-This gives you the text wrapping without of the optional Cargo
-features listed next.
-
-### `hyphenation`
-
-If you would like to have automatic language-sensitive hyphenation,
-enable the `hyphenation` feature:
-
-```toml
-[dependencies]
-textwrap = { version = "0.13", features = ["hyphenation"] }
-```
-
-This gives you hyphenation support for US English. Please see the
-[`hyphenation` example] for an executable demo. Read the Getting
-Started section below to see how to load the hyphenation patterns for
-other languages.
-
-### `terminal_size`
-
-To conveniently wrap text at the current terminal width, enable the
-`terminal_size` feature:
-
-```toml
-[dependencies]
-textwrap = { version = "0.13", features = ["terminal_size"] }
-```
-
-Please see the [`termwidth` example] for how to use this feature.
+By default, this enables word wrapping with support for Unicode
+strings. Extra features can be enabled with Cargo features — and the
+Unicode support can be disabled if needed. This allows you slim down
+the library and so you will only pay for the features you actually
+use. Please see the [_Cargo Features_ in the crate
+documentation](https://docs.rs/textwrap/#cargo-features) for a full
+list of the featurs.
 
 ## Documentation
 
