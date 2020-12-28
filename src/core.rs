@@ -32,7 +32,6 @@
 
 use crate::{Options, WordSplitter};
 use std::cell::RefCell;
-use unicode_width::UnicodeWidthChar;
 
 /// The CSI or “Control Sequence Introducer” introduces an ANSI escape
 /// sequence. This is typically used for colored text and will be
@@ -59,16 +58,58 @@ fn skip_ansi_escape_sequence<I: Iterator<Item = char>>(ch: char, chars: &mut I) 
     false
 }
 
-/// Compute display with while skipping over ANSI escape sequences.
+#[cfg(feature = "unicode-width")]
 #[inline]
-fn width(text: &str) -> usize {
+fn ch_width(ch: char) -> usize {
+    unicode_width::UnicodeWidthChar::width(ch).unwrap_or(0)
+}
+
+#[cfg(not(feature = "unicode-width"))]
+#[inline]
+fn ch_width(_: char) -> usize {
+    1
+}
+
+/// Compute the display width of `text` while skipping over ANSI
+/// escape sequences.
+///
+/// # Examples
+///
+/// ```
+/// use textwrap::core::display_width;
+/// assert_eq!(display_width("Café Plain"), 10);
+/// assert_eq!(display_width("\u{1b}[31mCafé Rouge\u{1b}[0m"), 10);
+/// ```
+///
+/// **Note:** When the `unicode-width` Cargo feature is enabled, this
+/// function will correctly deal with [combining characters] in their
+/// decomposed form (see [Unicode equivalence]).
+///
+/// An example of a decomposed character can be “é”, which can be
+/// decomposed into: “e” followed by an acute accent: “◌́”. Without the
+/// `unicode-width` feature, every `char` has a width of 1, including
+/// the combining accent:
+///
+/// ```
+/// use textwrap::core::display_width;
+/// assert_eq!(display_width("Cafe Plain"), 10);
+/// #[cfg(feature = "unicode-width")]
+/// assert_eq!(display_width("Cafe\u{301} Plain"), 10);
+/// #[cfg(not(feature = "unicode-width"))]
+/// assert_eq!(display_width("Cafe\u{301} Plain"), 11);
+/// ```
+///
+/// [combining characters]: https://en.wikipedia.org/wiki/Combining_character
+/// [Unicode equivalence]: https://en.wikipedia.org/wiki/Unicode_equivalence
+#[inline]
+pub fn display_width(text: &str) -> usize {
     let mut chars = text.chars();
     let mut width = 0;
     while let Some(ch) = chars.next() {
         if skip_ansi_escape_sequence(ch, &mut chars) {
             continue;
-        };
-        width += ch.width().unwrap_or(0);
+        }
+        width += ch_width(ch);
     }
     width
 }
@@ -125,7 +166,7 @@ impl<'a> Word<'a> {
         let trimmed = word.trim_end_matches(' ');
         Word {
             word: trimmed,
-            width: width(&trimmed),
+            width: display_width(&trimmed),
             whitespace: &word[trimmed.len()..],
             penalty: "",
         }
@@ -155,8 +196,7 @@ impl<'a> Word<'a> {
                     continue;
                 }
 
-                let ch_width = ch.width().unwrap_or(0);
-                if width > 0 && width + ch_width > line_width {
+                if width > 0 && width + ch_width(ch) > line_width {
                     let word = Word {
                         word: &self.word[offset..idx],
                         width: width,
@@ -164,11 +204,11 @@ impl<'a> Word<'a> {
                         penalty: "",
                     };
                     offset = idx;
-                    width = ch_width;
+                    width = ch_width(ch);
                     return Some(word);
                 }
 
-                width += ch_width;
+                width += ch_width(ch);
             }
 
             if offset < self.word.len() {
@@ -296,7 +336,7 @@ where
                 let need_hyphen = !word[..idx].ends_with('-');
                 let w = Word {
                     word: &word.word[prev..idx],
-                    width: width(&word[prev..idx]),
+                    width: display_width(&word[prev..idx]),
                     whitespace: "",
                     penalty: if need_hyphen { "-" } else { "" },
                 };
@@ -307,7 +347,7 @@ where
             if prev < word.word.len() || prev == 0 {
                 let w = Word {
                     word: &word.word[prev..],
-                    width: width(&word[prev..]),
+                    width: display_width(&word[prev..]),
                     whitespace: word.whitespace,
                     penalty: word.penalty,
                 };
@@ -766,10 +806,10 @@ mod tests {
     }
 
     #[test]
-    fn width_works() {
+    fn display_width_works() {
         assert_eq!("Café Plain".len(), 11); // “é” is two bytes
-        assert_eq!(width("Café Plain"), 10);
-        assert_eq!(width("\u{1b}[31mCafé Rouge\u{1b}[0m"), 10);
+        assert_eq!(display_width("Café Plain"), 10);
+        assert_eq!(display_width("\u{1b}[31mCafé Rouge\u{1b}[0m"), 10);
     }
 
     #[test]
