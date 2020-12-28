@@ -179,7 +179,10 @@ impl<'a> Options<'a, HyphenSplitter> {
     ///     initial_indent: "",
     ///     subsequent_indent: "",
     ///     break_words: true,
+    ///     #[cfg(feature = "smawk")]
     ///     wrap_algorithm: textwrap::core::WrapAlgorithm::OptimalFit,
+    ///     #[cfg(not(feature = "smawk"))]
+    ///     wrap_algorithm: textwrap::core::WrapAlgorithm::FirstFit,
     ///     splitter: HyphenSplitter,
     /// }
     /// # ;
@@ -190,6 +193,10 @@ impl<'a> Options<'a, HyphenSplitter> {
     /// # assert_eq!(actual.wrap_algorithm, expected.wrap_algorithm);
     /// # let expected_coerced: Options<'static, HyphenSplitter> = expected;
     /// ```
+    ///
+    /// Note that the default wrap algorithm changes based on the
+    /// `smawk` Cargo feature. The best available algorithm is used by
+    /// default.
     ///
     /// Static dispatch mean here, that the splitter is stored as-is
     /// and the type is known at compile-time. Thus the returned value
@@ -281,7 +288,10 @@ impl<'a, S> Options<'a, S> {
     ///     initial_indent: "",
     ///     subsequent_indent: "",
     ///     break_words: true,
+    ///     #[cfg(feature = "smawk")]
     ///     wrap_algorithm: textwrap::core::WrapAlgorithm::OptimalFit,
+    ///     #[cfg(not(feature = "smawk"))]
+    ///     wrap_algorithm: textwrap::core::WrapAlgorithm::FirstFit,
     ///     splitter: splitter,
     /// }
     /// # ;
@@ -337,7 +347,10 @@ impl<'a, S> Options<'a, S> {
             initial_indent: "",
             subsequent_indent: "",
             break_words: true,
+            #[cfg(feature = "smawk")]
             wrap_algorithm: core::WrapAlgorithm::OptimalFit,
+            #[cfg(not(feature = "smawk"))]
+            wrap_algorithm: core::WrapAlgorithm::FirstFit,
             splitter: splitter,
         }
     }
@@ -597,6 +610,7 @@ where
 /// second last line:
 ///
 /// ```
+/// # #[cfg(feature = "smawk")] {
 /// # use textwrap::{Options, wrap};
 /// # use textwrap::core::WrapAlgorithm::OptimalFit;
 /// #
@@ -608,7 +622,7 @@ where
 /// be: that
 /// is the
 /// question
-/// # ");
+/// # "); }
 /// ```
 ///
 /// Please see [`core::WrapAlgorithm`] for details.
@@ -678,6 +692,7 @@ where
         #[rustfmt::skip]
         let line_lengths = |i| if i == 0 { initial_width } else { subsequent_width };
         let wrapped_words = match options.wrap_algorithm {
+            #[cfg(feature = "smawk")]
             core::WrapAlgorithm::OptimalFit => core::wrap_optimal_fit(&broken_words, line_lengths),
             core::WrapAlgorithm::FirstFit => core::wrap_first_fit(&broken_words, line_lengths),
         };
