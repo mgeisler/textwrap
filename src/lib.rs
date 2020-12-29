@@ -85,12 +85,20 @@
 //!
 //! * `unicode-width`: enables correct width computation of non-ASCII
 //!   characters via the [unicode-width] crate. Without this feature,
-//!   every [`char`] is 1 column wide.
+//!   every [`char`] is 1 column wide. See the [`core::display_width`]
+//!   function for details.
 //!
 //!   This feature can be disabled if you only need to wrap ASCII
 //!   text, or if the functions in [`core`] are used directly with
 //!   [`core::Fragment`]s for which the widths have been computed in
 //!   other ways.
+//!
+//! * `smawk`: enables linear-time wrapping of the whole paragraph via
+//!   the [smawk] crate. See the [`core::wrap_optimal_fit`] function
+//!   for details on the optimal-fit algorithm.
+//!
+//!   This feature can be disabled if you only ever intend to use
+//!   [`core::wrap_first_fit`].
 //!
 //! ## Optional Features
 //!
