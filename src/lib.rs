@@ -92,6 +92,13 @@
 //!   [`core::Fragment`]s for which the widths have been computed in
 //!   other ways.
 //!
+//! * `smawk`: enables linear-time wrapping of the whole paragraph via
+//!   the [smawk] crate. See the [`core::wrap_optimal_fit`] function
+//!   for details on the optimal-fit algorithm.
+//!
+//!   This feature can be disabled if you only ever intend to use
+//!   [`core::wrap_first_fit`].
+//!
 //! ## Optional Features
 //!
 //! These Cargo features enable new functionality:
