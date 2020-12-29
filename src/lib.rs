@@ -1,6 +1,8 @@
 //! The textwrap library provides functions for word wrapping and
 //! indenting text.
 //!
+//! # Wrapping Text
+//!
 //! Wrapping text can be very useful in command-line programs where
 //! you want to format dynamic output nicely so it looks good in a
 //! terminal. A quick example:
@@ -48,12 +50,12 @@
 //! ping text.
 //! ```
 //!
-//! # Wrapping Strings at Compile Time
+//! ## Wrapping Strings at Compile Time
 //!
 //! If your strings are known at compile time, please take a look at
 //! the procedural macros from the [textwrap-macros] crate.
 //!
-//! # Displayed Width vs Byte Size
+//! ## Displayed Width vs Byte Size
 //!
 //! To word wrap text, one must know the width of each word so one can
 //! know when to break lines. This library will by default measure the
@@ -72,6 +74,43 @@
 //! library handle Unicode characters like this when the
 //! `unicode-width` Cargo feature is enabled (it is enabled by
 //! default).
+//!
+//! # Indentation and Dedentation
+//!
+//! The textwrap library also offers functions for adding a prefix to
+//! every line of a string and to remove leading whitespace. As an
+//! example, the [`indent`] function allows you to turn lines of text
+//! into a bullet list:
+//!
+//! ```
+//! let before = "
+//! foo
+//! bar
+//! baz
+//! ";
+//! let after = "
+//! * foo
+//! * bar
+//! * baz
+//! ";
+//! assert_eq!(textwrap::indent(before, "* "), after);
+//! ```
+//!
+//! Removing leading whitespace is done with [`dedent`]:
+//!
+//! ```
+//! let before = "
+//!     Some
+//!       indented
+//!         text
+//! ";
+//! let after = "
+//! Some
+//!   indented
+//!     text
+//! ";
+//! assert_eq!(textwrap::dedent(before), after);
+//! ```
 //!
 //! # Cargo Features
 //!
