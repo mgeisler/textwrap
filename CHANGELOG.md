@@ -5,15 +5,15 @@ This file lists the most important changes made in each release of
 
 ## Version 0.13.1 (2020-12-10)
 
-This is a bugfix release which fixed the width computations for
-colored text.
+This is a bugfix release which fixes a regression in 0.13.0. The bug
+meant that colored text was wrapped incorrectly.
 
 * [#245](https://github.com/mgeisler/textwrap/pull/245): Support
-  deleting a word with Ctrl-Backspace in the interactive demo
+  deleting a word with Ctrl-Backspace in the interactive demo.
 * [#246](https://github.com/mgeisler/textwrap/pull/246): Show build
-  type (debug/release) in interactive demo
+  type (debug/release) in interactive demo.
 * [#249](https://github.com/mgeisler/textwrap/pull/249): Correctly
-  compute width while skipping over ANSI escape sequences
+  compute width while skipping over ANSI escape sequences.
 
 ## Version 0.13.0 (2020-12-05)
 
