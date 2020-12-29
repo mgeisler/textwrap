@@ -43,16 +43,6 @@ pub fn benchmark(c: &mut Criterion) {
             },
         );
 
-        let options: textwrap::Options =
-            textwrap::Options::new(LINE_LENGTH).splitter(Box::new(textwrap::HyphenSplitter));
-        group.bench_with_input(BenchmarkId::new("fill_boxed", length), &text, |b, text| {
-            b.iter(|| textwrap::fill(text, &options));
-        });
-
-        group.bench_with_input(BenchmarkId::new("fill_usize", length), &text, |b, text| {
-            b.iter(|| textwrap::fill(text, LINE_LENGTH));
-        });
-
         group.bench_function(BenchmarkId::new("fill_inplace", length), |b| {
             b.iter_batched(
                 || text.clone(),
