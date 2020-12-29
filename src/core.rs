@@ -453,8 +453,7 @@ pub enum WrapAlgorithm {
 ///                 "not wrap",
 ///                 "nicely."]);
 ///
-/// // We can avoid the short line if we look ahead (this requires the
-/// // smawk Cargo feature):
+/// // We can avoid the short line if we look ahead:
 /// #[cfg(feature = "smawk")]
 /// assert_eq!(lines_to_strings(textwrap::core::wrap_optimal_fit(&words, |_| 15)),
 ///            vec!["These few",

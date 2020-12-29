@@ -5,13 +5,15 @@
 [![](https://img.shields.io/crates/v/textwrap.svg)][crates-io]
 [![](https://docs.rs/textwrap/badge.svg)][api-docs]
 
-Textwrap is a library for word wrapping text. You can use it to format
-strings for display in commandline applications. The crate name and
-interface is inspired by the [Python textwrap module][py-textwrap].
+Textwrap is a library for wrapping and indenting text. It is most
+often used by command-line programs to format dynamic output nicely so
+it looks good in a terminal. However, you can use the library to wrap
+arbitrary things by implementing the `Fragment` trait — an example
+would be wrapping text for PDF files.
 
 ## Usage
 
-To use `textwrap`, add this to your `Cargo.toml` file:
+To use the textwrap crate, add this to your `Cargo.toml` file:
 ```toml
 [dependencies]
 textwrap = "0.13"
@@ -23,7 +25,7 @@ Unicode support can be disabled if needed. This allows you slim down
 the library and so you will only pay for the features you actually
 use. Please see the [_Cargo Features_ in the crate
 documentation](https://docs.rs/textwrap/#cargo-features) for a full
-list of the featurs.
+list of the available features.
 
 ## Documentation
 
@@ -56,7 +58,7 @@ The explanation is that textwrap does not just wrap text one line at a
 time. Instead, it uses an optimal-fit algorithm which looks ahead and
 chooses line breaks which minimize the gaps left at ends of lines.
 
-Without look ahead, the first line would be longer and the text would
+Without look-ahead, the first line would be longer and the text would
 look like this:
 
 ```
@@ -106,7 +108,6 @@ see the [`hyphenation` documentation] for details.
 If your strings are known at compile time, please take a look at the
 procedural macros from the [`textwrap-macros` crate].
 
-
 ## Examples
 
 The library comes with [a
@@ -141,7 +142,6 @@ Contributions will be accepted under the same license.
 [crates-io]: https://crates.io/crates/textwrap
 [build-status]: https://github.com/mgeisler/textwrap/actions?query=workflow%3Abuild+branch%3Amaster
 [codecov]: https://codecov.io/gh/mgeisler/textwrap
-[py-textwrap]: https://docs.python.org/library/textwrap
 [`textwrap-macros` crate]: https://crates.io/crates/textwrap-macros
 [`hyphenation` example]: https://github.com/mgeisler/textwrap/blob/master/examples/hyphenation.rs
 [`termwidth` example]: https://github.com/mgeisler/textwrap/blob/master/examples/termwidth.rs

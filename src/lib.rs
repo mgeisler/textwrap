@@ -1,8 +1,8 @@
 //! The textwrap library provides functions for word wrapping and
-//! filling text.
+//! indenting text.
 //!
-//! Wrapping text can be very useful in commandline programs where you
-//! want to format dynamic output nicely so it looks good in a
+//! Wrapping text can be very useful in command-line programs where
+//! you want to format dynamic output nicely so it looks good in a
 //! terminal. A quick example:
 //!
 //! ```no_run
