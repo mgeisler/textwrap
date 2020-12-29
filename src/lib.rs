@@ -85,7 +85,8 @@
 //!
 //! * `unicode-width`: enables correct width computation of non-ASCII
 //!   characters via the [unicode-width] crate. Without this feature,
-//!   every [`char`] is 1 column wide.
+//!   every [`char`] is 1 column wide. See the [`core::display_width`]
+//!   function for details.
 //!
 //!   This feature can be disabled if you only need to wrap ASCII
 //!   text, or if the functions in [`core`] are used directly with
