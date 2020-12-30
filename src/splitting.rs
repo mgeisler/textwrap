@@ -9,9 +9,28 @@
 ///
 /// If the textwrap crate has been compiled with the `hyphenation`
 /// feature enabled, you will find an implementation of `WordSplitter`
-/// by the [`hyphenation::Standard`] struct. Use this struct for
-/// language-aware hyphenation. See the [hyphenation] documentation
-/// for details.
+/// by the `hyphenation::Standard` struct. Use this struct for
+/// language-aware hyphenation:
+///
+/// ```
+/// #[cfg(feature = "hyphenation")]
+/// {
+///     use hyphenation::{Language, Load, Standard};
+///     use textwrap::{wrap, Options};
+///
+///     let text = "Oxidation is the loss of electrons.";
+///     let dictionary = Standard::from_embedded(Language::EnglishUS).unwrap();
+///     let options = Options::new(8).splitter(dictionary);
+///     assert_eq!(wrap(text, &options), vec!["Oxida-",
+///                                           "tion is",
+///                                           "the loss",
+///                                           "of elec-",
+///                                           "trons."]);
+/// }
+/// ```
+///
+/// Please see the documentation for the [hyphenation] crate for more
+/// details.
 pub trait WordSplitter: std::fmt::Debug {
     /// Return all possible indices where `word` can be split.
     ///
