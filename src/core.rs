@@ -91,8 +91,8 @@ fn ch_width(_: char) -> usize {
 ///
 /// An example of a decomposed character can be “é”, which can be
 /// decomposed into: “e” followed by an acute accent: “◌́”. Without the
-/// `unicode-width` feature, every `char` has a width of 1, including
-/// the combining accent:
+/// `unicode-width` Cargo feature, every `char` has a width of 1,
+/// including the combining accent:
 ///
 /// ```
 /// use textwrap::core::display_width;
@@ -406,7 +406,8 @@ pub enum WrapAlgorithm {
     /// to find optimal line breaks. Implemented by
     /// [`wrap_optimal_fit`].
     ///
-    /// **Note:** Only available when the `smawk` feature is enabled.
+    /// **Note:** Only available when the `smawk` Cargo feature is
+    /// enabled.
     #[cfg(feature = "smawk")]
     OptimalFit,
     /// Use a fast and simple algorithm with no look-ahead to find

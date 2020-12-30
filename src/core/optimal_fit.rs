@@ -81,8 +81,6 @@ const HYPHEN_PENALTY: i32 = 25;
 
 /// Wrap abstract fragments into lines with an optimal-fit algorithm.
 ///
-/// > **Note:** Only available when the `smawk` feature is enabled.
-///
 /// The `line_widths` map line numbers (starting from 0) to a target
 /// line width. This can be used to implement hanging indentation.
 ///
@@ -153,7 +151,8 @@ const HYPHEN_PENALTY: i32 = 25;
 /// code by David
 /// Eppstein](https://github.com/jfinkels/PADS/blob/master/pads/wrap.py).
 ///
-/// **Note:** Only available when the `smawk` feature is enabled.
+/// **Note:** Only available when the `smawk` Cargo feature is
+/// enabled.
 pub fn wrap_optimal_fit<'a, T: Fragment, F: Fn(usize) -> usize>(
     fragments: &'a [T],
     line_widths: F,

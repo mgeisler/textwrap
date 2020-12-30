@@ -3,7 +3,7 @@ use textwrap::{fill, Options};
 
 #[cfg(not(feature = "terminal_size"))]
 fn main() {
-    println!("Please enable the terminal_size feature to run this example.");
+    println!("Please enable the terminal_size Cargo feature to run this example.");
 }
 
 #[cfg(feature = "terminal_size")]
