@@ -54,8 +54,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Build all targets
+      - name: Build all targets with default features
         run: cargo build --all-targets
+
+      - name: Build all targets without default features
+        run: cargo build --all-targets --no-default-features
 
       - name: Build all targets with all features
         run: cargo build --all-targets --all-features
