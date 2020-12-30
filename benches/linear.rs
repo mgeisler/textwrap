@@ -23,15 +23,19 @@ pub fn benchmark(c: &mut Criterion) {
     let mut group = c.benchmark_group("String lengths");
     for length in [200, 300, 400, 600, 800, 1200, 1600, 2400, 3200, 4800, 6400].iter() {
         let text = lorem_ipsum(*length);
-        let options = textwrap::Options::new(LINE_LENGTH)
-            .wrap_algorithm(textwrap::core::WrapAlgorithm::OptimalFit);
-        group.bench_with_input(
-            BenchmarkId::new("fill_optimal_fit", length),
-            &text,
-            |b, text| {
-                b.iter(|| textwrap::fill(text, &options));
-            },
-        );
+
+        #[cfg(feature = "smawk")]
+        {
+            let options = textwrap::Options::new(LINE_LENGTH)
+                .wrap_algorithm(textwrap::core::WrapAlgorithm::OptimalFit);
+            group.bench_with_input(
+                BenchmarkId::new("fill_optimal_fit", length),
+                &text,
+                |b, text| {
+                    b.iter(|| textwrap::fill(text, &options));
+                },
+            );
+        }
 
         let options = textwrap::Options::new(LINE_LENGTH)
             .wrap_algorithm(textwrap::core::WrapAlgorithm::FirstFit);
