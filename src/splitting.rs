@@ -31,6 +31,8 @@
 ///
 /// Please see the documentation for the [hyphenation] crate for more
 /// details.
+///
+/// [hyphenation]: https://docs.rs/hyphenation/
 pub trait WordSplitter: std::fmt::Debug {
     /// Return all possible indices where `word` can be split.
     ///
@@ -127,6 +129,8 @@ impl WordSplitter for HyphenSplitter {
 ///
 /// **Note:** Only available when the `hyphenation` feature is
 /// enabled.
+///
+/// [hyphenation]: https://docs.rs/hyphenation/
 #[cfg(feature = "hyphenation")]
 impl WordSplitter for hyphenation::Standard {
     fn split_points(&self, word: &str) -> Vec<usize> {
