@@ -186,9 +186,10 @@ pub struct Options<'a, S: ?Sized = Box<dyn WordSplitter>> {
     /// Wraping algorithm to use, see [`core::WrapAlgorithm`] for
     /// details.
     pub wrap_algorithm: core::WrapAlgorithm,
-    /// The method for splitting words. If the `hyphenation` feature
-    /// is enabled, you can use a [`hyphenation::Standard`] dictionary
-    /// here to get language-aware hyphenation.
+    /// The method for splitting words. This can be used to prohibit
+    /// splitting words on hyphens, or it can be used to implement
+    /// language-aware machine hyphenation. Please see the
+    /// [`WordSplitter`] trait for details.
     pub splitter: S,
 }
 
