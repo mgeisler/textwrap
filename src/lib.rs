@@ -151,7 +151,10 @@
 //!   [hyphenation] crate. See the [`WordSplitter`] trait for details.
 //!
 //! [unicode-width]: https://docs.rs/unicode-width/
+//! [smawk]: https://docs.rs/smawk/
 //! [textwrap-macros]: https://docs.rs/textwrap-macros/
+//! [terminal_size]: https://docs.rs/terminal_size/
+//! [hyphenation]: https://docs.rs/hyphenation/
 
 #![doc(html_root_url = "https://docs.rs/textwrap/0.13.1")]
 #![forbid(unsafe_code)] // See https://github.com/mgeisler/textwrap/issues/210
