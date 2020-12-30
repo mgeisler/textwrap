@@ -22,8 +22,8 @@
 //! wrapping text.
 //! ```
 //!
-//! If you enable the `hyphenation` feature, you can get automatic
-//! hyphenation for a number of languages:
+//! If you enable the `hyphenation` Cargo feature, you can get
+//! automatic hyphenation for a number of languages:
 //!
 //! ```no_run
 //! # #[cfg(feature = "hyphenation")]
@@ -523,7 +523,7 @@ impl<'a, S: WordSplitter> Options<'a, S> {
 ///     .subsequent_indent("  ");
 /// ```
 ///
-/// **Note:** Only available when the `terminal_size` feature is
+/// **Note:** Only available when the `terminal_size` Cargo feature is
 /// enabled.
 #[cfg(feature = "terminal_size")]
 pub fn termwidth() -> usize {

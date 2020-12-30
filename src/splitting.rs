@@ -8,9 +8,9 @@
 /// The `WordSplitter` trait describes where words can be split.
 ///
 /// If the textwrap crate has been compiled with the `hyphenation`
-/// feature enabled, you will find an implementation of `WordSplitter`
-/// by the `hyphenation::Standard` struct. Use this struct for
-/// language-aware hyphenation:
+/// Cargo feature enabled, you will find an implementation of
+/// `WordSplitter` by the `hyphenation::Standard` struct. Use this
+/// struct for language-aware hyphenation:
 ///
 /// ```
 /// #[cfg(feature = "hyphenation")]
@@ -125,7 +125,7 @@ impl WordSplitter for HyphenSplitter {
 /// A hyphenation dictionary can be used to do language-specific
 /// hyphenation using patterns from the [hyphenation] crate.
 ///
-/// **Note:** Only available when the `hyphenation` feature is
+/// **Note:** Only available when the `hyphenation` Cargo feature is
 /// enabled.
 #[cfg(feature = "hyphenation")]
 impl WordSplitter for hyphenation::Standard {
