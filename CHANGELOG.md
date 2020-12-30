@@ -3,6 +3,22 @@
 This file lists the most important changes made in each release of
 `textwrap`.
 
+## Version 0.13.2 (2020-12-30)
+
+This release primarily makes all dependencies optional. This makes it
+possible to slim down textwrap as needed.
+
+* [#254](https://github.com/mgeisler/textwrap/pull/254): `impl
+  WordSplitter` for `Box<T> where T: WordSplitter`.
+* [#255](https://github.com/mgeisler/textwrap/pull/255): Use command
+  line arguments as initial text in interactive example.
+* [#256](https://github.com/mgeisler/textwrap/pull/256): Introduce
+  fuzz tests for `wrap_optimal_fit` and `wrap_first_fit`.
+* [#260](https://github.com/mgeisler/textwrap/pull/260): Make the
+  unicode-width dependency optional.
+* [#261](https://github.com/mgeisler/textwrap/pull/261): Make the
+  smawk dependency optional.
+
 ## Version 0.13.1 (2020-12-10)
 
 This is a bugfix release which fixes a regression in 0.13.0. The bug
