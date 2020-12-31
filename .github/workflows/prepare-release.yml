@@ -46,6 +46,30 @@ jobs:
           git config user.name "Martin Geisler"
           git config user.email "martin@geisler.net"
 
+      - name: Install Graphviz
+        uses: ts-graphviz/setup-graphviz@v1
+
+      # We use debug builds since they compile a little faster.
+      - name: Install cargo-depgraph
+        run: |
+          cargo install --debug cargo-depgraph
+
+      - name: Install svgcleaner
+        run: |
+          cargo install --debug svgcleaner
+
+      - name: Generate dependency graph
+        run: |
+          cargo depgraph                                \
+          | dot -Tsvg -Nfontname=monospace              \
+          | sed 's/stroke="transparent"/stroke="none"/' \
+          | svgcleaner --indent 0 --stdout -            \
+          > images/textwrap-${{ needs.setup.outputs.new-version }}.svg
+
+      - name: Commit dependency graph
+        run: |
+          git commit --all -m "Update dependency graph for version ${{ needs.setup.outputs.new-version }}"
+
       - name: Update changelog for version ${{ needs.setup.outputs.new-version }}
         id: changelog
         uses: actions/github-script@v3
