@@ -10,7 +10,7 @@ keywords = ["text", "formatting", "wrap", "typesetting", "hyphenation"]
 categories = ["text-processing", "command-line-interface"]
 license = "MIT"
 edition = "2018"
-exclude = [".github/", ".gitignore", "examples/", "fuzz/"]
+exclude = [".github/", ".gitignore", "benches/", "examples/", "fuzz/"]
 
 [package.metadata.docs.rs]
 all-features = true
@@ -23,6 +23,7 @@ codecov = { repository = "mgeisler/textwrap" }
 [[bench]]
 name = "linear"
 harness = false
+path = "benches/linear.rs"
 
 [features]
 default = ["unicode-width", "smawk"]
