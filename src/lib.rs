@@ -1441,6 +1441,13 @@ mod tests {
     }
 
     #[test]
+    fn preserve_line_breaks_with_whitespace() {
+        assert_eq!(fill("  ", 80), "");
+        assert_eq!(fill("  \n  ", 80), "\n");
+        assert_eq!(fill("  \n \n  \n ", 80), "\n\n\n");
+    }
+
+    #[test]
     fn non_breaking_space() {
         let options = Options::new(5).break_words(false);
         assert_eq!(fill("foo bar baz", &options), "foo bar baz");
