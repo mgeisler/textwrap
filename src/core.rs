@@ -68,10 +68,19 @@ fn ch_width(ch: char) -> usize {
     unicode_width::UnicodeWidthChar::width(ch).unwrap_or(0)
 }
 
+/// First character which [`ch_width`] will classify as double-width.
+/// Please see [`display_width`].
+#[cfg(not(feature = "unicode-width"))]
+const DOUBLE_WIDTH_CUTOFF: char = '\u{1100}';
+
 #[cfg(not(feature = "unicode-width"))]
 #[inline]
-fn ch_width(_: char) -> usize {
-    1
+fn ch_width(ch: char) -> usize {
+    if ch < DOUBLE_WIDTH_CUTOFF {
+        1
+    } else {
+        2
+    }
 }
 
 /// Compute the display width of `text` while skipping over ANSI
@@ -81,21 +90,26 @@ fn ch_width(_: char) -> usize {
 ///
 /// ```
 /// use textwrap::core::display_width;
+///
 /// assert_eq!(display_width("Café Plain"), 10);
 /// assert_eq!(display_width("\u{1b}[31mCafé Rouge\u{1b}[0m"), 10);
 /// ```
 ///
-/// **Note:** When the `unicode-width` Cargo feature is enabled, this
-/// function will correctly deal with [combining characters] in their
+/// **Note:** When the `unicode-width` Cargo feature is disabled, the
+/// width of a `char` is determined by a crude approximation which
+/// simply counts chars below U+1100 as 1 column wide, and all other
+/// characters as 2 columns wide. With the feature enabled, function
+/// will correctly deal with [combining characters] in their
 /// decomposed form (see [Unicode equivalence]).
 ///
-/// An example of a decomposed character can be “é”, which can be
-/// decomposed into: “e” followed by an acute accent: “◌́”. Without the
-/// `unicode-width` Cargo feature, every `char` has a width of 1,
-/// including the combining accent:
+/// An example of a decomposed character is “é”, which can be
+/// decomposed into: “e” followed by a combining acute accent: “◌́”.
+/// Without the `unicode-width` Cargo feature, every `char` below
+/// U+1100 has a width of 1. This includes the combining accent:
 ///
 /// ```
 /// use textwrap::core::display_width;
+///
 /// assert_eq!(display_width("Cafe Plain"), 10);
 /// #[cfg(feature = "unicode-width")]
 /// assert_eq!(display_width("Cafe\u{301} Plain"), 10);
@@ -103,8 +117,64 @@ fn ch_width(_: char) -> usize {
 /// assert_eq!(display_width("Cafe\u{301} Plain"), 11);
 /// ```
 ///
+/// ## Emojis and CJK Characters
+///
+/// Characters such as emojis and [CJK characters] used in the
+/// Chinese, Japanese, and Korean langauges are seen as double-width,
+/// even if the `unicode-width` feature is disabled:
+///
+/// ```
+/// use textwrap::core::display_width;
+///
+/// assert_eq!(display_width("😂😭🥺🤣✨😍🙏🥰😊🔥"), 20);
+/// assert_eq!(display_width("你好"), 4);  // “Nǐ hǎo” or “Hello” in Chinese
+/// ```
+///
+/// # Limitations
+///
+/// The displayed width of a string cannot always be computed from the
+/// string alone. This is because the width depends on the rendering
+/// engine used. This is particularly visible with [emoji modifier
+/// sequences] where a base emoji is modified with, e.g., skin tone or
+/// hair color modifiers. It is up to the rendering engine to detect
+/// this and to produce a suitable emoji.
+///
+/// A simple example is “❤️”, which consists of “❤” (U+2764: Black
+/// Heart Symbol) followed by U+FE0F (Variation Selector-16). By
+/// itself, “❤” is a black heart, but if you follow it with the
+/// variant selector, you may get a wider red heart.
+///
+/// A more complex example would be “👨‍🦰” which should depict a man
+/// with red hair. Here the computed width is too large — and the
+/// width differs depending on the use of the `unicode-width` feature:
+///
+/// ```
+/// use textwrap::core::display_width;
+///
+/// assert_eq!("👨‍🦰".chars().collect::<Vec<char>>(), ['\u{1f468}', '\u{200d}', '\u{1f9b0}']);
+/// #[cfg(feature = "unicode-width")]
+/// assert_eq!(display_width("👨‍🦰"), 4);
+/// #[cfg(not(feature = "unicode-width"))]
+/// assert_eq!(display_width("👨‍🦰"), 6);
+/// ```
+///
+/// This happens because the grapheme consists of three code points:
+/// “👨” (U+1F468: Man), Zero Width Joiner (U+200D), and “🦰”
+/// (U+1F9B0: Red Hair). You can see them above in the test. With
+/// `unicode-width` enabled, the ZWJ is correctly seen as having zero
+/// width, without it is counted as a double-width character.
+///
+/// ## Terminal Support
+///
+/// Modern browsers typically do a great job at combining characters
+/// as shown above, but terminals often struggle more. As an example,
+/// Gnome Terminal version 3.38.1, shows “❤️” as a big red heart, but
+/// shows "👨‍🦰" as “👨🦰”.
+///
 /// [combining characters]: https://en.wikipedia.org/wiki/Combining_character
 /// [Unicode equivalence]: https://en.wikipedia.org/wiki/Unicode_equivalence
+/// [CJK characters]: https://en.wikipedia.org/wiki/CJK_characters
+/// [emoji modifier sequences]: https://unicode.org/emoji/charts/full-emoji-modifiers.html
 #[inline]
 pub fn display_width(text: &str) -> usize {
     let mut chars = text.chars();
@@ -576,6 +646,9 @@ pub fn wrap_first_fit<T: Fragment, F: Fn(usize) -> usize>(
 mod tests {
     use super::*;
 
+    #[cfg(feature = "unicode-width")]
+    use unicode_width::UnicodeWidthChar;
+
     // Like assert_eq!, but the left expression is an iterator.
     macro_rules! assert_iter_eq {
         ($left:expr, $right:expr) => {
@@ -593,10 +666,76 @@ mod tests {
     }
 
     #[test]
+    fn emojis_have_correct_width() {
+        use unic_emoji_char::is_emoji;
+
+        // Emojis in the Basic Latin (ASCII) and Latin-1 Supplement
+        // blocks all have a width of 1 column. This includes
+        // characters such as '#' and '©'.
+        for ch in '\u{1}'..'\u{FF}' {
+            if is_emoji(ch) {
+                let desc = format!("{:?} U+{:04X}", ch, ch as u32);
+
+                #[cfg(feature = "unicode-width")]
+                assert_eq!(ch.width().unwrap(), 1, "char: {}", desc);
+
+                #[cfg(not(feature = "unicode-width"))]
+                assert_eq!(ch_width(ch), 1, "char: {}", desc);
+            }
+        }
+
+        // Emojis in the remaining blocks of the Basic Multilingual
+        // Plane (BMP), in the Supplementary Multilingual Plane (SMP),
+        // and in the Supplementary Ideographic Plane (SIP), are all 1
+        // or 2 columns wide when unicode-width is used, and always 2
+        // columns wide otherwise. This includes all of our favorite
+        // emojis such as 😊.
+        for ch in '\u{FF}'..'\u{2FFFF}' {
+            if is_emoji(ch) {
+                let desc = format!("{:?} U+{:04X}", ch, ch as u32);
+
+                #[cfg(feature = "unicode-width")]
+                assert!(ch.width().unwrap() <= 2, "char: {}", desc);
+
+                #[cfg(not(feature = "unicode-width"))]
+                assert_eq!(ch_width(ch), 2, "char: {}", desc);
+            }
+        }
+
+        // The remaining planes contain almost no assigned code points
+        // and thus also no emojis.
+    }
+
+    #[test]
     fn display_width_works() {
         assert_eq!("Café Plain".len(), 11); // “é” is two bytes
         assert_eq!(display_width("Café Plain"), 10);
         assert_eq!(display_width("\u{1b}[31mCafé Rouge\u{1b}[0m"), 10);
+    }
+
+    #[test]
+    fn display_width_narrow_emojis() {
+        #[cfg(feature = "unicode-width")]
+        assert_eq!(display_width("⁉"), 1);
+
+        // The ⁉ character is above DOUBLE_WIDTH_CUTOFF.
+        #[cfg(not(feature = "unicode-width"))]
+        assert_eq!(display_width("⁉"), 2);
+    }
+
+    #[test]
+    fn display_width_narrow_emojis_variant_selector() {
+        #[cfg(feature = "unicode-width")]
+        assert_eq!(display_width("⁉\u{fe0f}"), 1);
+
+        // The variant selector-16 is also counted.
+        #[cfg(not(feature = "unicode-width"))]
+        assert_eq!(display_width("⁉\u{fe0f}"), 4);
+    }
+
+    #[test]
+    fn display_width_emojis() {
+        assert_eq!(display_width("😂😭🥺🤣✨😍🙏🥰😊🔥"), 20);
     }
 
     #[test]
