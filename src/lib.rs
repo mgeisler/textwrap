@@ -124,8 +124,9 @@
 //!
 //! * `unicode-width`: enables correct width computation of non-ASCII
 //!   characters via the [unicode-width] crate. Without this feature,
-//!   every [`char`] is 1 column wide. See the [`core::display_width`]
-//!   function for details.
+//!   every [`char`] is 1 column wide, except for emojis which are 2
+//!   columns wide. See the [`core::display_width`] function for
+//!   details.
 //!
 //!   This feature can be disabled if you only need to wrap ASCII
 //!   text, or if the functions in [`core`] are used directly with
@@ -1238,16 +1239,10 @@ mod tests {
     }
 
     #[test]
-    #[cfg(feature = "unicode-width")]
     fn break_words_wide_characters() {
+        // Even the poor man's version of `ch_width` counts these
+        // characters as wide.
         assert_eq!(wrap("Ｈｅｌｌｏ", 5), vec!["Ｈｅ", "ｌｌ", "ｏ"]);
-    }
-
-    #[test]
-    #[cfg(not(feature = "unicode-width"))]
-    fn break_words_wide_characters() {
-        // Each `char` takes up one column.
-        assert_eq!(wrap("Ｈｅｌｌｏ", 5), vec!["Ｈｅｌｌｏ"]);
     }
 
     #[test]
