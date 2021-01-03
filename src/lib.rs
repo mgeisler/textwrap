@@ -764,7 +764,6 @@ where
 /// Please see the [`linear`
 /// benchmark](https://github.com/mgeisler/textwrap/blob/master/benches/linear.rs)
 /// for details.
-// TODO: Make this take an &mut str
 pub fn fill_inplace(text: &mut String, width: usize) {
     let mut indices = Vec::new();
 
