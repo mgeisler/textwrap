@@ -118,6 +118,11 @@
 //! Cargo features. This means you only pay for the features you
 //! actually use.
 //!
+//! The full dependency graph, where dashed lines indicate optional
+//! dependencies, is shown below:
+//!
+//! <img src="https://raw.githubusercontent.com/mgeisler/textwrap/master/images/textwrap-0.13.2.svg">
+//!
 //! ## Default Features
 //!
 //! These features are enabled by default:

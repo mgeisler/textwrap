@@ -1,0 +1,17 @@
+<svg height="116pt" viewBox="0 0 262.29 116" width="262pt" xmlns="http://www.w3.org/2000/svg">
+<g transform="translate(4 112)">
+<path d="m-4 4v-116h262.29v116z" fill="#fff"/>
+<path d="m147.2-108h-83v36h83z" fill="none" stroke="#000"/>
+<text font-family="monospace" font-size="14" text-anchor="middle" x="105.7" y="-86.3">textwrap</text>
+<ellipse cx="37.7" cy="-18" fill="none" rx="37.89" ry="18" stroke="#000" stroke-dasharray="5 2"/>
+<text font-family="monospace" font-size="14" text-anchor="middle" x="37.7" y="-14.3">smawk</text>
+<g stroke="#000">
+<path d="m88.89-71.7c-8.69 8.95-19.41 19.99-28.8 29.64" fill="none" stroke-dasharray="1 5"/>
+<path d="m62.4-39.41-9.48 4.74 4.46-9.61z"/>
+<ellipse cx="173.7" cy="-18" fill="none" rx="80.69" ry="18" stroke-dasharray="5 2"/>
+</g>
+<text font-family="monospace" font-size="14" text-anchor="middle" x="173.7" y="-14.3">unicode-width</text>
+<path d="m122.51-71.7c8.31 8.56 18.49 19.04 27.58 28.4" fill="none" stroke="#000" stroke-dasharray="1 5"/>
+<path d="m152.62-45.72 4.46 9.62-9.48-4.74z" stroke="#000"/>
+</g>
+</svg>
