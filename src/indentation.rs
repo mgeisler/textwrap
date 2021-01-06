@@ -49,7 +49,7 @@
 pub fn indent(s: &str, prefix: &str) -> String {
     let mut result = String::new();
 
-    for line in s.split_inclusive('\n') {
+    for line in CharSplitInclusive::new(s, '\n') {
         if !line.trim().is_empty() {
             result.push_str(prefix);
         }
@@ -57,6 +57,46 @@ pub fn indent(s: &str, prefix: &str) -> String {
     }
 
     result
+}
+
+/// This should hopefully be replaced by the split_inclusive feature in the
+/// standard library.
+/// Issue: #72360
+struct CharSplitInclusive<'a> {
+    sep: char,
+    value: &'a str,
+    finished: bool,
+}
+
+impl<'a> CharSplitInclusive<'a> {
+    fn new(s: &'a str, sep: char) -> Self {
+        Self {
+            finished: false,
+            sep,
+            value: s,
+        }
+    }
+}
+
+impl<'a> Iterator for CharSplitInclusive<'a> {
+    type Item = &'a str;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.finished {
+            return None;
+        }
+        match self.value.find(self.sep) {
+            Some(i) => {
+                let ret = unsafe { self.value.get_unchecked(0..i + 1) };
+                self.value = unsafe { self.value.get_unchecked(i + 1..self.value.len()) };
+                Some(ret)
+            }
+            None => {
+                self.finished = true;
+                Some(self.value)
+            }
+        }
+    }
 }
 
 /// Removes common leading whitespace from each line.

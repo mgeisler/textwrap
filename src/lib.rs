@@ -92,7 +92,6 @@
 #![deny(missing_docs)]
 #![deny(missing_debug_implementations)]
 #![allow(clippy::redundant_field_names)]
-#![feature(split_inclusive)]
 
 use std::borrow::Cow;
 use std::str::CharIndices;
