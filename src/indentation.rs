@@ -87,8 +87,8 @@ impl<'a> Iterator for CharSplitInclusive<'a> {
         }
         match self.value.find(self.sep) {
             Some(i) => {
-                let ret = unsafe { self.value.get_unchecked(0..i + 1) };
-                self.value = unsafe { self.value.get_unchecked(i + 1..self.value.len()) };
+                let ret = &self.value[0..i + 1];
+                self.value = &self.value[i + 1..self.value.len()];
                 Some(ret)
             }
             None => {
