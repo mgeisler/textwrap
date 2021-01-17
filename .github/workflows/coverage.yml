@@ -12,12 +12,19 @@ jobs:
   coverage:
     name: Generate coverage
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        features:
+          - no-default-features
+          - all-features
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
 
       - name: Run cargo-tarpaulin
         uses: actions-rs/tarpaulin@v0.1
+        with:
+          args: '--${{ matrix.features }}'
 
       - name: Upload to codecov.io
         uses: codecov/codecov-action@v1

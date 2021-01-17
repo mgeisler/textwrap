@@ -1,15 +1,8 @@
 [package]
 name = "textwrap"
-version = "0.12.1"
+version = "0.13.2"
 authors = ["Martin Geisler <martin@geisler.net>"]
-description = """
-Textwrap is a library for word wrapping, indenting, and dedenting
-strings.
-
-You can use it to format strings (such as help and error messages) for
-display in commandline applications. It is designed to be efficient
-and handle Unicode characters correctly.
-"""
+description = "Powerful library for word wrapping, indenting, and dedenting strings"
 documentation = "https://docs.rs/textwrap/"
 repository = "https://github.com/mgeisler/textwrap"
 readme = "README.md"
@@ -17,6 +10,7 @@ keywords = ["text", "formatting", "wrap", "typesetting", "hyphenation"]
 categories = ["text-processing", "command-line-interface"]
 license = "MIT"
 edition = "2018"
+exclude = [".github/", ".gitignore", "benches/", "examples/", "fuzz/", "images/"]
 
 [package.metadata.docs.rs]
 all-features = true
@@ -29,9 +23,14 @@ codecov = { repository = "mgeisler/textwrap" }
 [[bench]]
 name = "linear"
 harness = false
+path = "benches/linear.rs"
+
+[features]
+default = ["unicode-width", "smawk"]
 
 [dependencies]
-unicode-width = "0.1"
+smawk = { version = "0.3", optional = true }
+unicode-width = { version= "0.1", optional = true }
 terminal_size = { version = "0.1", optional = true }
 hyphenation = { version = "0.8", optional = true, features = ["embed_en-us"] }
 
@@ -39,3 +38,7 @@ hyphenation = { version = "0.8", optional = true, features = ["embed_en-us"] }
 lipsum = "0.7"
 version-sync = "0.9"
 criterion = "0.3"
+unic-emoji-char = "0.9.0"
+
+[target.'cfg(unix)'.dev-dependencies]
+termion = "1.5"

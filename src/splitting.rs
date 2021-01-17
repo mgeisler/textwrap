@@ -5,62 +5,85 @@
 //! functionality. [`HyphenSplitter`] is the default implementation of
 //! this treat: it will simply split words on existing hyphens.
 
-/// An interface for splitting words.
+/// The `WordSplitter` trait describes where words can be split.
 ///
-/// When the [`wrap`] function tries to fit text into a line, it will
-/// eventually find a word that it too large the current text width.
-/// It will then call the currently configured `WordSplitter` to have
-/// it attempt to split the word into smaller parts. This trait
-/// describes that functionality via the [`split`] method.
+/// If the textwrap crate has been compiled with the `hyphenation`
+/// Cargo feature enabled, you will find an implementation of
+/// `WordSplitter` by the `hyphenation::Standard` struct. Use this
+/// struct for language-aware hyphenation:
 ///
-/// If the `textwrap` crate has been compiled with the `hyphenation`
-/// feature enabled, you will find an implementation of `WordSplitter`
-/// by the `hyphenation::Standard` struct. Use this struct for
-/// language-aware hyphenation. See the [`hyphenation` documentation]
-/// for details.
+/// ```
+/// #[cfg(feature = "hyphenation")]
+/// {
+///     use hyphenation::{Language, Load, Standard};
+///     use textwrap::{wrap, Options};
 ///
-/// [`wrap`]: ../fn.wrap.html
-/// [`split`]: #tymethod.split
-/// [`hyphenation` documentation]: https://docs.rs/hyphenation/
+///     let text = "Oxidation is the loss of electrons.";
+///     let dictionary = Standard::from_embedded(Language::EnglishUS).unwrap();
+///     let options = Options::new(8).splitter(dictionary);
+///     assert_eq!(wrap(text, &options), vec!["Oxida-",
+///                                           "tion is",
+///                                           "the loss",
+///                                           "of elec-",
+///                                           "trons."]);
+/// }
+/// ```
+///
+/// Please see the documentation for the [hyphenation] crate for more
+/// details.
+///
+/// [hyphenation]: https://docs.rs/hyphenation/
 pub trait WordSplitter: std::fmt::Debug {
-    /// Return all possible splits of word. Each split is a triple
-    /// with a head, a hyphen, and a tail where `head + &tail == word`.
-    /// The hyphen can be empty if there is already a hyphen in the
-    /// head.
+    /// Return all possible indices where `word` can be split.
     ///
-    /// The splits should go from smallest to longest and should
-    /// include no split at all. So the word "technology" could be
-    /// split into
+    /// The indices returned must be in range `0..word.len()`. They
+    /// should point to the index _after_ the split point, i.e., after
+    /// `-` if splitting on hyphens. This way, `word.split_at(idx)`
+    /// will break the word into two well-formed pieces.
     ///
-    /// ```no_run
-    /// vec![("tech", "-", "nology"),
-    ///      ("technol", "-", "ogy"),
-    ///      ("technolo", "-", "gy"),
-    ///      ("technology", "", "")];
+    /// # Examples
+    ///
     /// ```
-    fn split<'w>(&self, word: &'w str) -> Vec<(&'w str, &'w str, &'w str)>;
+    /// use textwrap::{HyphenSplitter, NoHyphenation, WordSplitter};
+    /// assert_eq!(NoHyphenation.split_points("cannot-be-split"), vec![]);
+    /// assert_eq!(HyphenSplitter.split_points("can-be-split"), vec![4, 7]);
+    /// ```
+    fn split_points(&self, word: &str) -> Vec<usize>;
+}
+
+impl<S: WordSplitter + ?Sized> WordSplitter for Box<S> {
+    fn split_points(&self, word: &str) -> Vec<usize> {
+        use std::ops::Deref;
+        self.deref().split_points(word)
+    }
+}
+
+impl<T: ?Sized + WordSplitter> WordSplitter for &T {
+    fn split_points(&self, word: &str) -> Vec<usize> {
+        (*self).split_points(word)
+    }
 }
 
 /// Use this as a [`Options.splitter`] to avoid any kind of
 /// hyphenation:
 ///
 /// ```
-/// use textwrap::{wrap, Options, NoHyphenation};
+/// use textwrap::{wrap, NoHyphenation, Options};
 ///
-/// let options = Options::new(8).splitter(Box::new(NoHyphenation));
-/// assert_eq!(wrap("foo bar-baz", &options).collect::<Vec<_>>(),
+/// let options = Options::new(8).splitter(NoHyphenation);
+/// assert_eq!(wrap("foo bar-baz", &options),
 ///            vec!["foo", "bar-baz"]);
 /// ```
 ///
-/// [`Options.splitter`]: ../struct.Options.html#structfield.splitter
-#[derive(Clone, Debug)]
+/// [`Options.splitter`]: super::Options::splitter
+#[derive(Clone, Copy, Debug)]
 pub struct NoHyphenation;
 
 /// `NoHyphenation` implements `WordSplitter` by not splitting the
 /// word at all.
 impl WordSplitter for NoHyphenation {
-    fn split<'w>(&self, word: &'w str) -> Vec<(&'w str, &'w str, &'w str)> {
-        vec![(word, "", "")]
+    fn split_points(&self, _: &str) -> Vec<usize> {
+        Vec::new()
     }
 }
 
@@ -68,74 +91,50 @@ impl WordSplitter for NoHyphenation {
 /// hyphens only.
 ///
 /// You probably don't need to use this type since it's already used
-/// by default by `Options::new`.
-#[derive(Clone, Debug)]
+/// by default by [`Options::new`](super::Options::new).
+#[derive(Clone, Copy, Debug)]
 pub struct HyphenSplitter;
 
 /// `HyphenSplitter` is the default `WordSplitter` used by
-/// `Options::new`. It will split words on any existing hyphens in the
-/// word.
+/// [`Options::new`](super::Options::new). It will split words on any
+/// existing hyphens in the word.
 ///
 /// It will only use hyphens that are surrounded by alphanumeric
-/// characters, which prevents a word like "--foo-bar" from being
-/// split on the first or second hyphen.
+/// characters, which prevents a word like `"--foo-bar"` from being
+/// split into `"--"` and `"foo-bar"`.
 impl WordSplitter for HyphenSplitter {
-    fn split<'w>(&self, word: &'w str) -> Vec<(&'w str, &'w str, &'w str)> {
-        let mut triples = Vec::new();
-        // Split on hyphens, smallest split first. We only use hyphens
-        // that are surrounded by alphanumeric characters. This is to
-        // avoid splitting on repeated hyphens, such as those found in
-        // --foo-bar.
-        let mut char_indices = word.char_indices();
-        // Early return if the word is empty.
-        let mut prev = match char_indices.next() {
-            None => return vec![(word, "", "")],
-            Some((_, ch)) => ch,
-        };
+    fn split_points(&self, word: &str) -> Vec<usize> {
+        let mut splits = Vec::new();
 
-        // Find current word, or return early if the word only has a
-        // single character.
-        let (mut idx, mut cur) = match char_indices.next() {
-            None => return vec![(word, "", "")],
-            Some((idx, cur)) => (idx, cur),
-        };
+        for (idx, _) in word.match_indices('-') {
+            // We only use hyphens that are surrounded by alphanumeric
+            // characters. This is to avoid splitting on repeated hyphens,
+            // such as those found in --foo-bar.
+            let prev = word[..idx].chars().next_back();
+            let next = word[idx + 1..].chars().next();
 
-        for (i, next) in char_indices {
-            if prev.is_alphanumeric() && cur == '-' && next.is_alphanumeric() {
-                let (head, tail) = word.split_at(idx + 1);
-                triples.push((head, "", tail));
+            if prev.filter(|ch| ch.is_alphanumeric()).is_some()
+                && next.filter(|ch| ch.is_alphanumeric()).is_some()
+            {
+                splits.push(idx + 1); // +1 due to width of '-'.
             }
-            prev = cur;
-            idx = i;
-            cur = next;
         }
 
-        // Finally option is no split at all.
-        triples.push((word, "", ""));
-
-        triples
+        splits
     }
 }
 
 /// A hyphenation dictionary can be used to do language-specific
-/// hyphenation using patterns from the hyphenation crate.
+/// hyphenation using patterns from the [hyphenation] crate.
 ///
-/// **Note:** Only available when the `hyphenation` feature is
+/// **Note:** Only available when the `hyphenation` Cargo feature is
 /// enabled.
+///
+/// [hyphenation]: https://docs.rs/hyphenation/
 #[cfg(feature = "hyphenation")]
 impl WordSplitter for hyphenation::Standard {
-    fn split<'w>(&self, word: &'w str) -> Vec<(&'w str, &'w str, &'w str)> {
+    fn split_points(&self, word: &str) -> Vec<usize> {
         use hyphenation::Hyphenator;
-        // Find splits based on language dictionary.
-        let mut triples = Vec::new();
-        for n in self.hyphenate(word).breaks {
-            let (head, tail) = word.split_at(n);
-            let hyphen = if head.ends_with('-') { "" } else { "-" };
-            triples.push((head, hyphen, tail));
-        }
-        // Finally option is no split at all.
-        triples.push((word, "", ""));
-
-        triples
+        self.hyphenate(word).breaks
     }
 }

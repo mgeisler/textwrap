@@ -1,0 +1,178 @@
+name: Prepare Release PR
+
+on:
+  push:
+    branches:
+      - 'release-*'
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      name: ${{ steps.vars.outputs.name }}
+      old-version: ${{ steps.vars.outputs.old-version }}
+      new-version: ${{ steps.vars.outputs.new-version }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      - name: Set variables
+        id: vars
+        run: |
+          NAME=$(cargo metadata -q --no-deps | jq -r '.packages[0].name')
+          OLD_VERSION=$(cargo metadata -q --no-deps | jq -r '.packages[0].version')
+          NEW_VERSION=$(echo ${{ github.ref }} | cut -d '-' -f 2-)
+          echo "Version from Cargo:  $OLD_VERSION"
+          echo "Version from branch: $NEW_VERSION"
+
+          echo "::set-output name=name::$NAME"
+          echo "::set-output name=old-version::$OLD_VERSION"
+          echo "::set-output name=new-version::$NEW_VERSION"
+
+      - name: Verify version format
+        run: |
+          echo '${{ steps.vars.outputs.new-version }}' | grep -q '^[0-9]\+\.[0-9]\+\.[0-9]\+$'
+
+  pull-request:
+    needs: setup
+    if: ${{ needs.setup.outputs.old-version != needs.setup.outputs.new-version }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      - name: Configure Git user
+        run: |
+          git config user.name "Martin Geisler"
+          git config user.email "martin@geisler.net"
+
+      - name: Install Graphviz
+        uses: ts-graphviz/setup-graphviz@v1
+
+      # We use debug builds since they compile a little faster.
+      - name: Install cargo-depgraph
+        run: |
+          cargo install --debug cargo-depgraph
+
+      - name: Install svgcleaner
+        run: |
+          cargo install --debug svgcleaner
+
+      - name: Generate dependency graph
+        run: |
+          cargo depgraph                                \
+          | dot -Tsvg -Nfontname=monospace              \
+          | sed 's/stroke="transparent"/stroke="none"/' \
+          | svgcleaner --indent 0 --stdout -            \
+          > images/textwrap-${{ needs.setup.outputs.new-version }}.svg
+
+      - name: Commit dependency graph
+        run: |
+          git commit --all -m "Update dependency graph for version ${{ needs.setup.outputs.new-version }}"
+
+      - name: Update changelog for version ${{ needs.setup.outputs.new-version }}
+        id: changelog
+        uses: actions/github-script@v3
+        with:
+          script: |
+            var fs = require('fs')
+            const old_version = '${{ needs.setup.outputs.old-version }}'
+            const new_version = '${{ needs.setup.outputs.new-version }}'
+
+            let cutoff = '1970-01-01'
+            const releases = await github.repos.listReleases(context.repo)
+            for (const release of releases.data) {
+              if (release.tag_name == old_version) {
+                cutoff = release.published_at
+                break
+              }
+            }
+            core.info(`Finding merged PRs after ${cutoff}`)
+
+            let q = [`repo:${context.repo.owner}/${context.repo.repo}`,
+                     'is:pr', 'is:merged', `merged:>${cutoff}`]
+            // Need to use https://octokit.github.io/rest.js/v18#pagination!
+            const prs = await github.search.issuesAndPullRequests({
+              q: q.join(' '),
+              sort: 'created',
+              order: 'asc',
+            })
+            core.info(`Found ${prs.data.items.length} merged PRs`)
+
+            const changelog = prs.data.items.map(
+              pr => `* [#${pr.number}](${pr.html_url}): ${pr.title}`
+            ).join('\n')
+            core.exportVariable('CHANGELOG', changelog)
+
+            var content = fs.readFileSync('CHANGELOG.md', 'utf8')
+            const today = new Date().toISOString().split('T')[0]
+            const heading = `## Version ${new_version} (${today})\n`
+            if (content.match('## Unreleased')) {
+              content = content.replace('## Unreleased', `${heading}\n${changelog}`)
+            } else {
+              content = content.replace('## Version', `${heading}\n${changelog}\n\n## Version`)
+            }
+            fs.writeFileSync('CHANGELOG.md', content)
+
+      - name: Commit changelog
+        run: |
+          git commit --all -m "Update changelog for version ${{ needs.setup.outputs.new-version }}"
+
+      - name: Update TOML code blocks
+        run: |
+          import fileinput, re, sys
+
+          NAME = '${{ needs.setup.outputs.name }}'
+          NEW_VERSION = '${{ needs.setup.outputs.new-version }}'
+          MAJOR_MINOR = '.'.join(NEW_VERSION.split('.')[:2])
+
+          for line in fileinput.input(inplace=True):
+              line = re.sub(f'{NAME} = "[^"]+"',
+                            f'{NAME} = "{MAJOR_MINOR}"', line)
+              line = re.sub(f'{NAME} = {{ version = "[^"]+"',
+                            f'{NAME} = {{ version = "{MAJOR_MINOR}"', line)
+              sys.stdout.write(line)
+        shell: python3 {0} README.md
+
+      - name: Update html_root_url
+        run: |
+          import fileinput, re, sys
+
+          NAME = '${{ needs.setup.outputs.name }}'
+          NEW_VERSION = '${{ needs.setup.outputs.new-version }}'
+
+          for line in fileinput.input(inplace=True):
+              sys.stdout.write(
+                  re.sub(f'html_root_url = "https://docs.rs/{NAME}/[^"]+"',
+                         f'html_root_url = "https://docs.rs/{NAME}/{NEW_VERSION}"', line))
+        shell: python3 {0} src/lib.rs
+
+      - name: Update crate version to ${{ needs.setup.outputs.new-version }}
+        uses: thomaseizinger/set-crate-version@1.0.0
+        with:
+          version: ${{ needs.setup.outputs.new-version }}
+
+      - name: Build and test
+        run: |
+            cargo test
+
+      - name: Commit version bump
+        run: |
+          git commit --all -m "Bump version to ${{ needs.setup.outputs.new-version }}"
+
+      - name: Push version bump
+        run: git push origin
+
+      - name: Create pull request
+        uses: actions/github-script@v3
+        with:
+          script: |
+            const pr = await github.pulls.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              head: 'release-${{ needs.setup.outputs.new-version }}',
+              base: 'master',
+              title: 'Release ${{ needs.setup.outputs.new-version }}',
+              body: process.env.CHANGELOG,
+            })
+            core.info(`Created PR: ${pr.data.html_url}`)

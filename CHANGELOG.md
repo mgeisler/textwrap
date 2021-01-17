@@ -3,7 +3,189 @@
 This file lists the most important changes made in each release of
 `textwrap`.
 
-## Version 0.12.1 — July 3rd, 2020
+## Version 0.13.2 (2020-12-30)
+
+This release primarily makes all dependencies optional. This makes it
+possible to slim down textwrap as needed.
+
+* [#254](https://github.com/mgeisler/textwrap/pull/254): `impl
+  WordSplitter` for `Box<T> where T: WordSplitter`.
+* [#255](https://github.com/mgeisler/textwrap/pull/255): Use command
+  line arguments as initial text in interactive example.
+* [#256](https://github.com/mgeisler/textwrap/pull/256): Introduce
+  fuzz tests for `wrap_optimal_fit` and `wrap_first_fit`.
+* [#260](https://github.com/mgeisler/textwrap/pull/260): Make the
+  unicode-width dependency optional.
+* [#261](https://github.com/mgeisler/textwrap/pull/261): Make the
+  smawk dependency optional.
+
+## Version 0.13.1 (2020-12-10)
+
+This is a bugfix release which fixes a regression in 0.13.0. The bug
+meant that colored text was wrapped incorrectly.
+
+* [#245](https://github.com/mgeisler/textwrap/pull/245): Support
+  deleting a word with Ctrl-Backspace in the interactive demo.
+* [#246](https://github.com/mgeisler/textwrap/pull/246): Show build
+  type (debug/release) in interactive demo.
+* [#249](https://github.com/mgeisler/textwrap/pull/249): Correctly
+  compute width while skipping over ANSI escape sequences.
+
+## Version 0.13.0 (2020-12-05)
+
+This is a major release which rewrites the core logic, adds many new
+features, and fixes a couple of bugs. Most programs which use
+`textwrap` stays the same, incompatibilities and upgrade notes are
+given below.
+
+Clone the repository and run the following to explore the new features
+in an interactive demo (Linux only):
+
+```sh
+$ cargo run --example interactive --all-features
+```
+
+### Bug Fixes
+
+#### Rewritten core wrapping algorithm
+
+* [#221](https://github.com/mgeisler/textwrap/pull/221): Reformulate
+  wrapping in terms of words with whitespace and penalties.
+
+The core wrapping algorithm has been completely rewritten. This fixed
+bugs and simplified the code, while also making it possible to use
+`textwrap` outside the context of the terminal.
+
+As part of this, trailing whitespace is now discarded consistently
+from wrapped lines. Before we would inconsistently remove whitespace
+at the end of wrapped lines, except for the last. Leading whitespace
+is still preserved.
+
+### New Features
+
+#### Optimal-fit wrapping
+
+* [#234](https://github.com/mgeisler/textwrap/pull/234): Introduce
+  wrapping using an optimal-fit algorithm.
+
+This release adds support for new wrapping algorithm which finds a
+globally optimal set of line breaks, taking certain penalties into
+account. As an example, the old algorithm would produce
+
+    "To be, or"
+    "not to be:"
+    "that is"
+    "the"
+    "question"
+
+Notice how the fourth line with “the” is very short. The new algorithm
+shortens the previous lines slightly to produce fewer short lines:
+
+    "To be,"
+    "or not to"
+    "be: that"
+    "is the"
+    "question"
+
+Use the new `textwrap::core::WrapAlgorithm` enum to select between the
+new and old algorithm. By default, the new algorithm is used.
+
+The optimal-fit algorithm is inspired by the line breaking algorithm
+used in TeX, described in the 1981 article [_Breaking Paragraphs into
+Lines_](http://www.eprg.org/G53DOC/pdfs/knuth-plass-breaking.pdf) by
+Knuth and Plass.
+
+#### In-place wrapping
+
+* [#226](https://github.com/mgeisler/textwrap/pull/226): Add a
+  `fill_inplace` function.
+
+When the text you want to fill is already a temporary `String`, you
+can now mutate it in-place with `fill_inplace`:
+
+```rust
+let mut greeting = format!("Greetings {}, welcome to the game! You have {} lives left.",
+                           player.name, player.lives);
+fill_inplace(&mut greeting, line_width);
+```
+
+This is faster than calling `fill` and it will reuse the memory
+already allocated for the string.
+
+### Changed Features
+
+#### `Wrapper` is replaced with `Options`
+
+* [#213](https://github.com/mgeisler/textwrap/pull/213): Simplify API
+  with only top-level functions.
+* [#215](https://github.com/mgeisler/textwrap/pull/215): Reintroducing
+  the type parameter on `Options` (previously known as `Wrapper`).
+* [#219](https://github.com/mgeisler/textwrap/pull/219): Allow using
+  trait objects with `fill` & `wrap`.
+* [#227](https://github.com/mgeisler/textwrap/pull/227): Replace
+  `WrapOptions` with `Into<Options>`.
+
+The `Wrapper` struct held the options (line width, indentation, etc)
+for wrapping text. It was also the entry point for actually wrapping
+the text via its methods such as `wrap`, `wrap_iter`,
+`into_wrap_iter`, and `fill` methods.
+
+The struct has been replaced by a simpler `Options` struct which only
+holds options. The `Wrapper` methods are gone, their job has been
+taken over by the top-level `wrap` and `fill` functions. The signature
+of these functions have changed from
+
+```rust
+fn fill(s: &str, width: usize) -> String;
+
+fn wrap(s: &str, width: usize) -> Vec<Cow<'_, str>>;
+```
+
+to the more general
+
+```rust
+fn fill<'a, S, Opt>(text: &str, options: Opt) -> String
+where
+    S: WordSplitter,
+    Opt: Into<Options<'a, S>>;
+
+fn wrap<'a, S, Opt>(text: &str, options: Opt) -> Vec<Cow<'_, str>>
+where
+    S: WordSplitter,
+    Opt: Into<Options<'a, S>>;
+```
+
+The `Into<Options<'a, S>` bound allows you to pass an `usize` (which
+is interpreted as the line width) *and* a full `Options` object. This
+allows the new functions to work like the old, plus you can now fully
+customize the behavior of the wrapping via `Options` when needed.
+
+Code that call `textwrap::wrap` or `textwrap::fill` can remain
+unchanged. Code that calls into `Wrapper::wrap` or `Wrapper::fill`
+will need to be update. This is a mechanical change, please see
+[#213](https://github.com/mgeisler/textwrap/pull/213) for examples.
+
+Thanks to @CryptJar and @Koxiat for their support in the PRs above!
+
+### Removed Features
+
+* The `wrap_iter` and `into_wrap_iter` methods are gone. This means
+  that lazy iteration is no longer supported: you always get all
+  wrapped lines back as a `Vec`. This was done to simplify the code
+  and to support the optimal-fit algorithm.
+
+  The first-fit algorithm could still be implemented in an incremental
+  fashion. Please let us know if this is important to you.
+
+### Other Changes
+
+* [#206](https://github.com/mgeisler/textwrap/pull/206): Change
+  `Wrapper.splitter` from `T: WordSplitter` to `Box<dyn
+  WordSplitter>`.
+* [#216](https://github.com/mgeisler/textwrap/pull/216): Forbid the
+  use of unsafe code.
+
+## Version 0.12.1 (2020-07-03)
 
 This is a bugfix release.
 
@@ -13,7 +195,7 @@ This is a bugfix release.
   broken and would cause extra whitespace to be inserted when words
   were longer than the line width.
 
-## Version 0.12.0 — June 26th, 2020
+## Version 0.12.0 (2020-06-26)
 
 The code has been updated to the [Rust 2018 edition][rust-2018] and
 each new release of `textwrap` will only support the latest stable
@@ -31,7 +213,7 @@ US-English. This slims down the dependency.
 * Fixed [#158][issue-158]: Unintended wrapping when using external splitter.
 * Fixed [#177][issue-177]: Update examples to the 2018 edition.
 
-## Version 0.11.0 — December 9th, 2018
+## Version 0.11.0 (2018-12-09)
 
 Due to our dependencies bumping their minimum supported version of
 Rust, the minimum version of Rust we test against is now 1.22.0.
@@ -40,7 +222,7 @@ Rust, the minimum version of Rust we test against is now 1.22.0.
   trailing newlines. Thanks @bbqsrc!
 * Fixed [#151][issue-151]: Release of version with hyphenation 0.7.
 
-## Version 0.10.0 — April 28th, 2018
+## Version 0.10.0 (2018-04-28)
 
 Due to our dependencies bumping their minimum supported version of
 Rust, the minimum version of Rust we test against is now 1.17.0.
@@ -50,7 +232,7 @@ Rust, the minimum version of Rust we test against is now 1.17.0.
 * Fixed [#122][issue-122]: Take newlines into account when wrapping.
 * Fixed [#129][issue-129]: Panic on string with em-dash.
 
-## Version 0.9.0 — October 5th, 2017
+## Version 0.9.0 (2017-10-05)
 
 The dependency on `term_size` is now optional, and by default this
 feature is not enabled. This is a *breaking change* for users of
@@ -63,7 +245,7 @@ Added a regression test for the case where `width` is set to
 
 * Fixed [#101][issue-101]: Make `term_size` an optional dependency.
 
-## Version 0.8.0 — September 4th, 2017
+## Version 0.8.0 (2017-09-04)
 
 The `Wrapper` stuct is now generic over the type of word splitter
 being used. This means less boxing and a nicer API. The
@@ -78,7 +260,7 @@ if you will be iterating over the wrapped lines one by one.
   @hcpl!
 * Fixed [#81][issue-81]: Set `html_root_url`.
 
-## Version 0.7.0 — July 20th, 2017
+## Version 0.7.0 (2017-07-20)
 
 Version 0.7.0 changes the return type of `Wrapper::wrap` from
 `Vec<String>` to `Vec<Cow<'a, str>>`. This means that the output lines
@@ -96,7 +278,7 @@ important for you so we can provide a work around.
 * Fixed [#58][issue-58]: Add a "fast_wrap" function.
 * Fixed [#61][issue-61]: Documentation errors.
 
-## Version 0.6.0 — May 22nd, 2017
+## Version 0.6.0 (2017-05-22)
 
 Version 0.6.0 adds builder methods to `Wrapper` for easy one-line
 initialization and configuration:
@@ -110,7 +292,7 @@ words, not even at existing hyphens.
 
 * Fixed [#28][issue-28]: Support not squeezing whitespace.
 
-## Version 0.5.0 — May 15th, 2017
+## Version 0.5.0 (2017-05-15)
 
 Version 0.5.0 has *breaking API changes*. However, this only affects
 code using the hyphenation feature. The feature is now optional, so
@@ -133,22 +315,22 @@ Other changes include optimizations, so version 0.5.0 is roughly
 * Fixed [#36][issue-36]: Support building without `hyphenation`.
 * Fixed [#39][issue-39]: Respect non-breaking spaces.
 
-## Version 0.4.0 — January 24th, 2017
+## Version 0.4.0 (2017-01-24)
 
 Documented complexities and tested these via `cargo bench`.
 
 * Fixed [#13][issue-13]: Immediatedly add word if it fits.
 * Fixed [#14][issue-14]: Avoid splitting on initial hyphens.
 
-## Version 0.3.0 — January 7th, 2017
+## Version 0.3.0 (2017-01-07)
 
 Added support for automatic hyphenation.
 
-## Version 0.2.0 — December 28th, 2016
+## Version 0.2.0 (2016-12-28)
 
 Introduced `Wrapper` struct. Added support for wrapping on hyphens.
 
-## Version 0.1.0 — December 17th, 2016
+## Version 0.1.0 (2016-12-17)
 
 First public release with support for wrapping strings on whitespace.
 

@@ -3,7 +3,7 @@ use textwrap::{fill, Options};
 
 #[cfg(not(feature = "terminal_size"))]
 fn main() {
-    println!("Please enable the terminal_size feature to run this example.");
+    println!("Please enable the terminal_size Cargo feature to run this example.");
 }
 
 #[cfg(feature = "terminal_size")]
@@ -21,9 +21,9 @@ fn main() {
     #[cfg(feature = "hyphenation")]
     let (msg, options) = (
         "with hyphenation",
-        Options::with_termwidth().splitter(Box::new(
+        Options::with_termwidth().splitter(
             hyphenation::Standard::from_embedded(hyphenation::Language::EnglishUS).unwrap(),
-        )),
+        ),
     );
 
     println!("Formatted {} in {} columns:", msg, options.width);

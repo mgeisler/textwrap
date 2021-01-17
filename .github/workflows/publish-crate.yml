@@ -1,0 +1,63 @@
+name: Publish Crate
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - Cargo.toml
+  repository_dispatch:
+    types: publish
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      - name: Set variables
+        id: vars
+        run: |
+          NAME=$(cargo metadata -q --no-deps | jq -r '.packages[0].name')
+          VERSION=$(cargo metadata -q --no-deps | jq -r '.packages[0].version')
+          CHANGELOG=$(awk '/^## Version/ {i++}; i==1 {print}; i>1 {exit}' CHANGELOG.md \
+            | python3 -c 'import sys, json; print(json.dumps(sys.stdin.read()))')
+          echo "::set-output name=name::$NAME"
+          echo "::set-output name=version::$VERSION"
+          echo "::set-output name=changelog::$CHANGELOG"
+          echo "Found $NAME-$VERSION"
+
+      - name: Lookup ${{ steps.vars.outputs.version }} tag
+        id: need-release
+        uses: actions/github-script@v3
+        with:
+          script: |
+            const version = '${{ steps.vars.outputs.version }}'
+            const tags = await github.repos.listTags(context.repo)
+            if (tags.data.some(tag => tag.name == version)) {
+                core.info(`Found ${version} tag -- will skip publish step`)
+                return false
+            }
+            core.info(`Found no ${version} tag -- will proceed with publishing`)
+            return true
+
+      # The result from above is JSON-encoded, meaning that we
+      # end up with the string 'true', not the Boolean true.
+      - if: steps.need-release.outputs.result == 'true'
+        name: Publish crate to crates.io
+        run: |
+          echo "Publishing ${{ steps.vars.outputs.name }}-${{ steps.vars.outputs.version }}"
+          cargo publish --token ${{ secrets.CARGO_TOKEN }}
+
+      - if: steps.need-release.outputs.result == 'true'
+        name: Create GitHub release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.vars.outputs.version }}
+          release_name: ${{ steps.vars.outputs.name }}-${{ steps.vars.outputs.version }}
+          body: ${{ fromJson(steps.vars.outputs.changelog) }}
+          draft: false
+          prerelease: false

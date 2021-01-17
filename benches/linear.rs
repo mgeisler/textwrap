@@ -21,15 +21,38 @@ fn lorem_ipsum(length: usize) -> String {
 
 pub fn benchmark(c: &mut Criterion) {
     let mut group = c.benchmark_group("String lengths");
-    for length in [100, 200, 400, 800, 1600].iter() {
+    for length in [200, 300, 400, 600, 800, 1200, 1600, 2400, 3200, 4800, 6400].iter() {
         let text = lorem_ipsum(*length);
-        let mut options = textwrap::Options::new(LINE_LENGTH);
-        group.bench_with_input(BenchmarkId::new("fill", length), &text, |b, text| {
-            b.iter(|| textwrap::fill(text, &options));
-        });
 
-        group.bench_with_input(BenchmarkId::new("fill_usize", length), &text, |b, text| {
-            b.iter(|| textwrap::fill(text, LINE_LENGTH));
+        #[cfg(feature = "smawk")]
+        {
+            let options = textwrap::Options::new(LINE_LENGTH)
+                .wrap_algorithm(textwrap::core::WrapAlgorithm::OptimalFit);
+            group.bench_with_input(
+                BenchmarkId::new("fill_optimal_fit", length),
+                &text,
+                |b, text| {
+                    b.iter(|| textwrap::fill(text, &options));
+                },
+            );
+        }
+
+        let options = textwrap::Options::new(LINE_LENGTH)
+            .wrap_algorithm(textwrap::core::WrapAlgorithm::FirstFit);
+        group.bench_with_input(
+            BenchmarkId::new("fill_first_fit", length),
+            &text,
+            |b, text| {
+                b.iter(|| textwrap::fill(text, &options));
+            },
+        );
+
+        group.bench_function(BenchmarkId::new("fill_inplace", length), |b| {
+            b.iter_batched(
+                || text.clone(),
+                |mut text| textwrap::fill_inplace(&mut text, LINE_LENGTH),
+                criterion::BatchSize::SmallInput,
+            );
         });
 
         #[cfg(feature = "hyphenation")]
@@ -39,11 +62,11 @@ pub fn benchmark(c: &mut Criterion) {
                 .join("benches")
                 .join("la.standard.bincode");
             let dictionary = Standard::from_path(Language::Latin, &path).unwrap();
-            options.splitter = Box::new(dictionary);
+            let options = options.splitter(dictionary);
             group.bench_with_input(BenchmarkId::new("hyphenation", length), &text, |b, text| {
                 b.iter(|| textwrap::fill(text, &options));
             });
-        }
+        };
     }
     group.finish();
 }

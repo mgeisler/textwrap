@@ -12,6 +12,6 @@ fn main() {
 fn main() {
     let text = "textwrap: a small library for wrapping text.";
     let dictionary = Standard::from_embedded(Language::EnglishUS).unwrap();
-    let options = textwrap::Options::new(18).splitter(Box::new(dictionary));
+    let options = textwrap::Options::new(18).splitter(dictionary);
     println!("{}", textwrap::fill(text, &options));
 }
