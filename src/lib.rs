@@ -955,7 +955,7 @@ where
 ///
 /// Since we can only replace existing whitespace in the input with
 /// `'\n'`, we cannot do hyphenation nor can we split words longer
-/// than the line width. Indentation is also rules out. In other
+/// than the line width. Indentation is also ruled out. In other
 /// words, `fill_inplace(width)` behaves as if you had called [`fill`]
 /// with these options:
 ///
