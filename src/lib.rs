@@ -571,14 +571,14 @@ pub fn termwidth() -> usize {
     terminal_size::terminal_size().map_or(80, |(terminal_size::Width(w), _)| w.into())
 }
 
-/// Fill a line of text at `width` characters.
+/// Fill a line of text at a given width.
 ///
 /// The result is a [`String`], complete with newlines between each
 /// line. Use the [`wrap`] function if you need access to the
 /// individual lines.
 ///
 /// The easiest way to use this function is to pass an integer for
-/// `options`:
+/// `width_or_options`:
 ///
 /// ```
 /// use textwrap::fill;
@@ -603,7 +603,7 @@ pub fn termwidth() -> usize {
 ///     "- Memory safety\n  without\n  garbage\n  collection."
 /// );
 /// ```
-pub fn fill<'a, S, Opt>(text: &str, options: Opt) -> String
+pub fn fill<'a, S, Opt>(text: &str, width_or_options: Opt) -> String
 where
     S: WordSplitter,
     Opt: Into<Options<'a, S>>,
@@ -612,7 +612,7 @@ where
     // indentation, no hyphenation).
     let mut result = String::with_capacity(text.len());
 
-    for (i, line) in wrap(text, options).iter().enumerate() {
+    for (i, line) in wrap(text, width_or_options).iter().enumerate() {
         if i > 0 {
             result.push('\n');
         }
@@ -622,7 +622,7 @@ where
     result
 }
 
-/// Wrap a line of text at `width` characters.
+/// Wrap a line of text at a given width.
 ///
 /// The result is a vector of lines, each line is of type [`Cow<'_,
 /// str>`](Cow), which means that the line will borrow from the input
@@ -630,7 +630,7 @@ where
 /// the [`fill`] function if you need a [`String`] instead.
 ///
 /// The easiest way to use this function is to pass an integer for
-/// `options`:
+/// `width_or_options`:
 ///
 /// ```
 /// use textwrap::wrap;
@@ -745,12 +745,12 @@ where
 ///     ]
 /// );
 /// ```
-pub fn wrap<'a, S, Opt>(text: &str, options: Opt) -> Vec<Cow<'_, str>>
+pub fn wrap<'a, S, Opt>(text: &str, width_or_options: Opt) -> Vec<Cow<'_, str>>
 where
     S: WordSplitter,
     Opt: Into<Options<'a, S>>,
 {
-    let options = options.into();
+    let options = width_or_options.into();
 
     let initial_width = options
         .width
@@ -841,9 +841,9 @@ where
 /// The `left_gap`, `mid_gap` and `right_gap` arguments specify the
 /// strings to insert before, between, and after the columns. The
 /// total width of all columns and all gaps is specified using the
-/// `options` argument. This argument can simply be an integer if you
-/// want to use default settings when wrapping, or it can be a
-/// [`Options`] value if you want to customize the wrapping.
+/// `total_width_or_options` argument. This argument can simply be an
+/// integer if you want to use default settings when wrapping, or it
+/// can be a [`Options`] value if you want to customize the wrapping.
 ///
 /// If the columns are narrow, it is recommended to set
 /// [`Options::break_words`] to `true` to prevent words from
@@ -896,7 +896,7 @@ where
 pub fn wrap_columns<'a, S, Opt>(
     text: &str,
     columns: usize,
-    options: Opt,
+    total_width_or_options: Opt,
     left_gap: &str,
     mid_gap: &str,
     right_gap: &str,
@@ -907,7 +907,7 @@ where
 {
     assert!(columns > 0);
 
-    let mut options = options.into();
+    let mut options = total_width_or_options.into();
 
     let inner_width = options
         .width
