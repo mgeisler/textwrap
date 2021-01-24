@@ -184,13 +184,15 @@ pub mod core;
 pub struct Options<'a, S: ?Sized = Box<dyn WordSplitter>> {
     /// The width in columns at which the text will be wrapped.
     pub width: usize,
-    /// Indentation used for the first line of output.
+    /// Indentation used for the first line of output. See the
+    /// [`Options::initial_indent`] method.
     pub initial_indent: &'a str,
-    /// Indentation used for subsequent lines of output.
+    /// Indentation used for subsequent lines of output. See the
+    /// [`Options::subsequent_indent`] method.
     pub subsequent_indent: &'a str,
     /// Allow long words to be broken if they cannot fit on a line.
     /// When set to `false`, some lines may be longer than
-    /// `self.width`.
+    /// `self.width`. See the [`Options::break_words`] method.
     pub break_words: bool,
     /// Wraping algorithm to use, see [`core::WrapAlgorithm`] for
     /// details.
@@ -422,10 +424,13 @@ impl<'a, S: WordSplitter> Options<'a, S> {
     /// Classic paragraph indentation can be achieved by specifying an
     /// initial indentation and wrapping each paragraph by itself:
     ///
-    /// ```no_run
-    /// use textwrap::Options;
+    /// ```
+    /// use textwrap::{Options, wrap};
     ///
-    /// let options = Options::new(15).initial_indent("    ");
+    /// let options = Options::new(16).initial_indent("    ");
+    /// assert_eq!(wrap("This is a little example.", options),
+    ///            vec!["    This is a",
+    ///                 "little example."]);
     /// ```
     ///
     /// [`self.initial_indent`]: #structfield.initial_indent
@@ -444,12 +449,24 @@ impl<'a, S: WordSplitter> Options<'a, S> {
     /// Combining initial and subsequent indentation lets you format a
     /// single paragraph as a bullet list:
     ///
-    /// ```no_run
-    /// use textwrap::Options;
+    /// ```
+    /// use textwrap::{Options, wrap};
     ///
-    /// let options = Options::new(15)
+    /// let options = Options::new(12)
     ///     .initial_indent("* ")
     ///     .subsequent_indent("  ");
+    /// #[cfg(feature = "smawk")]
+    /// assert_eq!(wrap("This is a little example.", options),
+    ///            vec!["* This is",
+    ///                 "  a little",
+    ///                 "  example."]);
+    ///
+    /// // Without the `smawk` feature, the wrapping is a little different:
+    /// #[cfg(not(feature = "smawk"))]
+    /// assert_eq!(wrap("This is a little example.", options),
+    ///            vec!["* This is a",
+    ///                 "  little",
+    ///                 "  example."]);
     /// ```
     ///
     /// [`self.subsequent_indent`]: #structfield.subsequent_indent
@@ -464,6 +481,21 @@ impl<'a, S: WordSplitter> Options<'a, S> {
     /// than `self.width` can be broken, or if they will be left
     /// sticking out into the right margin.
     ///
+    /// # Examples
+    ///
+    /// ```
+    /// use textwrap::{wrap, Options};
+    ///
+    /// let options = Options::new(4).break_words(true);
+    /// assert_eq!(wrap("This is a little example.", options),
+    ///            vec!["This",
+    ///                 "is a",
+    ///                 "litt",
+    ///                 "le",
+    ///                 "exam",
+    ///                 "ple."]);
+    /// ```
+    ///
     /// [`self.break_words`]: #structfield.break_words
     pub fn break_words(self, setting: bool) -> Self {
         Options {
@@ -474,7 +506,7 @@ impl<'a, S: WordSplitter> Options<'a, S> {
 
     /// Change [`self.wrap_algorithm`].
     ///
-    /// See  [`core::WrapAlgorithm`] for details on the choices.
+    /// See [`core::WrapAlgorithm`] for details on the choices.
     ///
     /// [`self.wrap_algorithm`]: #structfield.wrap_algorithm
     pub fn wrap_algorithm(self, wrap_algorithm: core::WrapAlgorithm) -> Self {
