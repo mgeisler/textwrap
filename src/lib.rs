@@ -1679,16 +1679,18 @@ mod tests {
         );
     }
 
-
     #[test]
     fn wrap_columns_big_gaps() {
         // The column width shrinks to 1 because the gaps take up all
         // the space.
-        assert_eq!(wrap_columns("xyz", 2, 10, "----> ", " !!! ", " <----"),
-                   vec!["----> x !!! z <----",
-                        "----> y !!!   <----"]);
+        assert_eq!(
+            wrap_columns("xyz", 2, 10, "----> ", " !!! ", " <----"),
+            vec![
+                "----> x !!! z <----", //
+                "----> y !!!   <----"
+            ]
+        );
     }
-
 
     #[test]
     #[should_panic]
