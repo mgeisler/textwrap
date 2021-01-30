@@ -16,7 +16,7 @@ impl LineNumbers {
         }
     }
 
-    fn get(&self, i: usize, minima: &[(usize, i32)]) -> usize {
+    fn get<T>(&self, i: usize, minima: &[(usize, T)]) -> usize {
         while self.line_numbers.borrow_mut().len() < i + 1 {
             let pos = self.line_numbers.borrow().len();
             let line_number = 1 + self.get(minima[pos].0, &minima);
