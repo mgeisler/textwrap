@@ -15,11 +15,6 @@ exclude = [".github/", ".gitignore", "benches/", "examples/", "fuzz/", "images/"
 [package.metadata.docs.rs]
 all-features = true
 
-[badges]
-travis-ci = { repository = "mgeisler/textwrap" }
-appveyor = { repository = "mgeisler/textwrap" }
-codecov = { repository = "mgeisler/textwrap" }
-
 [[bench]]
 name = "linear"
 harness = false
