@@ -50,6 +50,9 @@
 //! ping text.
 //! ```
 //!
+//! See also the [`unfill`] and [`refill`] functions which allow you to
+//! manipulate already wrapped text.
+//!
 //! ## Wrapping Strings at Compile Time
 //!
 //! If your strings are known at compile time, please take a look at
@@ -620,6 +623,140 @@ where
     }
 
     result
+}
+
+/// Unpack a paragraph of already-wrapped text.
+///
+/// This function attempts to recover the original text from a single
+/// paragraph of text produced by the [`fill`] function. This means
+/// that it turns
+///
+/// ```text
+/// textwrap: a small
+/// library for
+/// wrapping text.
+/// ```
+///
+/// back into
+///
+/// ```text
+/// textwrap: a small library for wrapping text.
+/// ```
+///
+/// In addition, it will recognize a common prefix among the lines.
+/// The prefix of the first line is returned in
+/// [`Options::initial_indent`] and the prefix (if any) of the the
+/// other lines is returned in [`Options::subsequent_indent`].
+///
+/// In addition to `' '`, the prefixes can consist of characters used
+/// for unordered lists (`'-'`, `'+'`, and `'*'`) and block quotes
+/// (`'>'`) in Markdown as well as characters often used for inline
+/// comments (`'#'` and `'/'`).
+///
+/// The text must come from a single wrapped paragraph. This means
+/// that there can be no `"\n\n"` within the text.
+///
+/// # Examples
+///
+/// ```
+/// use textwrap::unfill;
+///
+/// let (text, options) = unfill("\
+/// * This is an
+///   example of
+///   a list item.
+/// ");
+///
+/// assert_eq!(text, "This is an example of a list item.\n");
+/// assert_eq!(options.initial_indent, "* ");
+/// assert_eq!(options.subsequent_indent, "  ");
+/// ```
+pub fn unfill<'a>(text: &'a str) -> (String, Options<'a, HyphenSplitter>) {
+    let trimmed = text.trim_end_matches('\n');
+    let prefix_chars: &[_] = &[' ', '-', '+', '*', '>', '#', '/'];
+
+    let mut options = Options::new(0);
+    for (idx, line) in trimmed.split('\n').enumerate() {
+        options.width = std::cmp::max(options.width, core::display_width(line));
+        let without_prefix = line.trim_start_matches(prefix_chars);
+        let prefix = &line[..line.len() - without_prefix.len()];
+
+        println!("line: {:?} -> prefix: {:?}", line, prefix);
+
+        if idx == 0 {
+            options.initial_indent = prefix;
+        } else if idx == 1 {
+            options.subsequent_indent = prefix;
+        } else if idx > 1 {
+            for ((idx, x), y) in prefix.char_indices().zip(options.subsequent_indent.chars()) {
+                if x != y {
+                    options.subsequent_indent = &prefix[..idx];
+                    break;
+                }
+            }
+            if prefix.len() < options.subsequent_indent.len() {
+                options.subsequent_indent = prefix;
+            }
+        }
+    }
+
+    let mut unfilled = String::with_capacity(text.len());
+    for (idx, line) in trimmed.split('\n').enumerate() {
+        if idx == 0 {
+            unfilled.push_str(&line[options.initial_indent.len()..]);
+        } else {
+            unfilled.push(' ');
+            unfilled.push_str(&line[options.subsequent_indent.len()..]);
+        }
+    }
+
+    println!("pushing trailing newlines: {:?}", &text[trimmed.len()..]);
+    unfilled.push_str(&text[trimmed.len()..]);
+
+    println!("unfilled: {:?}", unfilled);
+
+    (unfilled, options)
+}
+
+/// Refill a paragraph of wrapped text with a new width.
+///
+/// This function will first use the [`unfill`] function to remove
+/// newlines from the text. Afterwards the text is filled again using
+/// the [`fill`] function.
+///
+/// The `new_width_or_options` argument specify the new width and can
+/// specify other options as well — except for
+/// [`Options::initial_indent`] and [`Options::subsequent_indent`],
+/// which are deduced from `filled_text`.
+///
+/// # Examples
+///
+/// ```
+/// use textwrap::refill;
+///
+/// let text = "\
+/// > Memory safety without
+/// > garbage collection.
+/// ";
+/// assert_eq!(refill(text, 15), "\
+/// > Memory safety
+/// > without
+/// > garbage
+/// > collection.
+/// ");
+pub fn refill<'a, S, Opt>(filled_text: &str, new_width_or_options: Opt) -> String
+where
+    S: WordSplitter,
+    Opt: Into<Options<'a, S>>,
+{
+    let trimmed = filled_text.trim_end_matches('\n');
+    let (text, options) = unfill(trimmed);
+    let mut new_options = new_width_or_options.into();
+    new_options.initial_indent = options.initial_indent;
+    new_options.subsequent_indent = options.subsequent_indent;
+    let mut refilled = fill(&text, new_options);
+    refilled.push_str(&filled_text[trimmed.len()..]);
+    refilled
 }
 
 /// Wrap a line of text at a given width.
@@ -1554,6 +1691,69 @@ mod tests {
         let mut text = String::from("foo  bar    baz");
         fill_inplace(&mut text, 10);
         assert_eq!(text, "foo  bar   \nbaz");
+    }
+
+    #[test]
+    fn unfill_simple() {
+        let (text, options) = unfill("foo\nbar");
+        assert_eq!(text, "foo bar");
+        assert_eq!(options.width, 3);
+    }
+
+    #[test]
+    fn unfill_trailing_newlines() {
+        let (text, options) = unfill("foo\nbar\n\n\n");
+        assert_eq!(text, "foo bar\n\n\n");
+        assert_eq!(options.width, 3);
+    }
+
+    #[test]
+    fn unfill_initial_indent() {
+        let (text, options) = unfill("  foo\nbar\nbaz");
+        assert_eq!(text, "foo bar baz");
+        assert_eq!(options.width, 5);
+        assert_eq!(options.initial_indent, "  ");
+    }
+
+    #[test]
+    fn unfill_differing_indents() {
+        let (text, options) = unfill("  foo\n    bar\n  baz");
+        assert_eq!(text, "foo   bar baz");
+        assert_eq!(options.width, 7);
+        assert_eq!(options.initial_indent, "  ");
+        assert_eq!(options.subsequent_indent, "  ");
+    }
+
+    #[test]
+    fn unfill_list_item() {
+        let (text, options) = unfill("* foo\n  bar\n  baz");
+        assert_eq!(text, "foo bar baz");
+        assert_eq!(options.width, 5);
+        assert_eq!(options.initial_indent, "* ");
+        assert_eq!(options.subsequent_indent, "  ");
+    }
+
+    #[test]
+    fn unfill_multiple_char_prefix() {
+        let (text, options) = unfill("    // foo bar\n    // baz\n    // quux");
+        assert_eq!(text, "foo bar baz quux");
+        assert_eq!(options.width, 14);
+        assert_eq!(options.initial_indent, "    // ");
+        assert_eq!(options.subsequent_indent, "    // ");
+    }
+
+    #[test]
+    fn unfill_block_quote() {
+        let (text, options) = unfill("> foo\n> bar\n> baz");
+        assert_eq!(text, "foo bar baz");
+        assert_eq!(options.width, 5);
+        assert_eq!(options.initial_indent, "> ");
+        assert_eq!(options.subsequent_indent, "> ");
+    }
+
+    #[test]
+    fn unfill_whitespace() {
+        assert_eq!(unfill("foo   bar").0, "foo   bar");
     }
 
     #[test]
