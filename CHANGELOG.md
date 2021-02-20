@@ -3,6 +3,24 @@
 This file lists the most important changes made in each release of
 `textwrap`.
 
+## Version 0.13.3 (2021-02-20)
+
+This release contains a bugfix for `indent` and improved handling of
+emojis. We’ve also added a new function for formatting text in columns
+and functions for reformatting already wrapped text.
+
+* [#276](https://github.com/mgeisler/textwrap/pull/276): Extend
+  `core::display_width` to handle emojis when the unicode-width Cargo
+  feature is disabled.
+* [#279](https://github.com/mgeisler/textwrap/pull/279): Make `indent`
+  preserve existing newlines in the input string.
+* [#281](https://github.com/mgeisler/textwrap/pull/281): Ensure all
+  `Options` fields have examples.
+* [#282](https://github.com/mgeisler/textwrap/pull/282): Add a
+  `wrap_columns` function.
+* [#294](https://github.com/mgeisler/textwrap/pull/294): Add new
+  `unfill` and `refill` functions.
+
 ## Version 0.13.2 (2020-12-30)
 
 This release primarily makes all dependencies optional. This makes it

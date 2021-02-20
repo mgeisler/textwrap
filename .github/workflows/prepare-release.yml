@@ -66,9 +66,23 @@ jobs:
           | svgcleaner --indent 0 --stdout -            \
           > images/textwrap-${{ needs.setup.outputs.new-version }}.svg
 
+      - name: Update dependency graph
+        run: |
+          import fileinput, re, sys
+
+          NAME = '${{ needs.setup.outputs.name }}'
+          NEW_VERSION = '${{ needs.setup.outputs.new-version }}'
+
+          for line in fileinput.input(inplace=True):
+              sys.stdout.write(
+                  re.sub(f'/images/{NAME}-.+\\.svg',
+                         f'/images/{NAME}-{NEW_VERSION}.svg', line))
+        shell: python3 {0} src/lib.rs
+
       - name: Commit dependency graph
         run: |
-          git commit --all -m "Update dependency graph for version ${{ needs.setup.outputs.new-version }}"
+          git add images/textwrap-${{ needs.setup.outputs.new-version }}.svg src/lib.rs
+          git commit -m "Add dependency graph for version ${{ needs.setup.outputs.new-version }}"
 
       - name: Update changelog for version ${{ needs.setup.outputs.new-version }}
         id: changelog
