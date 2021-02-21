@@ -562,7 +562,7 @@ pub enum WrapAlgorithm {
 ///     name: &'a str,
 ///     hours: usize,   // Time needed to complete task.
 ///     sweep: usize,   // Time needed for a quick sweep after task during the day.
-///     cleanup: usize, // Time needed to cleanup after task at end of day.
+///     cleanup: usize, // Time needed for full cleanup if day ends with this task.
 /// }
 ///
 /// impl Fragment for Task<'_> {
@@ -584,9 +584,15 @@ pub enum WrapAlgorithm {
 ///     Task { name: "Bathrooms",   hours: 2, sweep: 1, cleanup: 2 },
 /// ];
 ///
+/// // Fill tasks into days, taking `day_length` into account. The
+/// // output shows the hours worked per day along with the names of
+/// // the tasks for that day.
 /// fn assign_days<'a>(tasks: &[Task<'a>], day_length: usize) -> Vec<(usize, Vec<&'a str>)> {
 ///     let mut days = Vec::new();
-///     for day in wrap_first_fit(&tasks, |i| day_length) {
+///     // Assign tasks to days. The assignment is a vector of slices,
+///     // with a slice per day.
+///     let assigned_days: Vec<&[Task<'a>]> = wrap_first_fit(&tasks, |i| day_length);
+///     for day in assigned_days.iter() {
 ///         let last = day.last().unwrap();
 ///         let work_hours: usize = day.iter().map(|t| t.hours + t.sweep).sum();
 ///         let names = day.iter().map(|t| t.name).collect::<Vec<_>>();
