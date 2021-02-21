@@ -681,8 +681,6 @@ pub fn unfill<'a>(text: &'a str) -> (String, Options<'a, HyphenSplitter>) {
         let without_prefix = line.trim_start_matches(prefix_chars);
         let prefix = &line[..line.len() - without_prefix.len()];
 
-        println!("line: {:?} -> prefix: {:?}", line, prefix);
-
         if idx == 0 {
             options.initial_indent = prefix;
         } else if idx == 1 {
@@ -710,11 +708,7 @@ pub fn unfill<'a>(text: &'a str) -> (String, Options<'a, HyphenSplitter>) {
         }
     }
 
-    println!("pushing trailing newlines: {:?}", &text[trimmed.len()..]);
     unfilled.push_str(&text[trimmed.len()..]);
-
-    println!("unfilled: {:?}", unfilled);
-
     (unfilled, options)
 }
 
