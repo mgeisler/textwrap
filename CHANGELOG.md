@@ -23,7 +23,9 @@ and functions for reformatting already wrapped text.
   `core::display_width` to handle emojis when the unicode-width Cargo
   feature is disabled.
 * [#279](https://github.com/mgeisler/textwrap/pull/279): Make `indent`
-  preserve existing newlines in the input string.
+  preserve existing newlines in the input string. Before,
+  `indent("foo", "")` would return `"foo\n"` by mistake. It now
+  returns `"foo"` instead.
 * [#281](https://github.com/mgeisler/textwrap/pull/281): Ensure all
   `Options` fields have examples.
 * [#282](https://github.com/mgeisler/textwrap/pull/282): Add a
