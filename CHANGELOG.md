@@ -3,6 +3,16 @@
 This file lists the most important changes made in each release of
 `textwrap`.
 
+## Version 0.13.4 (2021-02-23)
+
+This release removes `println!` statements which was left behind in
+`unfill` by mistake.
+
+* [#296](https://github.com/mgeisler/textwrap/pull/296): Improve house
+  building example with more comments.
+* [#297](https://github.com/mgeisler/textwrap/pull/297): Remove debug
+  prints in the new `unfill` function.
+
 ## Version 0.13.3 (2021-02-20)
 
 This release contains a bugfix for `indent` and improved handling of
@@ -13,7 +23,9 @@ and functions for reformatting already wrapped text.
   `core::display_width` to handle emojis when the unicode-width Cargo
   feature is disabled.
 * [#279](https://github.com/mgeisler/textwrap/pull/279): Make `indent`
-  preserve existing newlines in the input string.
+  preserve existing newlines in the input string. Before,
+  `indent("foo", "")` would return `"foo\n"` by mistake. It now
+  returns `"foo"` instead.
 * [#281](https://github.com/mgeisler/textwrap/pull/281): Ensure all
   `Options` fields have examples.
 * [#282](https://github.com/mgeisler/textwrap/pull/282): Add a

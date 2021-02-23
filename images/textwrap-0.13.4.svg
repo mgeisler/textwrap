@@ -1,0 +1,17 @@
+<svg height="116pt" viewBox="0 0 262.29 116" width="262pt" xmlns="http://www.w3.org/2000/svg">
+<g transform="translate(4 112)">
+<path d="m-4 4v-116h262.2895v116z" fill="#fff"/>
+<path d="m147.1967-108h-83v36h83z" fill="none" stroke="#000"/>
+<text font-family="monospace" font-size="14" text-anchor="middle" x="105.6967" y="-86.3">textwrap</text>
+<ellipse cx="37.6967" cy="-18" fill="none" rx="37.8943" ry="18" stroke="#000" stroke-dasharray="5 2"/>
+<text font-family="monospace" font-size="14" text-anchor="middle" x="37.6967" y="-14.3">smawk</text>
+<g stroke="#000">
+<path d="m88.5374-71.8314c-8.5685 9.0726-19.0462 20.1665-28.2585 29.9208" fill="none" stroke-dasharray="1 5"/>
+<path d="m62.6335-39.3062-9.4109 4.8669 4.3218-9.6733z"/>
+<ellipse cx="173.6967" cy="-18" fill="none" rx="80.6858" ry="18" stroke-dasharray="5 2"/>
+</g>
+<text font-family="monospace" font-size="14" text-anchor="middle" x="173.6967" y="-14.3">unicode-width</text>
+<path d="m122.8559-71.8314c8.196 8.6781 18.1387 19.2057 27.05 28.6412" fill="none" stroke="#000" stroke-dasharray="1 5"/>
+<path d="m152.4567-45.5868 4.3217 9.6734-9.4108-4.867z" stroke="#000"/>
+</g>
+</svg>
