@@ -997,7 +997,7 @@ where
 
 /// Wrap text into columns with a given total width.
 ///
-/// The `left_gap`, `mid_gap` and `right_gap` arguments specify the
+/// The `left_gap`, `middle_gap` and `right_gap` arguments specify the
 /// strings to insert before, between, and after the columns. The
 /// total width of all columns and all gaps is specified using the
 /// `total_width_or_options` argument. This argument can simply be an
@@ -1057,7 +1057,7 @@ pub fn wrap_columns<'a, S, Opt>(
     columns: usize,
     total_width_or_options: Opt,
     left_gap: &str,
-    mid_gap: &str,
+    middle_gap: &str,
     right_gap: &str,
 ) -> Vec<String>
 where
@@ -1072,7 +1072,7 @@ where
         .width
         .saturating_sub(core::display_width(left_gap))
         .saturating_sub(core::display_width(right_gap))
-        .saturating_sub(core::display_width(mid_gap) * (columns - 1));
+        .saturating_sub(core::display_width(middle_gap) * (columns - 1));
 
     let column_width = std::cmp::max(inner_width / columns, 1);
     options.width = column_width;
@@ -1096,7 +1096,7 @@ where
             if column_no == columns - 1 {
                 line.push_str(&last_column_padding);
             } else {
-                line.push_str(mid_gap);
+                line.push_str(middle_gap);
             }
         }
         line.push_str(right_gap);
