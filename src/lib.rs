@@ -548,9 +548,11 @@ impl<'a, S: WordSplitter> Options<'a, S> {
     }
 }
 
-/// Return the current terminal width. If the terminal width cannot be
-/// determined (typically because the standard output is not connected
-/// to a terminal), a default width of 80 characters will be used.
+/// Return the current terminal width.
+///
+/// If the terminal width cannot be determined (typically because the
+/// standard output is not connected to a terminal), a default width
+/// of 80 characters will be used.
 ///
 /// # Examples
 ///
