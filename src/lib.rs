@@ -728,16 +728,44 @@ pub fn unfill<'a>(text: &'a str) -> (String, Options<'a, HyphenSplitter>) {
 /// ```
 /// use textwrap::refill;
 ///
+/// // Some loosely wrapped text. The "> " prefix is recognized automatically.
 /// let text = "\
-/// > Memory safety without
-/// > garbage collection.
+/// > Memory
+/// > safety without garbage
+/// > collection.
 /// ";
-/// assert_eq!(refill(text, 15), "\
+///
+/// assert_eq!(refill(text, 20), "\
 /// > Memory safety
-/// > without
-/// > garbage
+/// > without garbage
 /// > collection.
 /// ");
+///
+/// assert_eq!(refill(text, 40), "\
+/// > Memory safety without garbage
+/// > collection.
+/// ");
+///
+/// assert_eq!(refill(text, 60), "\
+/// > Memory safety without garbage collection.
+/// ");
+/// ```
+///
+/// You can also reshape bullet points:
+///
+/// ```
+/// use textwrap::refill;
+///
+/// let text = "\
+/// - This is my
+///   list item.
+/// ";
+///
+/// assert_eq!(refill(text, 20), "\
+/// - This is my list
+///   item.
+/// ");
+/// ```
 pub fn refill<'a, S, Opt>(filled_text: &str, new_width_or_options: Opt) -> String
 where
     S: WordSplitter,
