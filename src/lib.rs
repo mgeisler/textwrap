@@ -673,7 +673,7 @@ where
 /// assert_eq!(options.initial_indent, "* ");
 /// assert_eq!(options.subsequent_indent, "  ");
 /// ```
-pub fn unfill<'a>(text: &'a str) -> (String, Options<'a, HyphenSplitter>) {
+pub fn unfill(text: &str) -> (String, Options<'_, HyphenSplitter>) {
     let trimmed = text.trim_end_matches('\n');
     let prefix_chars: &[_] = &[' ', '-', '+', '*', '>', '#', '/'];
 

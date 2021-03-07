@@ -153,10 +153,10 @@ const HYPHEN_PENALTY: i32 = 25;
 ///
 /// **Note:** Only available when the `smawk` Cargo feature is
 /// enabled.
-pub fn wrap_optimal_fit<'a, T: Fragment, F: Fn(usize) -> usize>(
-    fragments: &'a [T],
+pub fn wrap_optimal_fit<T: Fragment, F: Fn(usize) -> usize>(
+    fragments: &[T],
     line_widths: F,
-) -> Vec<&'a [T]> {
+) -> Vec<&[T]> {
     let mut widths = Vec::with_capacity(fragments.len() + 1);
     let mut width = 0;
     widths.push(width);
