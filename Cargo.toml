@@ -21,11 +21,12 @@ harness = false
 path = "benches/linear.rs"
 
 [features]
-default = ["unicode-width", "smawk"]
+default = ["unicode-linebreak", "unicode-width", "smawk"]
 
 [dependencies]
 smawk = { version = "0.3", optional = true }
 terminal_size = { version = "0.1", optional = true }
+unicode-linebreak = { version = "0.1", optional = true }
 unicode-width = { version= "0.1", optional = true }
 
 [dependencies.hyphenation]

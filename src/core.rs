@@ -237,7 +237,7 @@ impl std::ops::Deref for Word<'_> {
 }
 
 impl<'a> Word<'a> {
-    /// Construct a new `Word`.
+    /// Construct a `Word` from a string.
     ///
     /// A trailing stretch of `' '` is automatically taken to be the
     /// whitespace part of the word.
@@ -354,9 +354,9 @@ impl Fragment for Word<'_> {
 ///     vec![Word::from("foo-bar")]
 /// );
 /// ```
-pub fn split_words<'a, I, T, S>(
+pub fn split_words<'a, I, R, S>(
     words: I,
-    options: &'a Options<'a, T, S>,
+    options: &'a Options<'a, R, S>,
 ) -> impl Iterator<Item = Word<'a>>
 where
     I: IntoIterator<Item = Word<'a>>,

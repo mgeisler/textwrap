@@ -1,4 +1,4 @@
-use textwrap::{AsciiSpace, HyphenSplitter, NoHyphenation, Options, WordSeparator, WordSplitter};
+use textwrap::{AsciiSpace, NoHyphenation, Options, WordSeparator, WordSplitter};
 
 /// Cleaned up type name.
 fn type_name<T: ?Sized>(_val: &T) -> String {
@@ -9,6 +9,7 @@ fn type_name<T: ?Sized>(_val: &T) -> String {
 }
 
 #[test]
+#[cfg(not(feature = "unicode-linebreak"))]
 fn static_hyphensplitter() {
     // Inferring the full type.
     let options = Options::new(10);
@@ -18,7 +19,7 @@ fn static_hyphensplitter() {
     );
 
     // Inferring part of the type.
-    let options: Options<_, HyphenSplitter> = Options::new(10);
+    let options: Options<_, textwrap::HyphenSplitter> = Options::new(10);
     assert_eq!(
         type_name(&options),
         "textwrap::Options<textwrap::AsciiSpace, textwrap::HyphenSplitter>"

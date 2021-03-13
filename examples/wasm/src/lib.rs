@@ -1,7 +1,7 @@
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 
-use textwrap::core;
+use textwrap::{core, WordSeparator};
 
 #[wasm_bindgen]
 extern "C" {
