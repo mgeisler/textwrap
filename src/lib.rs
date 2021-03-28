@@ -787,8 +787,9 @@ where
 ///
 /// The result is a vector of lines, each line is of type [`Cow<'_,
 /// str>`](Cow), which means that the line will borrow from the input
-/// `&str` if possible. The lines do not have a trailing `'\n'`. Use
-/// the [`fill`] function if you need a [`String`] instead.
+/// `&str` if possible. The lines do not have trailing whitespace,
+/// including a final `'\n'`. Please use the [`fill`] function if you
+/// need a [`String`] instead.
 ///
 /// The easiest way to use this function is to pass an integer for
 /// `width_or_options`:
@@ -905,6 +906,52 @@ where
 ///         "[Owned]    ....long.",
 ///     ]
 /// );
+/// ```
+///
+/// ## Leading and Trailing Whitespace
+///
+/// As a rule, leading whitespace (indentation) is preserved and
+/// trailing whitespace is discarded.
+///
+/// In more details, when wrapping words into lines, words are found
+/// by splitting the input text on space characters. One or more
+/// spaces (shown here as “␣”) are attached to the end of each word:
+///
+/// ```text
+/// "Foo␣␣␣bar␣baz" -> ["Foo␣␣␣", "bar␣", "baz"]
+/// ```
+///
+/// These words are then put into lines. The interword whitespace is
+/// preserved, unless the lines are wrapped so that the `"Foo␣␣␣"`
+/// word falls at the end of a line:
+///
+/// ```
+/// use textwrap::wrap;
+///
+/// assert_eq!(wrap("Foo   bar baz", 10), vec!["Foo   bar", "baz"]);
+/// assert_eq!(wrap("Foo   bar baz", 8), vec!["Foo", "bar baz"]);
+/// ```
+///
+/// Notice how the trailing whitespace is removed in both case: in the
+/// first example, `"bar␣"` becomes `"bar"` and in the second case
+/// `"Foo␣␣␣"` becomes `"Foo"`.
+///
+/// Leading whitespace is preserved when the following word fits on
+/// the first line. To understand this, consider how words are found
+/// in a text with leading spaces:
+///
+/// ```text
+/// "␣␣foo␣bar" -> ["␣␣", "foo␣", "bar"]
+/// ```
+///
+/// When put into lines, the indentation is preserved if `"foo"` fits
+/// on the first line, otherwise you end up with an empty line:
+///
+/// ```
+/// use textwrap::wrap;
+///
+/// assert_eq!(wrap("  foo bar", 8), vec!["  foo", "bar"]);
+/// assert_eq!(wrap("  foo bar", 4), vec!["", "foo", "bar"]);
 /// ```
 pub fn wrap<'a, S, Opt>(text: &str, width_or_options: Opt) -> Vec<Cow<'_, str>>
 where
@@ -1256,6 +1303,15 @@ mod tests {
     #[test]
     fn leading_whitespace() {
         assert_eq!(wrap("  foo bar", 6), vec!["  foo", "bar"]);
+    }
+
+    #[test]
+    fn leading_whitespace_empty_first_line() {
+        // If there is no space for the first word, the first line
+        // will be empty. This is because the string is split into
+        // words like [" ", "foobar ", "baz"], which puts "foobar " on
+        // the second line. We never output trailing whitespace
+        assert_eq!(wrap(" foobar baz", 6), vec!["", "foobar", "baz"]);
     }
 
     #[test]
