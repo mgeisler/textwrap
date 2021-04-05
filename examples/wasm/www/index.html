@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Textwrap WebAssembly demo</title>
+    <style>
+     body {
+       background: #f1f9f9
+     }
+
+     #text {
+       box-sizing: border-box;
+       width: 100%;
+       resize: vertical;
+     }
+
+     #line-width {
+       display: block;
+       margin: 0;
+     }
+
+     #canvas {
+       display: block;
+     }
+    </style>
+  </head>
+  <body>
+    <h1>Textwrap WebAssembly Demo</h1>
+
+    <textarea rows="5" id="text">Welcome to the interactive WebAssembly demo!
+
+You can test the word-wrapping behavior by editing the text 😍✨</textarea>
+
+    <p>Font family:
+      <select id="font-family">
+        <option value="monospace">Monospace</option>
+        <option value="serif">Serif</option>
+        <option value="sans-serif">Sans-serif</option>
+      </select>.
+      Line width: <input type="number" id="line-width-text" min="0"> px.
+    </p>
+
+    <div>
+      <input type="range" id="line-width" min="0" max="300" value="250">
+      <canvas id="canvas"></canvas>
+    </div>
+
+    <script src="bootstrap.js"></script>
+  </body>
+</html>
