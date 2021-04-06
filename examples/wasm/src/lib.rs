@@ -14,11 +14,20 @@ extern "C" {
     #[wasm_bindgen(method, getter, js_name = actualBoundingBoxRight)]
     fn actual_bounding_box_right(this: &ExtendedTextMetrics) -> f64;
 
-    #[wasm_bindgen(method, getter, js_name = fontBoundingBoxAscent)]
-    fn font_bounding_box_ascent(this: &ExtendedTextMetrics) -> f64;
+    #[wasm_bindgen(method, getter, js_name = actualBoundingBoxAscent)]
+    fn actual_bounding_box_ascent(this: &ExtendedTextMetrics) -> f64;
 
-    #[wasm_bindgen(method, getter, js_name = fontBoundingBoxDescent)]
-    fn font_bounding_box_descent(this: &ExtendedTextMetrics) -> f64;
+    #[wasm_bindgen(method, getter, js_name = actualBoundingBoxDescent)]
+    fn actual_bounding_box_descent(this: &ExtendedTextMetrics) -> f64;
+
+    // TODO: Enable when Firefox and Edge support these methods, see
+    // https://developer.mozilla.org/en-US/docs/Web/API/TextMetrics
+    //
+    // #[wasm_bindgen(method, getter, js_name = fontBoundingBoxAscent)]
+    // fn font_bounding_box_ascent(this: &ExtendedTextMetrics) -> f64;
+    //
+    // #[wasm_bindgen(method, getter, js_name = fontBoundingBoxDescent)]
+    // fn font_bounding_box_descent(this: &ExtendedTextMetrics) -> f64;
 
     #[wasm_bindgen(method, getter)]
     fn width(this: &ExtendedTextMetrics) -> f64;
@@ -140,9 +149,12 @@ pub fn draw_wrapped_text(
 ) -> Result<(), JsValue> {
     console_error_panic_hook::set_once();
 
-    let metrics: web_sys::TextMetrics = ctx.measure_text("").unwrap();
+    let metrics: web_sys::TextMetrics = ctx.measure_text("│").unwrap();
     let metrics: ExtendedTextMetrics = metrics.unchecked_into();
-    let line_height = metrics.font_bounding_box_ascent() + metrics.font_bounding_box_descent();
+    // TODO: use metrics.font_bounding_box_ascent() +
+    // metrics.font_bounding_box_descent() and measure "" instead of a
+    // tall character when supported by Firefox.
+    let line_height = metrics.actual_bounding_box_ascent() + metrics.actual_bounding_box_descent();
     let baseline_distance = 1.5 * line_height;
     let options = textwrap::Options::from(width);
 
@@ -188,7 +200,10 @@ pub fn draw_wrapped_text(
     draw_path(
         ctx,
         "blue",
-        (X_OFFSET + width as f64, metrics.font_bounding_box_ascent()),
+        (
+            X_OFFSET + width as f64,
+            metrics.actual_bounding_box_ascent(),
+        ),
         &[(0.0, baseline_distance * lineno as f64)],
     );
 
