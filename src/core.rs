@@ -217,10 +217,14 @@ pub trait Fragment: std::fmt::Debug {
 /// trailing whitespace, and potentially a penalty item.
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct Word<'a> {
-    word: &'a str,
+    /// Word content.
+    pub word: &'a str,
+    /// Whitespace to insert if the word does not fall at the end of a line.
+    pub whitespace: &'a str,
+    /// Penalty string to insert if the word falls at the end of a line.
+    pub penalty: &'a str,
+    // Cached width in columns.
     width: usize,
-    pub(crate) whitespace: &'a str,
-    pub(crate) penalty: &'a str,
 }
 
 impl std::ops::Deref for Word<'_> {

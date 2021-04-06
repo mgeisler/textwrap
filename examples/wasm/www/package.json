@@ -1,0 +1,30 @@
+{
+    "name": "textwrap-wasm-demo-app",
+    "version": "0.1.0",
+    "description": "Textwrap WebAssembly demo application",
+    "main": "index.js",
+    "scripts": {
+        "build": "webpack --config webpack.config.js",
+        "start": "webpack-dev-server"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/mgeisler/textwrap.git"
+    },
+    "author": "Martin Geisler <martin@geisler.net>",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/mgeisler/textwrap/issues"
+    },
+    "homepage": "https://github.com/mgeisler/textwrap",
+    "dependencies": {
+        "textwrap-wasm-demo": "file:../pkg"
+    },
+    "devDependencies": {
+        "copy-webpack-plugin": "^5.0.0",
+        "hello-wasm-pack": "^0.1.0",
+        "webpack": "^4.29.3",
+        "webpack-cli": "^3.1.0",
+        "webpack-dev-server": "^3.1.5"
+    }
+}
