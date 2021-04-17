@@ -3,6 +3,29 @@
 This file lists the most important changes made in each release of
 `textwrap`.
 
+## Unreleased
+
+This is a major feature release which adds a new generic type
+parameter to the `Options` struct. This new parameter lets you specify
+how words are found in the text.
+
+Common usages of textwrap stays unchanged, but if you previously
+spelled out the full type for `Options`, you now need to take th extra
+type parameter into account. This means that
+
+```rust
+let options: Options<HyphenSplitter> = Options::new(80);
+```
+
+need to change to
+
+```rust
+let options: Options<AsciiSpace, HyphenSplitter> = Options::new(80);
+```
+
+You won’t see any chance if you call `wrap` directly with a width or
+with an `Options` constructed on the fly.
+
 ## Version 0.13.4 (2021-02-23)
 
 This release removes `println!` statements which was left behind in

@@ -21,7 +21,8 @@ mod unix_only {
     use termion::{color, cursor, style};
     #[cfg(feature = "smawk")]
     use textwrap::core::WrapAlgorithm::{FirstFit, OptimalFit};
-    use textwrap::{wrap, HyphenSplitter, NoHyphenation, Options, WordSplitter};
+    use textwrap::{wrap, AsciiSpace, Options};
+    use textwrap::{HyphenSplitter, NoHyphenation, WordSplitter};
 
     #[cfg(feature = "hyphenation")]
     use hyphenation::{Language, Load, Standard};
@@ -56,7 +57,7 @@ mod unix_only {
 
     fn draw_text<'a>(
         text: &str,
-        options: &Options<'a>,
+        options: &Options<'a, AsciiSpace, Box<dyn WordSplitter>>,
         splitter_label: &str,
         stdout: &mut RawTerminal<io::Stdout>,
     ) -> Result<(), io::Error> {
@@ -256,7 +257,8 @@ mod unix_only {
         }
 
         let mut label = labels.pop().unwrap();
-        let mut options: Options = Options::new(35).splitter(Box::new(HyphenSplitter));
+        let mut options =
+            Options::new(35).splitter(Box::new(HyphenSplitter) as Box<dyn WordSplitter>);
         options.break_words = false;
         options.splitter = splitters.pop().unwrap();
 

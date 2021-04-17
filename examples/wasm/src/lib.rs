@@ -160,7 +160,7 @@ pub fn draw_wrapped_text(
 
     let mut lineno = 0;
     for line in text.split('\n') {
-        let words = core::find_words(line);
+        let words = options.word_separator.find_words(line);
         let split_words = core::split_words(words, &options);
 
         let canvas_words = split_words
