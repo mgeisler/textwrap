@@ -5,6 +5,8 @@
 //! functionality. [`HyphenSplitter`] is the default implementation of
 //! this treat: it will simply split words on existing hyphens.
 
+use std::ops::Deref;
+
 /// The `WordSplitter` trait describes where words can be split.
 ///
 /// If the textwrap crate has been compiled with the `hyphenation`
@@ -33,7 +35,7 @@
 /// details.
 ///
 /// [hyphenation]: https://docs.rs/hyphenation/
-pub trait WordSplitter: std::fmt::Debug {
+pub trait WordSplitter: WordSplitterClone + std::fmt::Debug {
     /// Return all possible indices where `word` can be split.
     ///
     /// The indices returned must be in range `0..word.len()`. They
@@ -51,16 +53,28 @@ pub trait WordSplitter: std::fmt::Debug {
     fn split_points(&self, word: &str) -> Vec<usize>;
 }
 
-impl<S: WordSplitter + ?Sized> WordSplitter for Box<S> {
-    fn split_points(&self, word: &str) -> Vec<usize> {
-        use std::ops::Deref;
-        self.deref().split_points(word)
+// The internal `WordSplitterClone` trait is allows us to implement
+// `Clone` for `Box<dyn WordSplitter>`. This in used in the
+// `From<&Options<'_, S>> for Options<'a, S>` implementation.
+pub trait WordSplitterClone {
+    fn clone_box(&self) -> Box<dyn WordSplitter>;
+}
+
+impl<T: WordSplitter + Clone + 'static> WordSplitterClone for T {
+    fn clone_box(&self) -> Box<dyn WordSplitter> {
+        Box::new(self.clone())
     }
 }
 
-impl<T: ?Sized + WordSplitter> WordSplitter for &T {
+impl Clone for Box<dyn WordSplitter> {
+    fn clone(&self) -> Box<dyn WordSplitter> {
+        self.deref().clone_box()
+    }
+}
+
+impl WordSplitter for Box<dyn WordSplitter> {
     fn split_points(&self, word: &str) -> Vec<usize> {
-        (*self).split_points(word)
+        self.deref().split_points(word)
     }
 }
 

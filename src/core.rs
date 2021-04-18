@@ -858,7 +858,7 @@ mod tests {
 
     #[test]
     fn split_words_adds_penalty() {
-        #[derive(Debug)]
+        #[derive(Clone, Debug)]
         struct FixedSplitPoint;
         impl WordSplitter for FixedSplitPoint {
             fn split_points(&self, _: &str) -> Vec<usize> {
