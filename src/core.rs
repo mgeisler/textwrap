@@ -398,14 +398,14 @@ pub fn find_words(line: &str) -> impl Iterator<Item = Word> {
 ///     vec![Word::from("foo-bar")]
 /// );
 /// ```
-pub fn split_words<'a, I, S, Opt>(words: I, options: Opt) -> impl Iterator<Item = Word<'a>>
+pub fn split_words<'a, I, S>(
+    words: I,
+    options: &'a Options<'a, S>,
+) -> impl Iterator<Item = Word<'a>>
 where
     I: IntoIterator<Item = Word<'a>>,
     S: WordSplitter,
-    Opt: Into<Options<'a, S>>,
 {
-    let options = options.into();
-
     words.into_iter().flat_map(move |word| {
         let mut prev = 0;
         let mut split_points = options.splitter.split_points(&word).into_iter();
@@ -827,13 +827,13 @@ mod tests {
 
     #[test]
     fn split_words_no_words() {
-        assert_iter_eq!(split_words(vec![], 80), vec![]);
+        assert_iter_eq!(split_words(vec![], &Options::new(80)), vec![]);
     }
 
     #[test]
     fn split_words_empty_word() {
         assert_iter_eq!(
-            split_words(vec![Word::from("   ")], 80),
+            split_words(vec![Word::from("   ")], &Options::new(80)),
             vec![Word::from("   ")]
         );
     }
@@ -841,7 +841,7 @@ mod tests {
     #[test]
     fn split_words_hyphen_splitter() {
         assert_iter_eq!(
-            split_words(vec![Word::from("foo-bar")], 80),
+            split_words(vec![Word::from("foo-bar")], &Options::new(80)),
             vec![Word::from("foo-"), Word::from("bar")]
         );
     }
@@ -851,7 +851,7 @@ mod tests {
         // Note that `split_words` does not take the line width into
         // account, that is the job of `break_words`.
         assert_iter_eq!(
-            split_words(vec![Word::from("foobar")], 3),
+            split_words(vec![Word::from("foobar")], &Options::new(3)),
             vec![Word::from("foobar")]
         );
     }
