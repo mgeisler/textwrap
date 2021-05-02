@@ -8,8 +8,9 @@
 //! something:
 //!
 //! 1. Split your input into [`Fragment`]s. These are abstract blocks
-//!    of text or content which can be wrapped into lines. You can use
-//!    [`find_words`] to do this for text.
+//!    of text or content which can be wrapped into lines. See
+//!    [`WordSeparator`](crate::WordSeparator) for how to do this for
+//!    text.
 //!
 //! 2. Potentially split your fragments into smaller pieces. This
 //!    allows you to implement things like hyphenation. If wrapping
@@ -48,7 +49,7 @@ const ANSI_FINAL_BYTE: std::ops::RangeInclusive<char> = '\x40'..='\x7e';
 /// `chars` provide the following characters. The `chars` will be
 /// modified if `ch` is the start of an ANSI escape sequence.
 #[inline]
-fn skip_ansi_escape_sequence<I: Iterator<Item = char>>(ch: char, chars: &mut I) -> bool {
+pub(crate) fn skip_ansi_escape_sequence<I: Iterator<Item = char>>(ch: char, chars: &mut I) -> bool {
     if ch == CSI.0 && chars.next() == Some(CSI.1) {
         // We have found the start of an ANSI escape code, typically
         // used for colored terminal text. We skip until we find a
@@ -326,51 +327,6 @@ impl Fragment for Word<'_> {
     }
 }
 
-/// Split line into words separated by regions of `' '` characters.
-///
-/// # Examples
-///
-/// ```
-/// use textwrap::core::{find_words, Fragment, Word};
-/// let words = find_words("Hello World!").collect::<Vec<_>>();
-/// assert_eq!(words, vec![Word::from("Hello "), Word::from("World!")]);
-/// assert_eq!(words[0].width(), 5);
-/// assert_eq!(words[0].whitespace_width(), 1);
-/// assert_eq!(words[0].penalty_width(), 0);
-/// ```
-pub fn find_words(line: &str) -> impl Iterator<Item = Word> {
-    let mut start = 0;
-    let mut in_whitespace = false;
-    let mut char_indices = line.char_indices();
-
-    std::iter::from_fn(move || {
-        // for (idx, ch) in char_indices does not work, gives this
-        // error:
-        //
-        // > cannot move out of `char_indices`, a captured variable in
-        // > an `FnMut` closure
-        #[allow(clippy::while_let_on_iterator)]
-        while let Some((idx, ch)) = char_indices.next() {
-            if in_whitespace && ch != ' ' {
-                let word = Word::from(&line[start..idx]);
-                start = idx;
-                in_whitespace = ch == ' ';
-                return Some(word);
-            }
-
-            in_whitespace = ch == ' ';
-        }
-
-        if start < line.len() {
-            let word = Word::from(&line[start..]);
-            start = line.len();
-            return Some(word);
-        }
-
-        None
-    })
-}
-
 /// Split words into smaller words according to the split points given
 /// by `options`.
 ///
@@ -398,9 +354,9 @@ pub fn find_words(line: &str) -> impl Iterator<Item = Word> {
 ///     vec![Word::from("foo-bar")]
 /// );
 /// ```
-pub fn split_words<'a, I, S>(
+pub fn split_words<'a, I, T, S>(
     words: I,
-    options: &'a Options<'a, S>,
+    options: &'a Options<'a, T, S>,
 ) -> impl Iterator<Item = Word<'a>>
 where
     I: IntoIterator<Item = Word<'a>>,
@@ -510,7 +466,8 @@ pub enum WrapAlgorithm {
 /// a large gap:
 ///
 /// ```
-/// use textwrap::core::{find_words, wrap_first_fit, Word};
+/// use textwrap::core::{wrap_first_fit, Word};
+/// use textwrap::{AsciiSpace, WordSeparator};
 ///
 /// // Helper to convert wrapped lines to a Vec<String>.
 /// fn lines_to_strings(lines: Vec<&[Word<'_>]>) -> Vec<String> {
@@ -520,7 +477,7 @@ pub enum WrapAlgorithm {
 /// }
 ///
 /// let text = "These few words will unfortunately not wrap nicely.";
-/// let words = find_words(text).collect::<Vec<_>>();
+/// let words = AsciiSpace.find_words(text).collect::<Vec<_>>();
 /// assert_eq!(lines_to_strings(wrap_first_fit(&words, |_| 15)),
 ///            vec!["These few words",
 ///                 "will",  // <-- short line
@@ -746,83 +703,6 @@ mod tests {
     #[test]
     fn display_width_emojis() {
         assert_eq!(display_width("😂😭🥺🤣✨😍🙏🥰😊🔥"), 20);
-    }
-
-    #[test]
-    fn find_words_empty() {
-        assert_iter_eq!(find_words(""), vec![]);
-    }
-
-    #[test]
-    fn find_words_single_word() {
-        assert_iter_eq!(find_words("foo"), vec![Word::from("foo")]);
-    }
-
-    #[test]
-    fn find_words_two_words() {
-        assert_iter_eq!(
-            find_words("foo bar"),
-            vec![Word::from("foo "), Word::from("bar")]
-        );
-    }
-
-    #[test]
-    fn find_words_multiple_words() {
-        assert_iter_eq!(
-            find_words("foo bar baz"),
-            vec![Word::from("foo "), Word::from("bar "), Word::from("baz")]
-        );
-    }
-
-    #[test]
-    fn find_words_whitespace() {
-        assert_iter_eq!(find_words("    "), vec![Word::from("    ")]);
-    }
-
-    #[test]
-    fn find_words_inter_word_whitespace() {
-        assert_iter_eq!(
-            find_words("foo   bar"),
-            vec![Word::from("foo   "), Word::from("bar")]
-        )
-    }
-
-    #[test]
-    fn find_words_trailing_whitespace() {
-        assert_iter_eq!(find_words("foo   "), vec![Word::from("foo   ")]);
-    }
-
-    #[test]
-    fn find_words_leading_whitespace() {
-        assert_iter_eq!(
-            find_words("   foo"),
-            vec![Word::from("   "), Word::from("foo")]
-        );
-    }
-
-    #[test]
-    fn find_words_multi_column_char() {
-        assert_iter_eq!(
-            find_words("\u{1f920}"), // cowboy emoji 🤠
-            vec![Word::from("\u{1f920}")]
-        );
-    }
-
-    #[test]
-    fn find_words_hyphens() {
-        assert_iter_eq!(find_words("foo-bar"), vec![Word::from("foo-bar")]);
-        assert_iter_eq!(
-            find_words("foo- bar"),
-            vec![Word::from("foo- "), Word::from("bar")]
-        );
-        assert_iter_eq!(
-            find_words("foo - bar"),
-            vec![Word::from("foo "), Word::from("- "), Word::from("bar")]
-        );
-        assert_iter_eq!(
-            find_words("foo -bar"),
-            vec![Word::from("foo "), Word::from("-bar")]
-        );
     }
 
     #[test]
