@@ -1,12 +1,15 @@
 //! Line breaking functionality.
 
+#[cfg(feature = "unicode-linebreak")]
+use crate::core::skip_ansi_escape_sequence;
 use crate::core::Word;
 
-/// Describes where a line break can occur.
+/// Describes where words occur in a line of text.
 ///
-/// The simplest approach is say that a line can end after one or more
-/// ASCII spaces (`' '`). This works for Western languages without
-/// emojis.
+/// The simplest approach is say that words are separated by one or
+/// more ASCII spaces (`' '`). This works for Western languages
+/// without emojis. A more complex approach is to use the Unicode line
+/// breaking algorithm, which finds break points in non-ASCII text.
 ///
 /// The line breaks occur between words, please see the
 /// [`WordSplitter`](crate::WordSplitter) trait for options of how
@@ -55,7 +58,7 @@ impl WordSeparator for Box<dyn WordSeparator> {
     }
 }
 
-/// Find line breaks by regions of `' '` characters.
+/// Find words by splitting on regions of `' '` characters.
 #[derive(Clone, Copy, Debug, Default)]
 pub struct AsciiSpace;
 
@@ -104,6 +107,162 @@ impl WordSeparator for AsciiSpace {
             None
         }))
     }
+}
+
+/// Find words using the Unicode line breaking algorithm.
+#[cfg(feature = "unicode-linebreak")]
+#[derive(Clone, Copy, Debug, Default)]
+pub struct UnicodeBreakProperties;
+
+/// Split `line` into words using Unicode break properties.
+///
+/// This word separator uses the Unicode line breaking algorithm
+/// described in [Unicode Standard Annex
+/// #14](https://www.unicode.org/reports/tr14/) to find legal places
+/// to break lines. There is a small difference in that the U+002D
+/// (Hyphen-Minus) and U+00AD (Soft Hyphen) don’t create a line break:
+/// to allow a line break at a hyphen, use the
+/// [`HyphenSplitter`](super::HyphenSplitter). Soft hyphens are not
+/// currently supported.
+///
+/// # Examples
+///
+/// Unlike [`AsciiSpace`], the Unicode line breaking algorithm will
+/// find line break opportunities between some characters with no
+/// intervening whitespace:
+///
+/// ```
+/// #[cfg(feature = "unicode-linebreak")] {
+/// use textwrap::{WordSeparator, UnicodeBreakProperties};
+/// use textwrap::core::Word;
+///
+/// assert_eq!(UnicodeBreakProperties.find_words("Emojis: 😂😍").collect::<Vec<_>>(),
+///            vec![Word::from("Emojis: "),
+///                 Word::from("😂"),
+///                 Word::from("😍")]);
+///
+/// assert_eq!(UnicodeBreakProperties.find_words("CJK: 你好").collect::<Vec<_>>(),
+///            vec![Word::from("CJK: "),
+///                 Word::from("你"),
+///                 Word::from("好")]);
+/// }
+/// ```
+///
+/// A U+2060 (Word Joiner) character can be inserted if you want to
+/// manually override the defaults and keep the characters together:
+///
+/// ```
+/// #[cfg(feature = "unicode-linebreak")] {
+/// use textwrap::{UnicodeBreakProperties, WordSeparator};
+/// use textwrap::core::Word;
+///
+/// assert_eq!(UnicodeBreakProperties.find_words("Emojis: 😂\u{2060}😍").collect::<Vec<_>>(),
+///            vec![Word::from("Emojis: "),
+///                 Word::from("😂\u{2060}😍")]);
+/// }
+/// ```
+///
+/// The Unicode line breaking algorithm will also automatically
+/// suppress break breaks around certain punctuation characters::
+///
+/// ```
+/// #[cfg(feature = "unicode-linebreak")] {
+/// use textwrap::{UnicodeBreakProperties, WordSeparator};
+/// use textwrap::core::Word;
+///
+/// assert_eq!(UnicodeBreakProperties.find_words("[ foo ] bar !").collect::<Vec<_>>(),
+///            vec![Word::from("[ foo ] "),
+///                 Word::from("bar !")]);
+/// }
+/// ```
+#[cfg(feature = "unicode-linebreak")]
+impl WordSeparator for UnicodeBreakProperties {
+    fn find_words<'a>(&self, line: &'a str) -> Box<dyn Iterator<Item = Word<'a>> + 'a> {
+        // Construct an iterator over (original index, stripped index)
+        // tuples. We find the Unicode linebreaks on a stripped string,
+        // but we need the original indices so we can form words based on
+        // the original string.
+        let mut last_stripped_idx = 0;
+        let mut char_indices = line.char_indices();
+        let mut idx_map = std::iter::from_fn(move || match char_indices.next() {
+            Some((orig_idx, ch)) => {
+                let stripped_idx = last_stripped_idx;
+                if !skip_ansi_escape_sequence(ch, &mut char_indices.by_ref().map(|(_, ch)| ch)) {
+                    last_stripped_idx += ch.len_utf8();
+                }
+                Some((orig_idx, stripped_idx))
+            }
+            None => None,
+        });
+
+        let stripped = strip_ansi_escape_sequences(&line);
+        let mut opportunities = unicode_linebreak::linebreaks(&stripped)
+            .filter(|(idx, _)| {
+                #[allow(clippy::match_like_matches_macro)]
+                match &line[..*idx].chars().next_back() {
+                    // We suppress breaks at ‘-’ since we want to control
+                    // this via the WordSplitter.
+                    Some('-') => false,
+                    // Soft hyphens are currently not supported since we
+                    // require all `Word` fragments to be continuous in
+                    // the input string.
+                    Some(SHY) => false,
+                    // Other breaks should be fine!
+                    _ => true,
+                }
+            })
+            .collect::<Vec<_>>()
+            .into_iter();
+
+        // Remove final break opportunity, we will add it below using
+        // &line[start..]; This ensures that we correctly include a
+        // trailing ANSI escape sequence.
+        opportunities.next_back();
+
+        let mut start = 0;
+        Box::new(std::iter::from_fn(move || {
+            #[allow(clippy::while_let_on_iterator)]
+            while let Some((idx, _)) = opportunities.next() {
+                if let Some((orig_idx, _)) = idx_map.find(|&(_, stripped_idx)| stripped_idx == idx)
+                {
+                    let word = Word::from(&line[start..orig_idx]);
+                    start = orig_idx;
+                    return Some(word);
+                }
+            }
+
+            if start < line.len() {
+                let word = Word::from(&line[start..]);
+                start = line.len();
+                return Some(word);
+            }
+
+            None
+        }))
+    }
+}
+
+/// Soft hyphen, also knows as a “shy hyphen”. Should show up as ‘-’
+/// if a line is broken at this point, and otherwise be invisible.
+/// Textwrap does not currently support breaking words at soft
+/// hyphens.
+#[cfg(feature = "unicode-linebreak")]
+const SHY: char = '\u{00ad}';
+
+// Strip all ANSI escape sequences from `text`.
+#[cfg(feature = "unicode-linebreak")]
+fn strip_ansi_escape_sequences(text: &str) -> String {
+    let mut result = String::with_capacity(text.len());
+
+    let mut chars = text.chars();
+    while let Some(ch) = chars.next() {
+        if skip_ansi_escape_sequence(ch, &mut chars) {
+            continue;
+        }
+        result.push(ch);
+    }
+
+    result
 }
 
 #[cfg(test)]
@@ -208,11 +367,23 @@ mod tests {
             AsciiSpace.find_words(&format!("{}{}", green_hello, blue_world)),
             vec![Word::from(&green_hello), Word::from(&blue_world)]
         );
+
+        #[cfg(feature = "unicode-linebreak")]
+        assert_iter_eq!(
+            UnicodeBreakProperties.find_words(&format!("{}{}", green_hello, blue_world)),
+            vec![Word::from(&green_hello), Word::from(&blue_world)]
+        );
     }
 
     #[test]
     fn ascii_space_color_inside_word() {
         let text = "foo\u{1b}[0m\u{1b}[32mbar\u{1b}[0mbaz";
         assert_iter_eq!(AsciiSpace.find_words(&text), vec![Word::from(text)]);
+
+        #[cfg(feature = "unicode-linebreak")]
+        assert_iter_eq!(
+            UnicodeBreakProperties.find_words(&text),
+            vec![Word::from(text)]
+        );
     }
 }

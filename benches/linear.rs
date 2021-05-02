@@ -26,10 +26,25 @@ pub fn benchmark(c: &mut Criterion) {
 
         #[cfg(feature = "smawk")]
         {
+            #[cfg(feature = "unicode-linebreak")]
+            {
+                let options = textwrap::Options::new(LINE_LENGTH)
+                    .wrap_algorithm(textwrap::core::WrapAlgorithm::OptimalFit)
+                    .word_separator(textwrap::UnicodeBreakProperties);
+                group.bench_with_input(
+                    BenchmarkId::new("fill_optimal_fit_unicode", length),
+                    &text,
+                    |b, text| {
+                        b.iter(|| textwrap::fill(text, &options));
+                    },
+                );
+            }
+
             let options = textwrap::Options::new(LINE_LENGTH)
-                .wrap_algorithm(textwrap::core::WrapAlgorithm::OptimalFit);
+                .wrap_algorithm(textwrap::core::WrapAlgorithm::OptimalFit)
+                .word_separator(textwrap::AsciiSpace);
             group.bench_with_input(
-                BenchmarkId::new("fill_optimal_fit", length),
+                BenchmarkId::new("fill_optimal_fit_ascii", length),
                 &text,
                 |b, text| {
                     b.iter(|| textwrap::fill(text, &options));
@@ -38,7 +53,8 @@ pub fn benchmark(c: &mut Criterion) {
         }
 
         let options = textwrap::Options::new(LINE_LENGTH)
-            .wrap_algorithm(textwrap::core::WrapAlgorithm::FirstFit);
+            .wrap_algorithm(textwrap::core::WrapAlgorithm::FirstFit)
+            .word_separator(textwrap::AsciiSpace);
         group.bench_with_input(
             BenchmarkId::new("fill_first_fit", length),
             &text,

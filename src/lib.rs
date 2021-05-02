@@ -130,6 +130,17 @@
 //!
 //! These features are enabled by default:
 //!
+//! * `unicode-linebreak`: enables finding words using the
+//!   [unicode-linebreak] crate, which implements the line breaking
+//!   algorithm described in [Unicode Standard Annex
+//!   #14](https://www.unicode.org/reports/tr14/).
+//!
+//!   This feature can be disabled if you are happy to find words
+//!   separated by ASCII space characters only. People wrapping text
+//!   with emojis or East-Asian characters will want most likely want
+//!   to enable this feature. See the [`WordSeparator`] trait for
+//!   details.
+//!
 //! * `unicode-width`: enables correct width computation of non-ASCII
 //!   characters via the [unicode-width] crate. Without this feature,
 //!   every [`char`] is 1 column wide, except for emojis which are 2
@@ -159,6 +170,7 @@
 //! * `hyphenation`: enables language-sensitive hyphenation via the
 //!   [hyphenation] crate. See the [`WordSplitter`] trait for details.
 //!
+//! [unicode-linebreak]: https://docs.rs/unicode-linebreak/
 //! [unicode-width]: https://docs.rs/unicode-width/
 //! [smawk]: https://docs.rs/smawk/
 //! [textwrap-macros]: https://docs.rs/textwrap-macros/
@@ -181,9 +193,27 @@ mod splitting;
 pub use crate::splitting::{HyphenSplitter, NoHyphenation, WordSplitter};
 
 mod word_separator;
+#[cfg(feature = "unicode-linebreak")]
+pub use word_separator::UnicodeBreakProperties;
 pub use word_separator::{AsciiSpace, WordSeparator};
 
 pub mod core;
+
+// This private macro lets us hide the actual WordSeperator used in
+// function signatures below.
+#[cfg(feature = "unicode-linebreak")]
+macro_rules! DefaultWordSeparator {
+    () => {
+        UnicodeBreakProperties
+    };
+}
+
+#[cfg(not(feature = "unicode-linebreak"))]
+macro_rules! DefaultWordSeparator {
+    () => {
+        AsciiSpace
+    };
+}
 
 /// Holds settings for wrapping and filling text.
 #[derive(Debug, Clone)]
@@ -227,19 +257,21 @@ impl<'a, R: Clone, S: Clone> From<&'a Options<'a, R, S>> for Options<'a, R, S> {
     }
 }
 
-impl<'a> From<usize> for Options<'a, AsciiSpace, HyphenSplitter> {
+impl<'a> From<usize> for Options<'a, DefaultWordSeparator!(), HyphenSplitter> {
     fn from(width: usize) -> Self {
         Options::new(width)
     }
 }
 
 /// Constructors for boxed Options, specifically.
-impl<'a> Options<'a, AsciiSpace, HyphenSplitter> {
+impl<'a> Options<'a, DefaultWordSeparator!(), HyphenSplitter> {
     /// Creates a new [`Options`] with the specified width and static
     /// dispatch using the [`HyphenSplitter`]. Equivalent to
     ///
     /// ```
     /// # use textwrap::{AsciiSpace, Options, HyphenSplitter, WordSplitter};
+    /// # #[cfg(feature = "unicode-linebreak")]
+    /// # use textwrap::UnicodeBreakProperties;
     /// # let width = 80;
     /// # let actual = Options::new(width);
     /// # let expected =
@@ -248,6 +280,9 @@ impl<'a> Options<'a, AsciiSpace, HyphenSplitter> {
     ///     initial_indent: "",
     ///     subsequent_indent: "",
     ///     break_words: true,
+    ///     #[cfg(feature = "unicode-linebreak")]
+    ///     word_separator: UnicodeBreakProperties,
+    ///     #[cfg(not(feature = "unicode-linebreak"))]
     ///     word_separator: AsciiSpace,
     ///     #[cfg(feature = "smawk")]
     ///     wrap_algorithm: textwrap::core::WrapAlgorithm::OptimalFit,
@@ -263,9 +298,9 @@ impl<'a> Options<'a, AsciiSpace, HyphenSplitter> {
     /// # assert_eq!(actual.wrap_algorithm, expected.wrap_algorithm);
     /// ```
     ///
-    /// Note that the default wrap algorithm changes based on the
-    /// `smawk` Cargo feature. The best available algorithm is used by
-    /// default.
+    /// Note that the default word separator and wrap algorithms
+    /// changes based on the available Cargo features. The best
+    /// available algorithm is used by default.
     ///
     /// Static dispatch means here, that the splitter is stored as-is
     /// and the type is known at compile-time. Thus the returned value
@@ -293,22 +328,18 @@ impl<'a> Options<'a, AsciiSpace, HyphenSplitter> {
     /// // uses HyphenSplitter with static dispatch
     /// // the actual type: Options<AsciiSpace, HyphenSplitter>
     /// let opt = Options::new(width);
-    /// # let opt_coerce: Options<AsciiSpace, HyphenSplitter> = opt;
     ///
     /// // uses NoHyphenation with static dispatch
     /// // the actual type: Options<AsciiSpace, NoHyphenation>
     /// let opt = Options::new(width).splitter(NoHyphenation);
-    /// # let opt_coerce: Options<AsciiSpace, NoHyphenation> = opt;
     ///
     /// // uses HyphenSplitter with dynamic dispatch
     /// // the actual type: Options<AsciiSpace, Box<dyn WordSplitter>>
     /// let opt: Options<_> = Options::new(width).splitter(Box::new(HyphenSplitter));
-    /// # let opt_coerce: Options<AsciiSpace, Box<dyn WordSplitter>> = opt;
     ///
     /// // uses NoHyphenation with dynamic dispatch
     /// // the actual type: Options<AsciiSpace, Box<dyn WordSplitter>>
     /// let opt: Options<_> = Options::new(width).splitter(Box::new(NoHyphenation));
-    /// # let opt_coerce: Options<AsciiSpace, Box<dyn WordSplitter>> = opt;
     /// ```
     ///
     /// Notice that the last two variables have the same type, despite
@@ -342,12 +373,14 @@ impl<'a> Options<'a, AsciiSpace, HyphenSplitter> {
     }
 }
 
-impl<'a, S> Options<'a, AsciiSpace, S> {
+impl<'a, S> Options<'a, DefaultWordSeparator!(), S> {
     /// Creates a new [`Options`] with the specified width and
     /// splitter. Equivalent to
     ///
     /// ```
     /// # use textwrap::{AsciiSpace, Options, NoHyphenation, HyphenSplitter};
+    /// # #[cfg(feature = "unicode-linebreak")]
+    /// # use textwrap::UnicodeBreakProperties;
     /// # const splitter: NoHyphenation = NoHyphenation;
     /// # const width: usize = 80;
     /// # let actual = Options::with_splitter(width, splitter);
@@ -357,6 +390,9 @@ impl<'a, S> Options<'a, AsciiSpace, S> {
     ///     initial_indent: "",
     ///     subsequent_indent: "",
     ///     break_words: true,
+    ///     #[cfg(feature = "unicode-linebreak")]
+    ///     word_separator: UnicodeBreakProperties,
+    ///     #[cfg(not(feature = "unicode-linebreak"))]
     ///     word_separator: textwrap::AsciiSpace,
     ///     #[cfg(feature = "smawk")]
     ///     wrap_algorithm: textwrap::core::WrapAlgorithm::OptimalFit,
@@ -407,7 +443,9 @@ impl<'a, S> Options<'a, AsciiSpace, S> {
     /// use textwrap::{HyphenSplitter, Options, AsciiSpace};
     /// # const width: usize = 80;
     ///
+    /// # #[cfg(not(feature = "unicode-linebreak"))]
     /// const FOO: Options<AsciiSpace, HyphenSplitter> = Options::with_splitter(width, HyphenSplitter);
+    /// # #[cfg(not(feature = "unicode-linebreak"))]
     /// static BAR: Options<AsciiSpace, HyphenSplitter> = FOO;
     /// ```
     pub const fn with_splitter(width: usize, splitter: S) -> Self {
@@ -416,7 +454,7 @@ impl<'a, S> Options<'a, AsciiSpace, S> {
             initial_indent: "",
             subsequent_indent: "",
             break_words: true,
-            word_separator: AsciiSpace,
+            word_separator: DefaultWordSeparator!(),
             #[cfg(feature = "smawk")]
             wrap_algorithm: core::WrapAlgorithm::OptimalFit,
             #[cfg(not(feature = "smawk"))]
@@ -553,11 +591,11 @@ impl<'a, R, S> Options<'a, R, S> {
     /// example:
     ///
     /// ```
-    /// use textwrap::{AsciiSpace, HyphenSplitter, NoHyphenation, Options};
+    /// use textwrap::{HyphenSplitter, NoHyphenation, Options};
     /// // The default type returned by `new`:
-    /// let opt: Options<AsciiSpace, HyphenSplitter> = Options::new(80);
+    /// let opt: Options<_, HyphenSplitter> = Options::new(80);
     /// // Setting a different splitter changes the type
-    /// let opt: Options<AsciiSpace, NoHyphenation> = opt.splitter(NoHyphenation);
+    /// let opt: Options<_, NoHyphenation> = opt.splitter(NoHyphenation);
     /// ```
     ///
     /// [`self.splitter`]: #structfield.splitter
@@ -700,7 +738,7 @@ where
 /// assert_eq!(options.initial_indent, "* ");
 /// assert_eq!(options.subsequent_indent, "  ");
 /// ```
-pub fn unfill(text: &str) -> (String, Options<'_, AsciiSpace, HyphenSplitter>) {
+pub fn unfill(text: &str) -> (String, Options<'_, DefaultWordSeparator!(), HyphenSplitter>) {
     let trimmed = text.trim_end_matches('\n');
     let prefix_chars: &[_] = &[' ', '-', '+', '*', '>', '#', '/'];
 
@@ -1193,9 +1231,11 @@ where
 ///
 /// Since we can only replace existing whitespace in the input with
 /// `'\n'`, we cannot do hyphenation nor can we split words longer
-/// than the line width. Indentation is also ruled out. In other
-/// words, `fill_inplace(width)` behaves as if you had called [`fill`]
-/// with these options:
+/// than the line width. We also need to use `AsciiSpace` as the word
+/// separator since we need `' '` characters between words in order to
+/// replace some of them with a `'\n'`. Indentation is also ruled out.
+/// In other words, `fill_inplace(width)` behaves as if you had called
+/// [`fill`] with these options:
 ///
 /// ```
 /// # use textwrap::{core, AsciiSpace, Options, NoHyphenation};
@@ -1367,7 +1407,8 @@ mod tests {
     fn issue_129() {
         // The dash is an em-dash which takes up four bytes. We used
         // to panic since we tried to index into the character.
-        assert_eq!(wrap("x – x", 1), vec!["x", "–", "x"]);
+        let options = Options::new(1).word_separator(AsciiSpace);
+        assert_eq!(wrap("x – x", options), vec!["x", "–", "x"]);
     }
 
     #[test]
@@ -1375,8 +1416,22 @@ mod tests {
     fn wide_character_handling() {
         assert_eq!(wrap("Hello, World!", 15), vec!["Hello, World!"]);
         assert_eq!(
-            wrap("Ｈｅｌｌｏ, Ｗｏｒｌｄ!", 15),
+            wrap(
+                "Ｈｅｌｌｏ, Ｗｏｒｌｄ!",
+                Options::new(15).word_separator(AsciiSpace)
+            ),
             vec!["Ｈｅｌｌｏ,", "Ｗｏｒｌｄ!"]
+        );
+
+        // Wide characters are allowed to break if the
+        // unicode-linebreak feature is enabled.
+        #[cfg(feature = "unicode-linebreak")]
+        assert_eq!(
+            wrap(
+                "Ｈｅｌｌｏ, Ｗｏｒｌｄ!",
+                Options::new(15).word_separator(UnicodeBreakProperties)
+            ),
+            vec!["Ｈｅｌｌｏ, Ｗ", "ｏｒｌｄ!"]
         );
     }
 
@@ -1639,7 +1694,8 @@ mod tests {
     fn break_words_wide_characters() {
         // Even the poor man's version of `ch_width` counts these
         // characters as wide.
-        assert_eq!(wrap("Ｈｅｌｌｏ", 5), vec!["Ｈｅ", "ｌｌ", "ｏ"]);
+        let options = Options::new(5).word_separator(AsciiSpace);
+        assert_eq!(wrap("Ｈｅｌｌｏ", options), vec!["Ｈｅ", "ｌｌ", "ｏ"]);
     }
 
     #[test]
@@ -1726,6 +1782,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(not(feature = "unicode-linebreak"))]
     fn cloning_works() {
         static OPT: Options<AsciiSpace, HyphenSplitter> =
             Options::with_splitter(80, HyphenSplitter);
@@ -1883,7 +1940,7 @@ mod tests {
         vector.push(opt_full_type);
         results.push(vec!["over-", "caffinated"]);
 
-        // Actually: Options<Box<AsciiSpaces>, Box<dyn WordSplitter>>
+        // Actually: Options<Box<AsciiSpace>, Box<dyn WordSplitter>>
         let opt_abbreviated_type = Options::new(10)
             .break_words(false)
             .splitter(Box::new(NoHyphenation) as Box<dyn WordSplitter>)
