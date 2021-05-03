@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use criterion::BenchmarkId;
 use criterion::Criterion;
 use criterion::{criterion_group, criterion_main};
@@ -87,5 +89,9 @@ pub fn benchmark(c: &mut Criterion) {
     group.finish();
 }
 
-criterion_group!(benches, benchmark);
+criterion_group!(
+    name = benches;
+    config = Criterion::default().warm_up_time(Duration::from_millis(500));
+    targets = benchmark
+);
 criterion_main!(benches);
