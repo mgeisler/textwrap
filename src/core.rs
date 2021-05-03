@@ -176,7 +176,6 @@ fn ch_width(ch: char) -> usize {
 /// [Unicode equivalence]: https://en.wikipedia.org/wiki/Unicode_equivalence
 /// [CJK characters]: https://en.wikipedia.org/wiki/CJK_characters
 /// [emoji modifier sequences]: https://unicode.org/emoji/charts/full-emoji-modifiers.html
-#[inline]
 pub fn display_width(text: &str) -> usize {
     let mut chars = text.chars();
     let mut width = 0;
