@@ -10,6 +10,8 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
+  NPM_CONFIG_COLOR: always
+  FORCE_COLOR: 3
   RUSTFLAGS: -D warnings
 
 jobs:
@@ -90,3 +92,25 @@ jobs:
 
       - name: Lint for left-over debug prints
         run: cargo clippy -- -D clippy::print_stdout -D clippy::print_stderr
+
+  wasm:
+    name: Build Wasm demo
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - name: Build Rust code
+        run: wasm-pack build
+        working-directory: examples/wasm
+
+      - name: Install Npm dependencies
+        run: npm install
+        working-directory: examples/wasm/www
+
+      - name: Pack JavaScript and HTML
+        run: npm run build
+        working-directory: examples/wasm/www
