@@ -93,7 +93,7 @@ jobs:
       - name: Lint for left-over debug prints
         run: cargo clippy -- -D clippy::print_stdout -D clippy::print_stderr
 
-  wasm:
+  wasm-build:
     name: Build Wasm demo
     runs-on: ubuntu-latest
     steps:
@@ -103,14 +103,64 @@ jobs:
       - name: Install wasm-pack
         run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
 
-      - name: Build Rust code
+      - name: Build textwrap-wasm-demo
         run: wasm-pack build
         working-directory: examples/wasm
 
-      - name: Install Npm dependencies
+      - name: Install textwrap-wasm-demo-app dependencies
         run: npm install
         working-directory: examples/wasm/www
 
-      - name: Pack JavaScript and HTML
+      - name: Bundle textwrap-wasm-demo-app
         run: npm run build
         working-directory: examples/wasm/www
+
+      - name: Upload bundled textwrap-wasm-demo-app
+        uses: actions/upload-artifact@v2
+        with:
+          name: textwrap-wasm-demo-app
+          path: examples/wasm/www/dist
+
+  wasm-deploy:
+    name: Deploy Wasm demo
+    needs: wasm-build
+    if: github.ref == 'ref/head/master'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+        with:
+          ref: gh-pages
+
+      - name: Cleanup previous deployment
+        run: rm *
+
+      - name: Download bundled textwrap-wasm-demo-app
+        uses: actions/download-artifact@v2
+        with:
+          name: textwrap-wasm-demo-app
+
+      - name: Add and remove changed files
+        id: git-add
+        run: |
+          git add --verbose --all
+          if git diff --staged --quiet --exit-code; then
+            echo "No changes found in textwrap-wasm-demo-app"
+            echo '::set-output name=has-changes::false'
+          else
+            echo '::set-output name=has-changes::true'
+          fi
+
+      - name: Configure Git user
+        if: steps.git-add.outputs.has-changes == 'true'
+        run: |
+          git config user.name "Martin Geisler"
+          git config user.email "martin@geisler.net"
+
+      - name: Commit textwrap-wasm-demo-app changes
+        if: steps.git-add.outputs.has-changes == 'true'
+        run: git commit -m "Update Wasm demo to ${GITHUB_SHA::7}"
+
+      - name: Deploy textwrap-wasm-demo-app
+        if: steps.git-add.outputs.has-changes == 'true'
+        run: git push origin
