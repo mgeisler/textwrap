@@ -4,3 +4,10 @@ target/
 *~
 *.rej
 *.orig
+
+examples/wasm/dist/
+examples/wasm/pkg/
+examples/wasm/www/node_modules/
+
+fuzz/artifacts/
+fuzz/corpus/
