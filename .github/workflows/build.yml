@@ -124,7 +124,7 @@ jobs:
   wasm-deploy:
     name: Deploy Wasm demo
     needs: wasm-build
-    if: github.ref == 'ref/head/master'
+    if: github.ref == 'refs/head/master'
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
