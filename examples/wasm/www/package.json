@@ -4,8 +4,8 @@
     "description": "Textwrap WebAssembly demo application",
     "main": "index.js",
     "scripts": {
-        "build": "webpack --config webpack.config.js",
-        "start": "webpack-dev-server"
+        "build": "webpack build",
+        "start": "webpack serve"
     },
     "repository": {
         "type": "git",
@@ -21,10 +21,10 @@
         "textwrap-wasm-demo": "file:../pkg"
     },
     "devDependencies": {
-        "copy-webpack-plugin": "^5.0.0",
+        "copy-webpack-plugin": "^8.1.1",
         "hello-wasm-pack": "^0.1.0",
-        "webpack": "^4.29.3",
-        "webpack-cli": "^3.1.0",
-        "webpack-dev-server": "^3.1.5"
+        "webpack": "^5.36.2",
+        "webpack-cli": "^4.6.0",
+        "webpack-dev-server": "^3.11.2"
     }
 }
