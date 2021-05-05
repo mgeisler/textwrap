@@ -11,4 +11,7 @@ module.exports = {
   plugins: [
     new CopyWebpackPlugin(['index.html', '../README.md'])
   ],
+  experiments: {
+    syncWebAssembly: true,
+  },
 };
