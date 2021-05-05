@@ -9,7 +9,7 @@ module.exports = {
   },
   mode: "development",
   plugins: [
-    new CopyWebpackPlugin(['index.html', '../README.md'])
+    new CopyWebpackPlugin({patterns: ['index.html', '../README.md']})
   ],
   experiments: {
     syncWebAssembly: true,
