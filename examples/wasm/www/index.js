@@ -1,5 +1,16 @@
 import { draw_wrapped_text } from "textwrap-wasm-demo";
 
+fetch("build-info.json").then(response => response.json()).then(buildInfo => {
+    if (buildInfo.date && buildInfo.commit) {
+        document.getElementById("build-date").innerText = buildInfo.date;
+
+        let link = document.createElement("a");
+        link.href = `https://github.com/mgeisler/textwrap/commit/${buildInfo.commit}`;
+        link.innerText = buildInfo.commit.slice(0, 7);
+        document.getElementById("build-commit").replaceWith(link);
+    }
+})
+
 function redraw(event) {
     let fontFamily = document.getElementById("font-family").value;
     let canvas = document.getElementById("canvas");
@@ -30,13 +41,13 @@ document.getElementById("line-width-text").addEventListener("input", (event) => 
 
 window.addEventListener("resize", (event) => {
     const X_OFFSET = 8;  // To accommodate the size of the slider knob.
-    const BOTTOM_MARGIN = 16;
 
+    let footer = document.getElementById("footer");
     let canvas = document.getElementById("canvas");
     let width = canvas.parentNode.clientWidth;
 
     canvas.width = width;
-    canvas.height = window.innerHeight - BOTTOM_MARGIN - canvas.offsetTop;
+    canvas.height = footer.offsetTop - canvas.offsetTop;
 
     let lineWidth = document.getElementById("line-width");
     let lineWidthText = document.getElementById("line-width-text");

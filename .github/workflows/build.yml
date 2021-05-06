@@ -140,6 +140,12 @@ jobs:
         with:
           name: textwrap-wasm-demo-app
 
+      - name: Record build info
+        run: |
+          cat > build-info.json <<EOM
+          {"date": "$(date --utc --iso-8601)", "commit": "$GITHUB_SHA"}
+          EOM
+
       - name: Add and remove changed files
         id: git-add
         run: |
