@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <title>Textwrap WebAssembly demo</title>
     <style>
-     body {
+     body, #footer {
        background: #f1f9f9
      }
 
@@ -21,6 +21,14 @@
 
      #canvas {
        display: block;
+     }
+
+     #footer {
+       position: fixed;
+       left: 8px;
+       right: 8px;
+       bottom: 0;
+       border-top: thin solid grey;
      }
     </style>
   </head>
@@ -43,6 +51,11 @@ You can test the word-wrapping behavior by editing the text 😍✨</textarea>
     <div>
       <input type="range" id="line-width" min="0" max="300" value="250">
       <canvas id="canvas"></canvas>
+    </div>
+
+    <div id="footer">
+      <p>Built at <span id="build-date">unknown</span> using Textwrap
+        commit <span id="build-commit">unknown</span>.</p>
     </div>
 
     <script src="bootstrap.js"></script>
