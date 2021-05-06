@@ -140,12 +140,6 @@ jobs:
         with:
           name: textwrap-wasm-demo-app
 
-      - name: Record build info
-        run: |
-          cat > build-info.json <<EOM
-          {"date": "$(date --utc --iso-8601)", "commit": "$GITHUB_SHA"}
-          EOM
-
       - name: Add and remove changed files
         id: git-add
         run: |
@@ -156,6 +150,14 @@ jobs:
           else
             echo '::set-output name=has-changes::true'
           fi
+
+      - name: Record build info
+        if: steps.git-add.outputs.has-changes == 'true'
+        run: |
+          cat > build-info.json <<EOM
+          {"date": "$(date --utc --iso-8601)", "commit": "$GITHUB_SHA"}
+          EOM
+          git add --verbose --all
 
       - name: Configure Git user
         if: steps.git-add.outputs.has-changes == 'true'
