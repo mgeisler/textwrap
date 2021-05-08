@@ -19,8 +19,7 @@ mod unix_only {
     use termion::raw::{IntoRawMode, RawTerminal};
     use termion::screen::AlternateScreen;
     use termion::{color, cursor, style};
-    #[cfg(feature = "smawk")]
-    use textwrap::core::WrapAlgorithm::{FirstFit, OptimalFit};
+    use textwrap::wrap_algorithms;
     use textwrap::{wrap, AsciiSpace, Options, WordSeparator};
     use textwrap::{HyphenSplitter, NoHyphenation, WordSplitter};
 
@@ -57,7 +56,12 @@ mod unix_only {
 
     fn draw_text<'a>(
         text: &str,
-        options: &Options<'a, Box<dyn WordSeparator>, Box<dyn WordSplitter>>,
+        options: &Options<
+            'a,
+            Box<dyn wrap_algorithms::WrapAlgorithm>,
+            Box<dyn WordSeparator>,
+            Box<dyn WordSplitter>,
+        >,
         splitter_label: &str,
         stdout: &mut RawTerminal<io::Stdout>,
     ) -> Result<(), io::Error> {
@@ -229,6 +233,11 @@ mod unix_only {
     }
 
     pub fn main() -> Result<(), io::Error> {
+        let mut wrap_algorithms: Vec<Box<dyn wrap_algorithms::WrapAlgorithm>> =
+            vec![Box::new(wrap_algorithms::FirstFit)];
+        #[cfg(feature = "smawk")]
+        wrap_algorithms.push(Box::new(wrap_algorithms::OptimalFit));
+
         let mut splitters: Vec<Box<dyn WordSplitter>> =
             vec![Box::new(HyphenSplitter), Box::new(NoHyphenation)];
         let mut splitter_labels: Vec<String> =
@@ -255,6 +264,7 @@ mod unix_only {
 
         let mut options = Options::new(35)
             .break_words(false)
+            .wrap_algorithm(wrap_algorithms.remove(0))
             .splitter(splitters.remove(0))
             .word_separator(Box::new(AsciiSpace) as Box<dyn WordSeparator>);
         let mut splitter_label = splitter_labels.remove(0);
@@ -291,10 +301,8 @@ mod unix_only {
                 Key::Ctrl('b') => options.break_words = !options.break_words,
                 #[cfg(feature = "smawk")]
                 Key::Ctrl('o') => {
-                    options.wrap_algorithm = match options.wrap_algorithm {
-                        OptimalFit => FirstFit,
-                        FirstFit => OptimalFit,
-                    }
+                    std::mem::swap(&mut options.wrap_algorithm, &mut wrap_algorithms[0]);
+                    wrap_algorithms.rotate_left(1);
                 }
                 Key::Ctrl('s') => {
                     // We always keep the next splitter at position 0.

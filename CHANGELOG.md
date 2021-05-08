@@ -5,13 +5,26 @@ This file lists the most important changes made in each release of
 
 ## Unreleased
 
-This is a major feature release which adds a new generic type
-parameter to the `Options` struct. This new parameter lets you specify
-how words are found in the text.
+This is a major feature release which adds new generic type parameters
+to the `Options` struct. These parameters lets you statically
+configure the wrapping algorithm and the word separator:
+
+* `wrap_algorithms::WrapAlgorithm`: this trait replaces the old
+  `core::WrapAlgorithm` enum. The enum variants are now two structs:
+  `wrap_algorithms::FirstFit` and `wrap_algorithms::OptimalFit`.
+
+* `WordSeparator`: this new trait lets you specify how words are
+  separated in the text. Until now, Textwrap would simply split on
+  spaces. While this works okay for Western languages, it fails to
+  take emojis and East-Asian languages into account.
+
+  The new `AsciiSpace` and `UnicodeBreakProperties` structs implement
+  the trait. The latter is available if the new optional
+  `unicode-linebreak` Cargo feature is enabled.
 
 Common usages of textwrap stays unchanged, but if you previously
-spelled out the full type for `Options`, you now need to take th extra
-type parameter into account. This means that
+spelled out the full type for `Options`, you now need to take the
+extra type parameters into account. This means that
 
 ```rust
 let options: Options<HyphenSplitter> = Options::new(80);
@@ -20,7 +33,7 @@ let options: Options<HyphenSplitter> = Options::new(80);
 need to change to
 
 ```rust
-let options: Options<AsciiSpace, HyphenSplitter> = Options::new(80);
+let options: Options<wrap_algorithms::FirstFit, AsciiSpace, HyphenSplitter> = Options::new(80);
 ```
 
 You won’t see any chance if you call `wrap` directly with a width or

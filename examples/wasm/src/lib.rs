@@ -1,7 +1,7 @@
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 
-use textwrap::{core, WordSeparator};
+use textwrap::{core, wrap_algorithms, WordSeparator};
 
 #[wasm_bindgen]
 extern "C" {
@@ -168,7 +168,7 @@ pub fn draw_wrapped_text(
             .collect::<Vec<_>>();
 
         let line_lengths = [width * PRECISION];
-        let wrapped_words = core::wrap_first_fit(&canvas_words, &line_lengths);
+        let wrapped_words = wrap_algorithms::wrap_first_fit(&canvas_words, &line_lengths);
 
         for words_in_line in wrapped_words {
             lineno += 1;

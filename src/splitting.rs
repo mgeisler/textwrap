@@ -55,7 +55,8 @@ pub trait WordSplitter: WordSplitterClone + std::fmt::Debug {
 
 // The internal `WordSplitterClone` trait is allows us to implement
 // `Clone` for `Box<dyn WordSplitter>`. This in used in the
-// `From<&Options<'_, R, S>> for Options<'a, R, S>` implementation.
+// `From<&Options<'_, A, R, S>> for Options<'a, A, R, S>`
+// implementation.
 pub trait WordSplitterClone {
     fn clone_box(&self) -> Box<dyn WordSplitter>;
 }
