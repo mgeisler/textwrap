@@ -1076,9 +1076,9 @@ where
             // length of `line`.
             let len = words
                 .iter()
-                .map(|word| word.len() + word.whitespace.len())
+                .map(|word| word.len() + word.post_fix.whitespace_len())
                 .sum::<usize>()
-                - last_word.whitespace.len();
+                - last_word.post_fix.whitespace_len();
 
             // The result is owned if we have indentation, otherwise
             // we can simply borrow an empty string.
@@ -1095,8 +1095,8 @@ where
 
             result += &line[idx..idx + len];
 
-            if !last_word.penalty.is_empty() {
-                result.to_mut().push_str(&last_word.penalty);
+            if let Some(penalty) = last_word.post_fix.try_penalty(){
+                result.to_mut().push_str(penalty);
             }
 
             lines.push(result);
@@ -1104,7 +1104,7 @@ where
             // Advance by the length of `result`, plus the length of
             // `last_word.whitespace` -- even if we had a penalty, we
             // need to skip over the whitespace.
-            idx += len + last_word.whitespace.len();
+            idx += len + last_word.post_fix.whitespace_len();
         }
     }
 
@@ -1288,7 +1288,7 @@ pub fn fill_inplace(text: &mut String, width: usize) {
         for words in &wrapped_words[..wrapped_words.len() - 1] {
             let line_len = words
                 .iter()
-                .map(|word| word.len() + word.whitespace.len())
+                .map(|word| word.len() + word.post_fix.whitespace_len())
                 .sum::<usize>();
 
             line_offset += line_len;

@@ -49,7 +49,7 @@ const ANSI_FINAL_BYTE: std::ops::RangeInclusive<char> = '\x40'..='\x7e';
 /// `chars` provide the following characters. The `chars` will be
 /// modified if `ch` is the start of an ANSI escape sequence.
 #[inline]
-pub(crate) fn skip_ansi_escape_sequence<I: Iterator<Item = char>>(ch: char, chars: &mut I) -> bool {
+pub(crate) fn skip_ansi_escape_sequence<I: Iterator<Item=char>>(ch: char, chars: &mut I) -> bool {
     if ch == CSI.0 && chars.next() == Some(CSI.1) {
         // We have found the start of an ANSI escape code, typically
         // used for colored terminal text. We skip until we find a
@@ -211,6 +211,62 @@ pub trait Fragment: std::fmt::Debug {
     fn penalty_width(&self) -> usize;
 }
 
+/// The string following a word
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub enum PostFix<'a> {
+    /// Whitespace to insert, if the word does not fall at the end of a line.
+    WhiteSpace(&'a str),
+    /// Penalty string to insert, if the word falls at the end of a line or ends on a hyphen.
+    Penalty(&'a str),
+}
+
+impl<'a> PostFix<'a> {
+    /// Creates a penalty for the given `word`.
+    /// # Returns
+    /// Returns an empty penalty if the word ends on a hyphen `'-'`anyway.
+    /// Returns a hyphen penalty otherwise
+    pub fn new_penalty(word: &str) -> Self {
+        let need_hyphen = !word.ends_with('-');
+        PostFix::Penalty(if need_hyphen { "-" } else { "" })
+    }
+
+    /// Returns the length of the white space or `0`, if the postfix is penalty
+    pub fn whitespace_len(&self) -> usize {
+        match self {
+            PostFix::WhiteSpace(w) => w.len(),
+            PostFix::Penalty(_) => 0,
+        }
+    }
+
+    /// Returns the length of the penalty string or `0`, if the postfix is a white space
+    pub fn penalty_len(&self) -> usize {
+        match self {
+            PostFix::WhiteSpace(_) => 0,
+            PostFix::Penalty(p) => p.len()
+        }
+    }
+
+    /// Returns `Some` with the penalty string, if the postfix is a non-empty string.
+    /// Returns `None` otherwise
+    pub fn try_penalty(&self) -> Option<&'a str> {
+        match self {
+            PostFix::WhiteSpace(_) => None,
+            PostFix::Penalty(p) => if p.is_empty() { None } else { Some(*p) }
+        }
+    }
+
+    /// Returns `true`, if the postfix is a non-empty penalty
+    pub fn is_penalty(&self) -> bool {
+        matches!(self, PostFix::Penalty(p) if !p.is_empty())
+    }
+
+    /// Returns `true`, if the postfix is a whitespace
+    pub fn is_whitespace(&self) -> bool {
+        matches!(self, PostFix::WhiteSpace(_))
+    }
+}
+
+
 /// A piece of wrappable text, including any trailing whitespace.
 ///
 /// A `Word` is an example of a [`Fragment`], so it has a width,
@@ -219,10 +275,8 @@ pub trait Fragment: std::fmt::Debug {
 pub struct Word<'a> {
     /// Word content.
     pub word: &'a str,
-    /// Whitespace to insert if the word does not fall at the end of a line.
-    pub whitespace: &'a str,
-    /// Penalty string to insert if the word falls at the end of a line.
-    pub penalty: &'a str,
+    /// String to insert, depending on whether the word does or doesn't fall at the end of a line.
+    pub post_fix: PostFix<'a>,
     // Cached width in columns.
     width: usize,
 }
@@ -242,11 +296,19 @@ impl<'a> Word<'a> {
     /// whitespace part of the word.
     pub fn from(word: &str) -> Word<'_> {
         let trimmed = word.trim_end_matches(' ');
+        let post_fix = if trimmed.len() == word.len() {
+            if word.ends_with('-') {
+                PostFix::Penalty("")
+            } else {
+                PostFix::WhiteSpace("")
+            }
+        } else {
+            PostFix::WhiteSpace(&word[trimmed.len()..])
+        };
         Word {
             word: trimmed,
             width: display_width(&trimmed),
-            whitespace: &word[trimmed.len()..],
-            penalty: "",
+            post_fix,
         }
     }
 
@@ -263,7 +325,7 @@ impl<'a> Word<'a> {
     ///     vec![Word::from("Hel"), Word::from("lo!  ")]
     /// );
     /// ```
-    pub fn break_apart<'b>(&'b self, line_width: usize) -> impl Iterator<Item = Word<'a>> + 'b {
+    pub fn break_apart<'b>(&'b self, line_width: usize) -> impl Iterator<Item=Word<'a>> + 'b {
         let mut char_indices = self.word.char_indices();
         let mut offset = 0;
         let mut width = 0;
@@ -275,11 +337,12 @@ impl<'a> Word<'a> {
                 }
 
                 if width > 0 && width + ch_width(ch) > line_width {
+                    let word_segment = &self.word[offset..idx];
                     let word = Word {
-                        word: &self.word[offset..idx],
-                        width: width,
-                        whitespace: "",
-                        penalty: "",
+                        word: word_segment,
+                        width,
+                        post_fix: if word_segment.ends_with(
+                            '-') { PostFix::Penalty("") } else { PostFix::WhiteSpace("") },
                     };
                     offset = idx;
                     width = ch_width(ch);
@@ -292,9 +355,8 @@ impl<'a> Word<'a> {
             if offset < self.word.len() {
                 let word = Word {
                     word: &self.word[offset..],
-                    width: width,
-                    whitespace: self.whitespace,
-                    penalty: self.penalty,
+                    width,
+                    post_fix: self.post_fix,
                 };
                 offset = self.word.len();
                 return Some(word);
@@ -315,14 +377,14 @@ impl Fragment for Word<'_> {
     // compute the display width in constant time.
     #[inline]
     fn whitespace_width(&self) -> usize {
-        self.whitespace.len()
+        self.post_fix.whitespace_len()
     }
 
     // We assume the penalty is `""` or `"-"`. This allows us to
     // compute the display width in constant time.
     #[inline]
     fn penalty_width(&self) -> usize {
-        self.penalty.len()
+        self.post_fix.penalty_len()
     }
 }
 
@@ -356,22 +418,20 @@ impl Fragment for Word<'_> {
 pub fn split_words<'a, I, R, S>(
     words: I,
     options: &'a Options<'a, R, S>,
-) -> impl Iterator<Item = Word<'a>>
-where
-    I: IntoIterator<Item = Word<'a>>,
-    S: WordSplitter,
+) -> impl Iterator<Item=Word<'a>>
+    where
+        I: IntoIterator<Item=Word<'a>>,
+        S: WordSplitter,
 {
     words.into_iter().flat_map(move |word| {
         let mut prev = 0;
         let mut split_points = options.splitter.split_points(&word).into_iter();
         std::iter::from_fn(move || {
             if let Some(idx) = split_points.next() {
-                let need_hyphen = !word[..idx].ends_with('-');
                 let w = Word {
                     word: &word.word[prev..idx],
                     width: display_width(&word[prev..idx]),
-                    whitespace: "",
-                    penalty: if need_hyphen { "-" } else { "" },
+                    post_fix: PostFix::new_penalty(&word[..idx]),
                 };
                 prev = idx;
                 return Some(w);
@@ -381,8 +441,7 @@ where
                 let w = Word {
                     word: &word.word[prev..],
                     width: display_width(&word[prev..]),
-                    whitespace: word.whitespace,
-                    penalty: word.penalty,
+                    post_fix: word.post_fix,
                 };
                 prev = word.word.len() + 1;
                 return Some(w);
@@ -399,8 +458,8 @@ where
 /// wide. This means that no extra `'-'` is inserted, the word is
 /// simply broken into smaller pieces.
 pub fn break_words<'a, I>(words: I, line_width: usize) -> Vec<Word<'a>>
-where
-    I: IntoIterator<Item = Word<'a>>,
+    where
+        I: IntoIterator<Item=Word<'a>>,
 {
     let mut shortened_words = Vec::new();
     for word in words {
@@ -610,10 +669,10 @@ pub fn wrap_first_fit<T: Fragment, F: Fn(usize) -> usize>(
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     #[cfg(feature = "unicode-width")]
     use unicode_width::UnicodeWidthChar;
+
+    use super::*;
 
     // Like assert_eq!, but the left expression is an iterator.
     macro_rules! assert_iter_eq {
@@ -752,14 +811,12 @@ mod tests {
                 Word {
                     word: "foo",
                     width: 3,
-                    whitespace: "",
-                    penalty: "-"
+                    post_fix:PostFix::Penalty("-")
                 },
                 Word {
                     word: "bar",
                     width: 3,
-                    whitespace: "",
-                    penalty: ""
+                    post_fix:PostFix::WhiteSpace("")
                 }
             ]
         );
@@ -770,14 +827,12 @@ mod tests {
                 Word {
                     word: "fo-",
                     width: 3,
-                    whitespace: "",
-                    penalty: ""
+                    post_fix:PostFix::Penalty("")
                 },
                 Word {
                     word: "bar",
                     width: 3,
-                    whitespace: "",
-                    penalty: ""
+                    post_fix:PostFix::WhiteSpace("")
                 }
             ]
         );
