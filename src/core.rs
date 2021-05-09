@@ -49,7 +49,7 @@ const ANSI_FINAL_BYTE: std::ops::RangeInclusive<char> = '\x40'..='\x7e';
 /// `chars` provide the following characters. The `chars` will be
 /// modified if `ch` is the start of an ANSI escape sequence.
 #[inline]
-pub(crate) fn skip_ansi_escape_sequence<I: Iterator<Item=char>>(ch: char, chars: &mut I) -> bool {
+pub(crate) fn skip_ansi_escape_sequence<I: Iterator<Item = char>>(ch: char, chars: &mut I) -> bool {
     if ch == CSI.0 && chars.next() == Some(CSI.1) {
         // We have found the start of an ANSI escape code, typically
         // used for colored terminal text. We skip until we find a
@@ -242,7 +242,7 @@ impl<'a> PostFix<'a> {
     pub fn penalty_len(&self) -> usize {
         match self {
             PostFix::WhiteSpace(_) => 0,
-            PostFix::Penalty(p) => p.len()
+            PostFix::Penalty(p) => p.len(),
         }
     }
 
@@ -251,7 +251,13 @@ impl<'a> PostFix<'a> {
     pub fn try_penalty(&self) -> Option<&'a str> {
         match self {
             PostFix::WhiteSpace(_) => None,
-            PostFix::Penalty(p) => if p.is_empty() { None } else { Some(*p) }
+            PostFix::Penalty(p) => {
+                if p.is_empty() {
+                    None
+                } else {
+                    Some(*p)
+                }
+            }
         }
     }
 
@@ -265,7 +271,6 @@ impl<'a> PostFix<'a> {
         matches!(self, PostFix::WhiteSpace(_))
     }
 }
-
 
 /// A piece of wrappable text, including any trailing whitespace.
 ///
@@ -325,7 +330,7 @@ impl<'a> Word<'a> {
     ///     vec![Word::from("Hel"), Word::from("lo!  ")]
     /// );
     /// ```
-    pub fn break_apart<'b>(&'b self, line_width: usize) -> impl Iterator<Item=Word<'a>> + 'b {
+    pub fn break_apart<'b>(&'b self, line_width: usize) -> impl Iterator<Item = Word<'a>> + 'b {
         let mut char_indices = self.word.char_indices();
         let mut offset = 0;
         let mut width = 0;
@@ -341,8 +346,11 @@ impl<'a> Word<'a> {
                     let word = Word {
                         word: word_segment,
                         width,
-                        post_fix: if word_segment.ends_with(
-                            '-') { PostFix::Penalty("") } else { PostFix::WhiteSpace("") },
+                        post_fix: if word_segment.ends_with('-') {
+                            PostFix::Penalty("")
+                        } else {
+                            PostFix::WhiteSpace("")
+                        },
                     };
                     offset = idx;
                     width = ch_width(ch);
@@ -418,10 +426,10 @@ impl Fragment for Word<'_> {
 pub fn split_words<'a, I, R, S>(
     words: I,
     options: &'a Options<'a, R, S>,
-) -> impl Iterator<Item=Word<'a>>
-    where
-        I: IntoIterator<Item=Word<'a>>,
-        S: WordSplitter,
+) -> impl Iterator<Item = Word<'a>>
+where
+    I: IntoIterator<Item = Word<'a>>,
+    S: WordSplitter,
 {
     words.into_iter().flat_map(move |word| {
         let mut prev = 0;
@@ -458,8 +466,8 @@ pub fn split_words<'a, I, R, S>(
 /// wide. This means that no extra `'-'` is inserted, the word is
 /// simply broken into smaller pieces.
 pub fn break_words<'a, I>(words: I, line_width: usize) -> Vec<Word<'a>>
-    where
-        I: IntoIterator<Item=Word<'a>>,
+where
+    I: IntoIterator<Item = Word<'a>>,
 {
     let mut shortened_words = Vec::new();
     for word in words {
@@ -669,10 +677,10 @@ pub fn wrap_first_fit<T: Fragment, F: Fn(usize) -> usize>(
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+
     #[cfg(feature = "unicode-width")]
     use unicode_width::UnicodeWidthChar;
-
-    use super::*;
 
     // Like assert_eq!, but the left expression is an iterator.
     macro_rules! assert_iter_eq {
@@ -811,12 +819,12 @@ mod tests {
                 Word {
                     word: "foo",
                     width: 3,
-                    post_fix:PostFix::Penalty("-")
+                    post_fix: PostFix::Penalty("-")
                 },
                 Word {
                     word: "bar",
                     width: 3,
-                    post_fix:PostFix::WhiteSpace("")
+                    post_fix: PostFix::WhiteSpace("")
                 }
             ]
         );
@@ -827,12 +835,12 @@ mod tests {
                 Word {
                     word: "fo-",
                     width: 3,
-                    post_fix:PostFix::Penalty("")
+                    post_fix: PostFix::Penalty("")
                 },
                 Word {
                     word: "bar",
                     width: 3,
-                    post_fix:PostFix::WhiteSpace("")
+                    post_fix: PostFix::WhiteSpace("")
                 }
             ]
         );

@@ -1095,7 +1095,7 @@ where
 
             result += &line[idx..idx + len];
 
-            if let Some(penalty) = last_word.post_fix.try_penalty(){
+            if let Some(penalty) = last_word.post_fix.try_penalty() {
                 result.to_mut().push_str(penalty);
             }
 
