@@ -229,13 +229,10 @@ mod unix_only {
     }
 
     pub fn main() -> Result<(), io::Error> {
-        let mut labels = vec![
-            String::from("HyphenSplitter"),
-            String::from("NoHyphenation"),
-        ];
-
         let mut splitters: Vec<Box<dyn WordSplitter>> =
             vec![Box::new(HyphenSplitter), Box::new(NoHyphenation)];
+        let mut splitter_labels: Vec<String> =
+            splitters.iter().map(|s| format!("{:?}", s)).collect();
 
         // If you like, you can download more dictionaries from
         // https://github.com/tapeinosyne/hyphenation/tree/master/dictionaries
@@ -251,19 +248,16 @@ mod unix_only {
             });
 
             if let Ok(dict) = dictionary {
-                labels.push(format!("{} hyphenation", lang.code()));
-                splitters.push(Box::new(dict));
+                splitters.insert(0, Box::new(dict));
+                splitter_labels.insert(0, format!("{} hyphenation", lang.code()));
             }
         }
 
-        let mut label = labels.pop().unwrap();
         let mut options = Options::new(35)
-            .splitter(Box::new(HyphenSplitter) as Box<dyn WordSplitter>)
+            .break_words(false)
+            .splitter(splitters.remove(0))
             .word_separator(Box::new(AsciiSpace) as Box<dyn WordSeparator>);
-        options.break_words = false;
-        options.splitter = splitters.pop().unwrap();
-
-        let mut idx_iter = (0..splitters.len()).collect::<Vec<_>>().into_iter().cycle();
+        let mut splitter_label = splitter_labels.remove(0);
 
         let args = std::env::args().collect::<Vec<_>>();
         let mut text = if args.len() > 1 {
@@ -287,7 +281,7 @@ mod unix_only {
         let stdin = io::stdin();
         let mut screen = AlternateScreen::from(io::stdout().into_raw_mode()?);
         write!(screen, "{}", cursor::BlinkingUnderline)?;
-        draw_text(&text, &options, &label, &mut screen)?;
+        draw_text(&text, &options, &splitter_label, &mut screen)?;
 
         for c in stdin.keys() {
             match c? {
@@ -303,9 +297,11 @@ mod unix_only {
                     }
                 }
                 Key::Ctrl('s') => {
-                    let idx = idx_iter.next().unwrap();
-                    std::mem::swap(&mut options.splitter, &mut splitters[idx]);
-                    std::mem::swap(&mut label, &mut labels[idx]);
+                    // We always keep the next splitter at position 0.
+                    std::mem::swap(&mut options.splitter, &mut splitters[0]);
+                    splitters.rotate_left(1);
+                    std::mem::swap(&mut splitter_label, &mut splitter_labels[0]);
+                    splitter_labels.rotate_left(1);
                 }
                 Key::Char(c) => text.push(c),
                 Key::Backspace => {
@@ -316,7 +312,7 @@ mod unix_only {
                 _ => {}
             }
 
-            draw_text(&text, &options, &label, &mut screen)?;
+            draw_text(&text, &options, &splitter_label, &mut screen)?;
         }
 
         // TODO: change to cursor::DefaultStyle if
