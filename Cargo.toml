@@ -20,6 +20,11 @@ name = "linear"
 harness = false
 path = "benches/linear.rs"
 
+[[bench]]
+name = "indent"
+harness = false
+path = "benches/indent.rs"
+
 [features]
 default = ["unicode-linebreak", "unicode-width", "smawk"]
 
