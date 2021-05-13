@@ -143,6 +143,7 @@ jobs:
       - name: Add and remove changed files
         id: git-add
         run: |
+          git restore build-info.json
           git add --verbose --all
           if git diff --staged --quiet --exit-code; then
             echo "No changes found in textwrap-wasm-demo-app"
