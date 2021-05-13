@@ -4,42 +4,45 @@
 //! The functions here can be used to uniformly indent or dedent
 //! (unindent) word wrapped lines of text.
 
-/// Add prefix to each non-empty line.
+/// Indent each line by the given prefix.
+///
+/// # Examples
 ///
 /// ```
 /// use textwrap::indent;
 ///
-/// assert_eq!(indent("
-/// Foo
-/// Bar
-/// ", "  "), "
-///   Foo
-///   Bar
-/// ");
+/// assert_eq!(indent("First line.\nSecond line.\n", "  "),
+///            "  First line.\n  Second line.\n");
 /// ```
 ///
-/// Lines consisting only of whitespace are kept unchanged:
+/// When indenting, trailing whitespace is stripped from the prefix.
+/// This means that empty lines remain empty afterwards:
 ///
 /// ```
 /// use textwrap::indent;
 ///
-/// assert_eq!(indent("
-/// Foo
-///
-/// Bar
-///   \t
-/// Baz
-/// ", "->"), "
-/// ->Foo
-///
-/// ->Bar
-///   \t
-/// ->Baz
-/// ");
+/// assert_eq!(indent("First line.\n\n\nSecond line.\n", "  "),
+///            "  First line.\n\n\n  Second line.\n");
 /// ```
 ///
-/// Leading and trailing whitespace on non-empty lines is kept
-/// unchanged:
+/// Notice how `"\n\n\n"` remained as `"\n\n\n"`.
+///
+/// This feature is useful when you want to indent text and have a
+/// space between your prefix and the text. In this case, you _don't_
+/// want a trailing space on empty lines:
+///
+/// ```
+/// use textwrap::indent;
+///
+/// assert_eq!(indent("foo = 123\n\nprint(foo)\n", "# "),
+///            "# foo = 123\n#\n# print(foo)\n");
+/// ```
+///
+/// Notice how `"\n\n"` became `"\n#\n"` instead of `"\n# \n"` which
+/// would have trailing whitespace.
+///
+/// Leading and trailing whitespace coming from the text itself is
+/// kept unchanged:
 ///
 /// ```
 /// use textwrap::indent;
@@ -48,17 +51,22 @@
 /// ```
 pub fn indent(s: &str, prefix: &str) -> String {
     let mut result = String::new();
-
-    for (idx, line) in s.split('\n').enumerate() {
+    let trimmed_prefix = prefix.trim_end();
+    for (idx, line) in s.split_terminator('\n').enumerate() {
         if idx > 0 {
             result.push('\n');
         }
-        if !line.trim().is_empty() {
+        if line.trim().is_empty() {
+            result.push_str(trimmed_prefix);
+        } else {
             result.push_str(prefix);
         }
         result.push_str(line);
     }
-
+    if s.ends_with('\n') {
+        // split_terminator will have eaten the final '\n'.
+        result.push('\n');
+    }
     result
 }
 
@@ -155,11 +163,11 @@ mod tests {
             "  baz\n",
         ].join("");
         let expected = [
-            "//  foo\n",
-            "//bar\n",
-            "//  baz\n",
+            "//   foo\n",
+            "// bar\n",
+            "//   baz\n",
         ].join("");
-        assert_eq!(indent(&text, "//"), expected);
+        assert_eq!(indent(&text, "// "), expected);
     }
 
     #[test]
@@ -172,12 +180,12 @@ mod tests {
             "  baz",
         ].join("\n");
         let expected = [
-            "//  foo",
-            "//bar",
-            "",
-            "//  baz",
+            "//   foo",
+            "// bar",
+            "//",
+            "//   baz",
         ].join("\n");
-        assert_eq!(indent(&text, "//"), expected);
+        assert_eq!(indent(&text, "// "), expected);
     }
 
     #[test]

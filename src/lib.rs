@@ -86,12 +86,12 @@
 //! into a bullet list:
 //!
 //! ```
-//! let before = "
+//! let before = "\
 //! foo
 //! bar
 //! baz
 //! ";
-//! let after = "
+//! let after = "\
 //! * foo
 //! * bar
 //! * baz
