@@ -50,7 +50,11 @@
 /// assert_eq!(indent(" \t  Foo   ", "->"), "-> \t  Foo   ");
 /// ```
 pub fn indent(s: &str, prefix: &str) -> String {
-    let mut result = String::new();
+    // We know we'll need more than s.len() bytes for the output, but
+    // without counting '\n' characters (which is somewhat slow), we
+    // don't know exactly how much. However, we can preemptively do
+    // the first doubling of the output size.
+    let mut result = String::with_capacity(2 * s.len());
     let trimmed_prefix = prefix.trim_end();
     for (idx, line) in s.split_terminator('\n').enumerate() {
         if idx > 0 {
