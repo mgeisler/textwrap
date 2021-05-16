@@ -167,8 +167,8 @@ pub fn draw_wrapped_text(
             .map(|word| CanvasWord::from(ctx, word))
             .collect::<Vec<_>>();
 
-        let line_lengths = |_| width * PRECISION;
-        let wrapped_words = core::wrap_first_fit(&canvas_words, line_lengths);
+        let line_lengths = [width * PRECISION];
+        let wrapped_words = core::wrap_first_fit(&canvas_words, &line_lengths);
 
         for words_in_line in wrapped_words {
             lineno += 1;

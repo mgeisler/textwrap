@@ -1053,12 +1053,11 @@ where
             split_words.collect::<Vec<_>>()
         };
 
-        #[rustfmt::skip]
-        let line_lengths = |i| if i == 0 { initial_width } else { subsequent_width };
+        let line_widths = [initial_width, subsequent_width];
         let wrapped_words = match options.wrap_algorithm {
             #[cfg(feature = "smawk")]
-            core::WrapAlgorithm::OptimalFit => core::wrap_optimal_fit(&broken_words, line_lengths),
-            core::WrapAlgorithm::FirstFit => core::wrap_first_fit(&broken_words, line_lengths),
+            core::WrapAlgorithm::OptimalFit => core::wrap_optimal_fit(&broken_words, &line_widths),
+            core::WrapAlgorithm::FirstFit => core::wrap_first_fit(&broken_words, &line_widths),
         };
 
         let mut idx = 0;
@@ -1282,7 +1281,7 @@ pub fn fill_inplace(text: &mut String, width: usize) {
     let mut offset = 0;
     for line in text.split('\n') {
         let words = AsciiSpace.find_words(line).collect::<Vec<_>>();
-        let wrapped_words = core::wrap_first_fit(&words, |_| width);
+        let wrapped_words = core::wrap_first_fit(&words, &[width]);
 
         let mut line_offset = offset;
         for words in &wrapped_words[..wrapped_words.len() - 1] {
