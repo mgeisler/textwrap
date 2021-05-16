@@ -446,8 +446,9 @@ pub enum WrapAlgorithm {
 
 /// Wrap abstract fragments into lines with a first-fit algorithm.
 ///
-/// The `line_widths` map line numbers (starting from 0) to a target
-/// line width. This can be used to implement hanging indentation.
+/// The `line_widths` slice give the target line width for each line
+/// (the last slice element is repeated as necessary). This can be
+/// used to implement hanging indentation.
 ///
 /// The fragments must already have been split into the desired
 /// widths, this function will not (and cannot) attempt to split them
@@ -477,7 +478,7 @@ pub enum WrapAlgorithm {
 ///
 /// let text = "These few words will unfortunately not wrap nicely.";
 /// let words = AsciiSpace.find_words(text).collect::<Vec<_>>();
-/// assert_eq!(lines_to_strings(wrap_first_fit(&words, |_| 15)),
+/// assert_eq!(lines_to_strings(wrap_first_fit(&words, &[15])),
 ///            vec!["These few words",
 ///                 "will",  // <-- short line
 ///                 "unfortunately",
@@ -486,7 +487,7 @@ pub enum WrapAlgorithm {
 ///
 /// // We can avoid the short line if we look ahead:
 /// #[cfg(feature = "smawk")]
-/// assert_eq!(lines_to_strings(textwrap::core::wrap_optimal_fit(&words, |_| 15)),
+/// assert_eq!(lines_to_strings(textwrap::core::wrap_optimal_fit(&words, &[15])),
 ///            vec!["These few",
 ///                 "words will",
 ///                 "unfortunately",
@@ -551,7 +552,7 @@ pub enum WrapAlgorithm {
 ///     let mut days = Vec::new();
 ///     // Assign tasks to days. The assignment is a vector of slices,
 ///     // with a slice per day.
-///     let assigned_days: Vec<&[Task<'a>]> = wrap_first_fit(&tasks, |i| day_length);
+///     let assigned_days: Vec<&[Task<'a>]> = wrap_first_fit(&tasks, &[day_length]);
 ///     for day in assigned_days.iter() {
 ///         let last = day.last().unwrap();
 ///         let work_hours: usize = day.iter().map(|t| t.hours + t.sweep).sum();
@@ -587,16 +588,21 @@ pub enum WrapAlgorithm {
 ///
 /// Apologies to anyone who actually knows how to build a house and
 /// knows how long each step takes :-)
-pub fn wrap_first_fit<T: Fragment, F: Fn(usize) -> usize>(
-    fragments: &[T],
-    line_widths: F,
-) -> Vec<&[T]> {
+pub fn wrap_first_fit<'a, 'b, T: Fragment>(
+    fragments: &'a [T],
+    line_widths: &'b [usize],
+) -> Vec<&'a [T]> {
+    // The final line width is used for all remaining lines.
+    let default_line_width = line_widths.last().copied().unwrap_or(0);
     let mut lines = Vec::new();
     let mut start = 0;
     let mut width = 0;
 
     for (idx, fragment) in fragments.iter().enumerate() {
-        let line_width = line_widths(lines.len());
+        let line_width = line_widths
+            .get(lines.len())
+            .copied()
+            .unwrap_or(default_line_width);
         if width + fragment.width() + fragment.penalty_width() > line_width && idx > start {
             lines.push(&fragments[start..idx]);
             start = idx;

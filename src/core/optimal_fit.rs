@@ -46,20 +46,20 @@ const NLINE_PENALTY: i32 = 1000;
 /// let fragments = vec![Word::from(short), Word::from(&long)];
 ///
 /// // Perfect fit, both words are on a single line with no overflow.
-/// let wrapped = wrap_optimal_fit(&fragments, |_| short.len() + long.len());
+/// let wrapped = wrap_optimal_fit(&fragments, &[short.len() + long.len()]);
 /// assert_eq!(wrapped, vec![&[Word::from(short), Word::from(&long)]]);
 ///
 /// // The words no longer fit, yet we get a single line back. While
 /// // the cost of overflow (`1 * 2500`) is the same as the cost of the
 /// // gap (`50 * 50 = 2500`), the tie is broken by `NLINE_PENALTY`
 /// // which makes it cheaper to overflow than to use two lines.
-/// let wrapped = wrap_optimal_fit(&fragments, |_| short.len() + long.len() - 1);
+/// let wrapped = wrap_optimal_fit(&fragments, &[short.len() + long.len() - 1]);
 /// assert_eq!(wrapped, vec![&[Word::from(short), Word::from(&long)]]);
 ///
 /// // The cost of overflow would be 2 * 2500, whereas the cost of the
 /// // gap is only `49 * 49 + NLINE_PENALTY = 2401 + 1000 = 3401`. We
 /// // therefore get two lines.
-/// let wrapped = wrap_optimal_fit(&fragments, |_| short.len() + long.len() - 2);
+/// let wrapped = wrap_optimal_fit(&fragments, &[short.len() + long.len() - 2]);
 /// assert_eq!(wrapped, vec![&[Word::from(short)],
 ///                          &[Word::from(&long)]]);
 /// ```
@@ -81,8 +81,9 @@ const HYPHEN_PENALTY: i32 = 25;
 
 /// Wrap abstract fragments into lines with an optimal-fit algorithm.
 ///
-/// The `line_widths` map line numbers (starting from 0) to a target
-/// line width. This can be used to implement hanging indentation.
+/// The `line_widths` slice give the target line width for each line
+/// (the last slice element is repeated as necessary). This can be
+/// used to implement hanging indentation.
 ///
 /// The fragments must already have been split into the desired
 /// widths, this function will not (and cannot) attempt to split them
@@ -153,10 +154,12 @@ const HYPHEN_PENALTY: i32 = 25;
 ///
 /// **Note:** Only available when the `smawk` Cargo feature is
 /// enabled.
-pub fn wrap_optimal_fit<T: Fragment, F: Fn(usize) -> usize>(
-    fragments: &[T],
-    line_widths: F,
-) -> Vec<&[T]> {
+pub fn wrap_optimal_fit<'a, 'b, T: Fragment>(
+    fragments: &'a [T],
+    line_widths: &'b [usize],
+) -> Vec<&'a [T]> {
+    // The final line width is used for all remaining lines.
+    let default_line_width = line_widths.last().copied().unwrap_or(0);
     let mut widths = Vec::with_capacity(fragments.len() + 1);
     let mut width = 0;
     widths.push(width);
@@ -170,7 +173,11 @@ pub fn wrap_optimal_fit<T: Fragment, F: Fn(usize) -> usize>(
     let minima = smawk::online_column_minima(0, widths.len(), |minima, i, j| {
         // Line number for fragment `i`.
         let line_number = line_numbers.get(i, &minima);
-        let target_width = std::cmp::max(1, line_widths(line_number));
+        let line_width = line_widths
+            .get(line_number)
+            .copied()
+            .unwrap_or(default_line_width);
+        let target_width = std::cmp::max(1, line_width);
 
         // Compute the width of a line spanning fragments[i..j] in
         // constant time. We need to adjust widths[j] by subtracting
