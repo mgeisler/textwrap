@@ -1,5 +1,25 @@
-use crate::core::Fragment;
 use std::cell::RefCell;
+
+use crate::core::{Fragment, Word};
+use crate::wrap_algorithms::WrapAlgorithm;
+
+/// Wrap words using an advanced algorithm with look-ahead.
+///
+/// This wrapping algorithm considers the entire paragraph to find
+/// optimal line breaks. Implemented by [`wrap_optimal_fit`], please
+/// see that function for details and examples.
+///
+/// **Note:** Only available when the `smawk` Cargo feature is
+/// enabled.
+#[derive(Clone, Copy, Debug, Default)]
+pub struct OptimalFit;
+
+impl WrapAlgorithm for OptimalFit {
+    #[inline]
+    fn wrap<'a, 'b>(&self, words: &'b [Word<'a>], line_widths: &'b [usize]) -> Vec<&'b [Word<'a>]> {
+        wrap_optimal_fit(words, line_widths)
+    }
+}
 
 /// Cache for line numbers. This is necessary to avoid a O(n**2)
 /// behavior when computing line numbers in [`wrap_optimal_fit`].
@@ -39,7 +59,8 @@ const NLINE_PENALTY: i32 = 1000;
 /// overflow the line by 1 character in extreme cases:
 ///
 /// ```
-/// use textwrap::core::{wrap_optimal_fit, Word};
+/// use textwrap::wrap_algorithms::wrap_optimal_fit;
+/// use textwrap::core::Word;
 ///
 /// let short = "foo ";
 /// let long = "x".repeat(50);
@@ -81,7 +102,7 @@ const HYPHEN_PENALTY: i32 = 25;
 
 /// Wrap abstract fragments into lines with an optimal-fit algorithm.
 ///
-/// The `line_widths` slice give the target line width for each line
+/// The `line_widths` slice gives the target line width for each line
 /// (the last slice element is repeated as necessary). This can be
 /// used to implement hanging indentation.
 ///

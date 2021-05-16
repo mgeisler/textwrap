@@ -33,7 +33,8 @@ pub trait WordSeparator: WordSeparatorClone + std::fmt::Debug {
 
 // The internal `WordSeparatorClone` trait is allows us to implement
 // `Clone` for `Box<dyn WordSeparator>`. This in used in the
-// `From<&Options<'_, R, S>> for Options<'a, R, S>` implementation.
+// `From<&Options<'_, A, R, S>> for Options<'a, A, R, S>`
+// implementation.
 pub trait WordSeparatorClone {
     fn clone_box(&self) -> Box<dyn WordSeparator>;
 }
