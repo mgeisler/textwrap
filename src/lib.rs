@@ -235,9 +235,9 @@ macro_rules! DefaultWordSeparator {
 #[derive(Debug, Clone)]
 pub struct Options<
     'a,
-    A = Box<dyn wrap_algorithms::WrapAlgorithm>,
-    R = Box<dyn WordSeparator>,
-    S = Box<dyn WordSplitter>,
+    WrapAlgo = Box<dyn wrap_algorithms::WrapAlgorithm>,
+    WordSep = Box<dyn WordSeparator>,
+    WordSplit = Box<dyn WordSplitter>,
 > {
     /// The width in columns at which the text will be wrapped.
     pub width: usize,
@@ -253,19 +253,25 @@ pub struct Options<
     pub break_words: bool,
     /// Wrapping algorithm to use, see the implementations of the
     /// [`wrap_algorithms::WrapAlgorithm`] trait for details.
-    pub wrap_algorithm: A,
+    pub wrap_algorithm: WrapAlgo,
     /// The line breaking algorithm to use, see [`WordSeparator`]
     /// trait for an overview and possible implementations.
-    pub word_separator: R,
+    pub word_separator: WordSep,
     /// The method for splitting words. This can be used to prohibit
     /// splitting words on hyphens, or it can be used to implement
     /// language-aware machine hyphenation. Please see the
     /// [`WordSplitter`] trait for details.
-    pub splitter: S,
+    pub splitter: WordSplit,
 }
 
-impl<'a, A: Clone, R: Clone, S: Clone> From<&'a Options<'a, A, R, S>> for Options<'a, A, R, S> {
-    fn from(options: &'a Options<'a, A, R, S>) -> Self {
+impl<'a, WrapAlgo, WordSep, WordSplit> From<&'a Options<'a, WrapAlgo, WordSep, WordSplit>>
+    for Options<'a, WrapAlgo, WordSep, WordSplit>
+where
+    WrapAlgo: Clone,
+    WordSep: Clone,
+    WordSplit: Clone,
+{
+    fn from(options: &'a Options<'a, WrapAlgo, WordSep, WordSplit>) -> Self {
         Self {
             width: options.width,
             initial_indent: options.initial_indent,
@@ -395,7 +401,7 @@ impl<'a> Options<'a, DefaultWrapAlgorithm!(), DefaultWordSeparator!(), HyphenSpl
     }
 }
 
-impl<'a, S> Options<'a, DefaultWrapAlgorithm!(), DefaultWordSeparator!(), S> {
+impl<'a, WordSplit> Options<'a, DefaultWrapAlgorithm!(), DefaultWordSeparator!(), WordSplit> {
     /// Creates a new [`Options`] with the specified width and
     /// splitter. Equivalent to
     ///
@@ -471,7 +477,7 @@ impl<'a, S> Options<'a, DefaultWrapAlgorithm!(), DefaultWordSeparator!(), S> {
     /// static BAR: Options<FirstFit, AsciiSpace, HyphenSplitter> = FOO;
     /// # }
     /// ```
-    pub const fn with_splitter(width: usize, splitter: S) -> Self {
+    pub const fn with_splitter(width: usize, splitter: WordSplit) -> Self {
         Options {
             width,
             initial_indent: "",
@@ -484,7 +490,7 @@ impl<'a, S> Options<'a, DefaultWrapAlgorithm!(), DefaultWordSeparator!(), S> {
     }
 }
 
-impl<'a, A, R, S> Options<'a, A, R, S> {
+impl<'a, WrapAlgo, WordSep, WordSplit> Options<'a, WrapAlgo, WordSep, WordSplit> {
     /// Change [`self.initial_indent`]. The initial indentation is
     /// used on the very first line of output.
     ///
@@ -578,7 +584,10 @@ impl<'a, A, R, S> Options<'a, A, R, S> {
     /// See [`WordSeparator`] for details on the choices.
     ///
     /// [`self.word_separator`]: #structfield.word_separator
-    pub fn word_separator<T>(self, word_separator: T) -> Options<'a, A, T, S> {
+    pub fn word_separator<NewWordSep>(
+        self,
+        word_separator: NewWordSep,
+    ) -> Options<'a, WrapAlgo, NewWordSep, WordSplit> {
         Options {
             width: self.width,
             initial_indent: self.initial_indent,
@@ -596,7 +605,10 @@ impl<'a, A, R, S> Options<'a, A, R, S> {
     /// the choices.
     ///
     /// [`self.wrap_algorithm`]: #structfield.wrap_algorithm
-    pub fn wrap_algorithm<B>(self, wrap_algorithm: B) -> Options<'a, B, R, S> {
+    pub fn wrap_algorithm<NewWrapAlgo>(
+        self,
+        wrap_algorithm: NewWrapAlgo,
+    ) -> Options<'a, NewWrapAlgo, WordSep, WordSplit> {
         Options {
             width: self.width,
             initial_indent: self.initial_indent,
@@ -625,7 +637,10 @@ impl<'a, A, R, S> Options<'a, A, R, S> {
     /// ```
     ///
     /// [`self.splitter`]: #structfield.splitter
-    pub fn splitter<T>(self, splitter: T) -> Options<'a, A, R, T> {
+    pub fn splitter<NewWordSplit>(
+        self,
+        splitter: NewWordSplit,
+    ) -> Options<'a, WrapAlgo, WordSep, NewWordSplit> {
         Options {
             width: self.width,
             initial_indent: self.initial_indent,
@@ -698,12 +713,12 @@ pub fn termwidth() -> usize {
 ///     "- Memory safety\n  without\n  garbage\n  collection."
 /// );
 /// ```
-pub fn fill<'a, A, R, S, Opt>(text: &str, width_or_options: Opt) -> String
+pub fn fill<'a, WrapAlgo, WordSep, WordSplit, Opt>(text: &str, width_or_options: Opt) -> String
 where
-    A: wrap_algorithms::WrapAlgorithm,
-    R: WordSeparator,
-    S: WordSplitter,
-    Opt: Into<Options<'a, A, R, S>>,
+    WrapAlgo: wrap_algorithms::WrapAlgorithm,
+    WordSep: WordSeparator,
+    WordSplit: WordSplitter,
+    Opt: Into<Options<'a, WrapAlgo, WordSep, WordSplit>>,
 {
     // This will avoid reallocation in simple cases (no
     // indentation, no hyphenation).
@@ -865,12 +880,15 @@ pub fn unfill(
 ///   item.
 /// ");
 /// ```
-pub fn refill<'a, A, R, S, Opt>(filled_text: &str, new_width_or_options: Opt) -> String
+pub fn refill<'a, WrapAlgo, WordSep, WordSplit, Opt>(
+    filled_text: &str,
+    new_width_or_options: Opt,
+) -> String
 where
-    A: wrap_algorithms::WrapAlgorithm,
-    R: WordSeparator,
-    S: WordSplitter,
-    Opt: Into<Options<'a, A, R, S>>,
+    WrapAlgo: wrap_algorithms::WrapAlgorithm,
+    WordSep: WordSeparator,
+    WordSplit: WordSplitter,
+    Opt: Into<Options<'a, WrapAlgo, WordSep, WordSplit>>,
 {
     let trimmed = filled_text.trim_end_matches('\n');
     let (text, options) = unfill(trimmed);
@@ -1051,12 +1069,15 @@ where
 /// assert_eq!(wrap("  foo bar", 8), vec!["  foo", "bar"]);
 /// assert_eq!(wrap("  foo bar", 4), vec!["", "foo", "bar"]);
 /// ```
-pub fn wrap<'a, A, R, S, Opt>(text: &str, width_or_options: Opt) -> Vec<Cow<'_, str>>
+pub fn wrap<'a, WrapAlgo, WordSep, WordSplit, Opt>(
+    text: &str,
+    width_or_options: Opt,
+) -> Vec<Cow<'_, str>>
 where
-    A: wrap_algorithms::WrapAlgorithm,
-    R: WordSeparator,
-    S: WordSplitter,
-    Opt: Into<Options<'a, A, R, S>>,
+    WrapAlgo: wrap_algorithms::WrapAlgorithm,
+    WordSep: WordSeparator,
+    WordSplit: WordSplitter,
+    Opt: Into<Options<'a, WrapAlgo, WordSep, WordSplit>>,
 {
     let options = width_or_options.into();
 
@@ -1196,7 +1217,7 @@ where
 ///                 "| example text, | columns.      | shorter than   |",
 ///                 "| which is      | Notice how    | the others.    |",
 ///                 "| wrapped into  | the final     |                |"]);
-pub fn wrap_columns<'a, A, R, S, Opt>(
+pub fn wrap_columns<'a, WrapAlgo, WordSep, WordSplit, Opt>(
     text: &str,
     columns: usize,
     total_width_or_options: Opt,
@@ -1205,10 +1226,10 @@ pub fn wrap_columns<'a, A, R, S, Opt>(
     right_gap: &str,
 ) -> Vec<String>
 where
-    A: wrap_algorithms::WrapAlgorithm,
-    R: WordSeparator,
-    S: WordSplitter,
-    Opt: Into<Options<'a, A, R, S>>,
+    WrapAlgo: wrap_algorithms::WrapAlgorithm,
+    WordSep: WordSeparator,
+    WordSplit: WordSplitter,
+    Opt: Into<Options<'a, WrapAlgo, WordSep, WordSplit>>,
 {
     assert!(columns > 0);
 

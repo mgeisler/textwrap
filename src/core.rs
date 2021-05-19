@@ -350,13 +350,13 @@ impl Fragment for Word<'_> {
 ///     vec![Word::from("foo-bar")]
 /// );
 /// ```
-pub fn split_words<'a, I, A, R, S>(
+pub fn split_words<'a, I, WrapAlgo, WordSep, WordSplit>(
     words: I,
-    options: &'a Options<'a, A, R, S>,
+    options: &'a Options<'a, WrapAlgo, WordSep, WordSplit>,
 ) -> impl Iterator<Item = Word<'a>>
 where
     I: IntoIterator<Item = Word<'a>>,
-    S: WordSplitter,
+    WordSplit: WordSplitter,
 {
     words.into_iter().flat_map(move |word| {
         let mut prev = 0;
