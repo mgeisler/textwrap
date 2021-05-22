@@ -68,7 +68,7 @@ wrapping text.
 ```
 
 The second line is now shorter and the text is more ragged. The kind
-of wrapping can be configured via `Option::wrap_algorithm`.
+of wrapping can be configured via `Options::wrap_algorithm`.
 
 If you enable the `hyphenation` Cargo feature, you get support for
 automatic hyphenation for [about 70 languages][patterns] via
