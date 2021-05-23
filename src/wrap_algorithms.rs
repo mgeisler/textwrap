@@ -42,8 +42,8 @@ pub trait WrapAlgorithm: WrapAlgorithmClone + std::fmt::Debug {
 
 // The internal `WrapAlgorithmClone` trait is allows us to implement
 // `Clone` for `Box<dyn WrapAlgorithm>`. This in used in the
-// `From<&Options<'_, A, R, S>> for Options<'a, A, R, S>`
-// implementation.
+// `From<&Options<'_, WrapAlgo, WordSep, WordSplit>> for Options<'a,
+// WrapAlgo, WordSep, WordSplit>` implementation.
 #[doc(hidden)]
 pub trait WrapAlgorithmClone {
     fn clone_box(&self) -> Box<dyn WrapAlgorithm>;
