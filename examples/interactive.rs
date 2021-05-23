@@ -19,9 +19,8 @@ mod unix_only {
     use termion::raw::{IntoRawMode, RawTerminal};
     use termion::screen::AlternateScreen;
     use termion::{color, cursor, style};
-    use textwrap::{word_separators, wrap_algorithms};
+    use textwrap::{word_separators, word_splitters, wrap_algorithms};
     use textwrap::{wrap, Options};
-    use textwrap::{HyphenSplitter, NoHyphenation, WordSplitter};
 
     #[cfg(feature = "hyphenation")]
     use hyphenation::{Language, Load, Standard};
@@ -60,7 +59,7 @@ mod unix_only {
             'a,
             Box<dyn wrap_algorithms::WrapAlgorithm>,
             Box<dyn word_separators::WordSeparator>,
-            Box<dyn WordSplitter>,
+            Box<dyn word_splitters::WordSplitter>,
         >,
         splitter_label: &str,
         stdout: &mut RawTerminal<io::Stdout>,
@@ -238,8 +237,10 @@ mod unix_only {
         #[cfg(feature = "smawk")]
         wrap_algorithms.push(Box::new(wrap_algorithms::OptimalFit));
 
-        let mut splitters: Vec<Box<dyn WordSplitter>> =
-            vec![Box::new(HyphenSplitter), Box::new(NoHyphenation)];
+        let mut splitters: Vec<Box<dyn word_splitters::WordSplitter>> = vec![
+            Box::new(word_splitters::HyphenSplitter),
+            Box::new(word_splitters::NoHyphenation),
+        ];
         let mut splitter_labels: Vec<String> =
             splitters.iter().map(|s| format!("{:?}", s)).collect();
 

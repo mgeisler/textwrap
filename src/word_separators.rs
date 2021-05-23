@@ -26,8 +26,8 @@ use crate::core::Word;
 /// breaking algorithm, which finds break points in non-ASCII text.
 ///
 /// The line breaks occur between words, please see the
-/// [`WordSplitter`](crate::WordSplitter) trait for options of how
-/// to handle hyphenation of individual words.
+/// [`WordSplitter`](crate::word_splitters::WordSplitter) trait for
+/// options of how to handle hyphenation of individual words.
 ///
 /// # Examples
 ///
@@ -139,8 +139,8 @@ pub struct UnicodeBreakProperties;
 /// to break lines. There is a small difference in that the U+002D
 /// (Hyphen-Minus) and U+00AD (Soft Hyphen) don’t create a line break:
 /// to allow a line break at a hyphen, use the
-/// [`HyphenSplitter`](super::HyphenSplitter). Soft hyphens are not
-/// currently supported.
+/// [`HyphenSplitter`](crate::word_splitters::HyphenSplitter). Soft
+/// hyphens are not currently supported.
 ///
 /// # Examples
 ///
