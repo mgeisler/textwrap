@@ -9,8 +9,8 @@
 //!
 //! 1. Split your input into [`Fragment`]s. These are abstract blocks
 //!    of text or content which can be wrapped into lines. See
-//!    [`WordSeparator`](crate::WordSeparator) for how to do this for
-//!    text.
+//!    [`WordSeparator`](crate::word_separators::WordSeparator) for
+//!    how to do this for text.
 //!
 //! 2. Potentially split your fragments into smaller pieces. This
 //!    allows you to implement things like hyphenation. If wrapping

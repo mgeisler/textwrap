@@ -19,8 +19,8 @@ mod unix_only {
     use termion::raw::{IntoRawMode, RawTerminal};
     use termion::screen::AlternateScreen;
     use termion::{color, cursor, style};
-    use textwrap::wrap_algorithms;
-    use textwrap::{wrap, AsciiSpace, Options, WordSeparator};
+    use textwrap::{word_separators, wrap_algorithms};
+    use textwrap::{wrap, Options};
     use textwrap::{HyphenSplitter, NoHyphenation, WordSplitter};
 
     #[cfg(feature = "hyphenation")]
@@ -59,7 +59,7 @@ mod unix_only {
         options: &Options<
             'a,
             Box<dyn wrap_algorithms::WrapAlgorithm>,
-            Box<dyn WordSeparator>,
+            Box<dyn word_separators::WordSeparator>,
             Box<dyn WordSplitter>,
         >,
         splitter_label: &str,
@@ -266,7 +266,9 @@ mod unix_only {
             .break_words(false)
             .wrap_algorithm(wrap_algorithms.remove(0))
             .splitter(splitters.remove(0))
-            .word_separator(Box::new(AsciiSpace) as Box<dyn WordSeparator>);
+            .word_separator(
+                Box::new(word_separators::AsciiSpace) as Box<dyn word_separators::WordSeparator>
+            );
         let mut splitter_label = splitter_labels.remove(0);
 
         let args = std::env::args().collect::<Vec<_>>();

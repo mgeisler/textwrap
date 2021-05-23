@@ -1,13 +1,12 @@
+use textwrap::word_separators::{AsciiSpace, WordSeparator};
 use textwrap::wrap_algorithms::{FirstFit, WrapAlgorithm};
 use textwrap::Options;
-use textwrap::{AsciiSpace, WordSeparator};
 use textwrap::{NoHyphenation, WordSplitter};
 
 /// Cleaned up type name.
 fn type_name<T: ?Sized>(_val: &T) -> String {
     std::any::type_name::<T>()
         .replace("alloc::boxed::Box", "Box")
-        .replace("textwrap::word_separator", "textwrap")
         .replace("textwrap::splitting", "textwrap")
 }
 
@@ -22,7 +21,7 @@ fn static_hyphensplitter() {
         format!(
             "textwrap::Options<{}, {}, {}>",
             "textwrap::wrap_algorithms::FirstFit",
-            "textwrap::AsciiSpace",
+            "textwrap::word_separators::AsciiSpace",
             "textwrap::HyphenSplitter"
         )
     );
@@ -34,7 +33,7 @@ fn static_hyphensplitter() {
         format!(
             "textwrap::Options<{}, {}, {}>",
             "textwrap::wrap_algorithms::FirstFit",
-            "textwrap::AsciiSpace",
+            "textwrap::word_separators::AsciiSpace",
             "textwrap::HyphenSplitter"
         )
     );
@@ -46,7 +45,7 @@ fn static_hyphensplitter() {
         format!(
             "textwrap::Options<{}, {}, {}>",
             "textwrap::wrap_algorithms::FirstFit",
-            "textwrap::AsciiSpace",
+            "textwrap::word_separators::AsciiSpace",
             "textwrap::HyphenSplitter"
         )
     );
@@ -64,7 +63,7 @@ fn box_static_nohyphenation() {
         format!(
             "textwrap::Options<{}, {}, {}>",
             "Box<textwrap::wrap_algorithms::FirstFit>",
-            "Box<textwrap::AsciiSpace>",
+            "Box<textwrap::word_separators::AsciiSpace>",
             "Box<textwrap::NoHyphenation>"
         )
     );
@@ -82,7 +81,7 @@ fn box_dyn_wordsplitter() {
         format!(
             "textwrap::Options<{}, {}, {}>",
             "Box<dyn textwrap::wrap_algorithms::WrapAlgorithm>",
-            "Box<dyn textwrap::WordSeparator>",
+            "Box<dyn textwrap::word_separators::WordSeparator>",
             "Box<dyn textwrap::WordSplitter>"
         )
     );
