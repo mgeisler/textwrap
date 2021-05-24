@@ -1091,7 +1091,7 @@ where
     let mut lines = Vec::new();
     for line in text.split('\n') {
         let words = options.word_separator.find_words(line);
-        let split_words = core::split_words(words, &options);
+        let split_words = core::split_words(words, &options.splitter);
         let broken_words = if options.break_words {
             let mut broken_words = core::break_words(split_words, subsequent_width);
             if !options.initial_indent.is_empty() {

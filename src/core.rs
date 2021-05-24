@@ -33,7 +33,7 @@
 //! the functionality here is not sufficient or if you have ideas for
 //! improving it. We would love to hear from you!
 
-use crate::{Options, WordSplitter};
+use crate::WordSplitter;
 
 /// The CSI or “Control Sequence Introducer” introduces an ANSI escape
 /// sequence. This is typically used for colored text and will be
@@ -334,25 +334,22 @@ impl Fragment for Word<'_> {
 ///
 /// ```
 /// use textwrap::core::{split_words, Word};
-/// use textwrap::{NoHyphenation, Options};
+/// use textwrap::{NoHyphenation, HyphenSplitter};
 ///
-/// // The default splitter is HyphenSplitter:
-/// let options = Options::new(80);
 /// assert_eq!(
-///     split_words(vec![Word::from("foo-bar")], &options).collect::<Vec<_>>(),
+///     split_words(vec![Word::from("foo-bar")], &HyphenSplitter).collect::<Vec<_>>(),
 ///     vec![Word::from("foo-"), Word::from("bar")]
 /// );
 ///
 /// // The NoHyphenation splitter ignores the '-':
-/// let options = Options::new(80).splitter(NoHyphenation);
 /// assert_eq!(
-///     split_words(vec![Word::from("foo-bar")], &options).collect::<Vec<_>>(),
+///     split_words(vec![Word::from("foo-bar")], &NoHyphenation).collect::<Vec<_>>(),
 ///     vec![Word::from("foo-bar")]
 /// );
 /// ```
-pub fn split_words<'a, I, WrapAlgo, WordSep, WordSplit>(
+pub fn split_words<'a, I, WordSplit>(
     words: I,
-    options: &'a Options<'a, WrapAlgo, WordSep, WordSplit>,
+    word_splitter: &'a WordSplit,
 ) -> impl Iterator<Item = Word<'a>>
 where
     I: IntoIterator<Item = Word<'a>>,
@@ -360,7 +357,7 @@ where
 {
     words.into_iter().flat_map(move |word| {
         let mut prev = 0;
-        let mut split_points = options.splitter.split_points(&word).into_iter();
+        let mut split_points = word_splitter.split_points(&word).into_iter();
         std::iter::from_fn(move || {
             if let Some(idx) = split_points.next() {
                 let need_hyphen = !word[..idx].ends_with('-');
@@ -413,6 +410,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::HyphenSplitter;
 
     #[cfg(feature = "unicode-width")]
     use unicode_width::UnicodeWidthChar;
@@ -508,32 +506,30 @@ mod tests {
 
     #[test]
     fn split_words_no_words() {
-        assert_iter_eq!(split_words(vec![], &Options::new(80)), vec![]);
+        assert_iter_eq!(split_words(vec![], &HyphenSplitter), vec![]);
     }
 
     #[test]
     fn split_words_empty_word() {
         assert_iter_eq!(
-            split_words(vec![Word::from("   ")], &Options::new(80)),
+            split_words(vec![Word::from("   ")], &HyphenSplitter),
             vec![Word::from("   ")]
+        );
+    }
+
+    #[test]
+    fn split_words_single_word() {
+        assert_iter_eq!(
+            split_words(vec![Word::from("foobar")], &HyphenSplitter),
+            vec![Word::from("foobar")]
         );
     }
 
     #[test]
     fn split_words_hyphen_splitter() {
         assert_iter_eq!(
-            split_words(vec![Word::from("foo-bar")], &Options::new(80)),
+            split_words(vec![Word::from("foo-bar")], &HyphenSplitter),
             vec![Word::from("foo-"), Word::from("bar")]
-        );
-    }
-
-    #[test]
-    fn split_words_short_line() {
-        // Note that `split_words` does not take the line width into
-        // account, that is the job of `break_words`.
-        assert_iter_eq!(
-            split_words(vec![Word::from("foobar")], &Options::new(3)),
-            vec![Word::from("foobar")]
         );
     }
 
@@ -547,9 +543,8 @@ mod tests {
             }
         }
 
-        let options = Options::new(80).splitter(FixedSplitPoint);
         assert_iter_eq!(
-            split_words(vec![Word::from("foobar")].into_iter(), &options),
+            split_words(vec![Word::from("foobar")].into_iter(), &FixedSplitPoint),
             vec![
                 Word {
                     word: "foo",
@@ -567,7 +562,7 @@ mod tests {
         );
 
         assert_iter_eq!(
-            split_words(vec![Word::from("fo-bar")].into_iter(), &options),
+            split_words(vec![Word::from("fo-bar")].into_iter(), &FixedSplitPoint),
             vec![
                 Word {
                     word: "fo-",
