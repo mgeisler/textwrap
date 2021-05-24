@@ -30,6 +30,11 @@
        bottom: 0;
        border-top: thin solid grey;
      }
+
+     div.option {
+       display: inline-block;
+       padding-right: 1em;
+     }
     </style>
   </head>
   <body>
@@ -39,14 +44,49 @@
 
 You can test the word-wrapping behavior by editing the text 😍✨</textarea>
 
-    <p>Font family:
-      <select id="font-family">
-        <option value="monospace">Monospace</option>
-        <option value="serif">Serif</option>
-        <option value="sans-serif">Sans-serif</option>
-      </select>.
-      Line width: <input type="number" id="line-width-text" min="0"> px.
-    </p>
+    <div>
+      <div class="option">
+        <label for="font-family">Font family:</label>
+        <select id="font-family">
+          <option value="monospace">Monospace</option>
+          <option value="serif">Serif</option>
+          <option value="sans-serif">Sans-serif</option>
+        </select>
+      </div>
+
+      <div class="option">
+        <label for="line-width-text">Line width:</label>
+        <input type="number" id="line-width-text" min="0"> px.
+      </div>
+
+      <div class="option">
+        <label for="word-separator">Word separator:</label>
+        <select id="word-separator">
+          <option value="UnicodeBreakProperties">Unicode breaks</option>
+          <option value="AsciiSpace">ASCII space</option>
+        </select>
+      </div>
+
+      <div class="option">
+        <label for="word-splitter">Word splitter:</label>
+        <select id="word-splitter">
+          <option value="HyphenSplitter">Hyphens</option>
+          <option value="NoHyphenation">No hyphenation</option>
+        </select>
+      </div>
+
+      <div class="option">
+        <label for="wrap-algorithm">Wrap algorithm:</label>
+        <select id="wrap-algorithm">
+          <!--
+               The optimal-fit algorithm does not work well for proportional
+               fonts, see https://github.com/mgeisler/textwrap/issues/326.
+               <option value="OptimalFit">Optimal-fit</option>
+          -->
+          <option value="FirstFit">First-fit</option>
+        </select>
+      </div>
+    </div>
 
     <div>
       <input type="range" id="line-width" min="0" max="300" value="250">

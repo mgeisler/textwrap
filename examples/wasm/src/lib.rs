@@ -1,7 +1,8 @@
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 
-use textwrap::{core, wrap_algorithms, WordSeparator};
+use textwrap::core;
+use textwrap::wrap_algorithms::{wrap_first_fit, wrap_optimal_fit};
 
 #[wasm_bindgen]
 extern "C" {
@@ -142,10 +143,58 @@ fn draw_word(
 }
 
 #[wasm_bindgen]
+#[derive(Copy, Clone, Debug)]
+pub enum WasmWordSeparator {
+    AsciiSpace = "AsciiSpace",
+    UnicodeBreakProperties = "UnicodeBreakProperties",
+}
+
+#[wasm_bindgen]
+#[derive(Copy, Clone, Debug)]
+pub enum WasmWordSplitter {
+    NoHyphenation = "NoHyphenation",
+    HyphenSplitter = "HyphenSplitter",
+}
+
+#[wasm_bindgen]
+#[derive(Copy, Clone, Debug)]
+pub enum WasmWrapAlgorithm {
+    FirstFit = "FirstFit",
+    OptimalFit = "OptimalFit",
+}
+
+#[wasm_bindgen]
+#[derive(Copy, Clone, Debug)]
+pub struct WasmOptions {
+    pub width: usize,
+    pub word_separator: WasmWordSeparator,
+    pub word_splitter: WasmWordSplitter,
+    pub wrap_algorithm: WasmWrapAlgorithm,
+}
+
+#[wasm_bindgen]
+impl WasmOptions {
+    #[wasm_bindgen(constructor)]
+    pub fn new(
+        width: usize,
+        word_separator: WasmWordSeparator,
+        word_splitter: WasmWordSplitter,
+        wrap_algorithm: WasmWrapAlgorithm,
+    ) -> WasmOptions {
+        WasmOptions {
+            width,
+            word_separator,
+            word_splitter,
+            wrap_algorithm,
+        }
+    }
+}
+
+#[wasm_bindgen]
 pub fn draw_wrapped_text(
     ctx: &web_sys::CanvasRenderingContext2d,
+    options: &WasmOptions,
     text: &str,
-    width: usize,
 ) -> Result<(), JsValue> {
     console_error_panic_hook::set_once();
 
@@ -156,19 +205,34 @@ pub fn draw_wrapped_text(
     // tall character when supported by Firefox.
     let line_height = metrics.actual_bounding_box_ascent() + metrics.actual_bounding_box_descent();
     let baseline_distance = 1.5 * line_height;
-    let options = textwrap::Options::from(width);
+
+    let word_separator: Box<dyn textwrap::WordSeparator> = match options.word_separator {
+        WasmWordSeparator::AsciiSpace => Box::new(textwrap::AsciiSpace),
+        WasmWordSeparator::UnicodeBreakProperties => Box::new(textwrap::UnicodeBreakProperties),
+        _ => Err("WasmOptions has an invalid word_separator field")?,
+    };
+
+    let word_splitter: Box<dyn textwrap::WordSplitter> = match options.word_splitter {
+        WasmWordSplitter::NoHyphenation => Box::new(textwrap::NoHyphenation),
+        WasmWordSplitter::HyphenSplitter => Box::new(textwrap::HyphenSplitter),
+        _ => Err("WasmOptions has an invalid word_splitter field")?,
+    };
 
     let mut lineno = 0;
     for line in text.split('\n') {
-        let words = options.word_separator.find_words(line);
-        let split_words = core::split_words(words, &options.splitter);
+        let words = word_separator.find_words(line);
+        let split_words = core::split_words(words, &word_splitter);
 
         let canvas_words = split_words
             .map(|word| CanvasWord::from(ctx, word))
             .collect::<Vec<_>>();
 
-        let line_lengths = [width * PRECISION];
-        let wrapped_words = wrap_algorithms::wrap_first_fit(&canvas_words, &line_lengths);
+        let line_lengths = [options.width * PRECISION];
+        let wrapped_words = match options.wrap_algorithm {
+            WasmWrapAlgorithm::FirstFit => wrap_first_fit(&canvas_words, &line_lengths),
+            WasmWrapAlgorithm::OptimalFit => wrap_optimal_fit(&canvas_words, &line_lengths),
+            _ => Err("WasmOptions has an invalid wrap_algorithm field")?,
+        };
 
         for words_in_line in wrapped_words {
             lineno += 1;
@@ -190,7 +254,7 @@ pub fn draw_wrapped_text(
             ctx.set_font("10px sans-serif");
             ctx.fill_text(
                 &format!("{:.1}px", x - X_OFFSET),
-                1.5 * X_OFFSET + width as f64,
+                1.5 * X_OFFSET + options.width as f64,
                 y,
             )?;
             ctx.restore();
@@ -201,7 +265,7 @@ pub fn draw_wrapped_text(
         ctx,
         "blue",
         (
-            X_OFFSET + width as f64,
+            X_OFFSET + options.width as f64,
             metrics.actual_bounding_box_ascent(),
         ),
         &[(0.0, baseline_distance * lineno as f64)],

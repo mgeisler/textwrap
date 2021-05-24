@@ -1,4 +1,4 @@
-import { draw_wrapped_text } from "textwrap-wasm-demo";
+import { draw_wrapped_text, WasmOptions } from "textwrap-wasm-demo";
 
 fetch("build-info.json").then(response => response.json()).then(buildInfo => {
     if (buildInfo.date && buildInfo.commit) {
@@ -20,12 +20,19 @@ function redraw(event) {
     ctx.font = `20px ${fontFamily}`;
 
     let text = document.getElementById("text").value;
-    let lineWidth = document.getElementById("line-width");
-    draw_wrapped_text(ctx, text, lineWidth.valueAsNumber);
+    let lineWidth = document.getElementById("line-width").valueAsNumber;
+    let wordSeparator = document.getElementById("word-separator").value;
+    let wordSplitter = document.getElementById("word-splitter").value;
+    let wrapAlgorithm = document.getElementById("wrap-algorithm").value;
+    let options = new WasmOptions(lineWidth, wordSeparator, wordSplitter, wrapAlgorithm);
+    draw_wrapped_text(ctx, options, text);
 }
 
 document.getElementById("text").addEventListener("input", redraw);
 document.getElementById("font-family").addEventListener("input", redraw);
+document.getElementById("word-separator").addEventListener("input", redraw);
+document.getElementById("word-splitter").addEventListener("input", redraw);
+document.getElementById("wrap-algorithm").addEventListener("input", redraw);
 
 document.getElementById("line-width").addEventListener("input", (event) => {
     let lineWidthText = document.getElementById("line-width-text");
