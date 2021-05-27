@@ -316,6 +316,7 @@ eval("// A dependency graph that contains any wasm must all be imported\n// asyn
 /******/ 		var wasmImportedFuncCache20;
 /******/ 		var wasmImportedFuncCache21;
 /******/ 		var wasmImportedFuncCache22;
+/******/ 		var wasmImportedFuncCache23;
 /******/ 		var wasmImportObjects = {
 /******/ 			"../pkg/textwrap_wasm_demo_bg.wasm": function() {
 /******/ 				return {
@@ -400,17 +401,21 @@ eval("// A dependency graph that contains any wasm must all be imported\n// asyn
 /******/ 							if(wasmImportedFuncCache19 === undefined) wasmImportedFuncCache19 = __webpack_require__.c["../pkg/textwrap_wasm_demo_bg.js"].exports;
 /******/ 							return wasmImportedFuncCache19["__wbg_width_9c3c9e775c405aaa"](p0i32);
 /******/ 						},
-/******/ 						"__wbindgen_debug_string": function(p0i32,p1i32) {
+/******/ 						"__wbindgen_string_get": function(p0i32,p1i32) {
 /******/ 							if(wasmImportedFuncCache20 === undefined) wasmImportedFuncCache20 = __webpack_require__.c["../pkg/textwrap_wasm_demo_bg.js"].exports;
-/******/ 							return wasmImportedFuncCache20["__wbindgen_debug_string"](p0i32,p1i32);
+/******/ 							return wasmImportedFuncCache20["__wbindgen_string_get"](p0i32,p1i32);
+/******/ 						},
+/******/ 						"__wbindgen_debug_string": function(p0i32,p1i32) {
+/******/ 							if(wasmImportedFuncCache21 === undefined) wasmImportedFuncCache21 = __webpack_require__.c["../pkg/textwrap_wasm_demo_bg.js"].exports;
+/******/ 							return wasmImportedFuncCache21["__wbindgen_debug_string"](p0i32,p1i32);
 /******/ 						},
 /******/ 						"__wbindgen_throw": function(p0i32,p1i32) {
-/******/ 							if(wasmImportedFuncCache21 === undefined) wasmImportedFuncCache21 = __webpack_require__.c["../pkg/textwrap_wasm_demo_bg.js"].exports;
-/******/ 							return wasmImportedFuncCache21["__wbindgen_throw"](p0i32,p1i32);
+/******/ 							if(wasmImportedFuncCache22 === undefined) wasmImportedFuncCache22 = __webpack_require__.c["../pkg/textwrap_wasm_demo_bg.js"].exports;
+/******/ 							return wasmImportedFuncCache22["__wbindgen_throw"](p0i32,p1i32);
 /******/ 						},
 /******/ 						"__wbindgen_rethrow": function(p0i32) {
-/******/ 							if(wasmImportedFuncCache22 === undefined) wasmImportedFuncCache22 = __webpack_require__.c["../pkg/textwrap_wasm_demo_bg.js"].exports;
-/******/ 							return wasmImportedFuncCache22["__wbindgen_rethrow"](p0i32);
+/******/ 							if(wasmImportedFuncCache23 === undefined) wasmImportedFuncCache23 = __webpack_require__.c["../pkg/textwrap_wasm_demo_bg.js"].exports;
+/******/ 							return wasmImportedFuncCache23["__wbindgen_rethrow"](p0i32);
 /******/ 						}
 /******/ 					}
 /******/ 				};
@@ -439,7 +444,7 @@ eval("// A dependency graph that contains any wasm must all be imported\n// asyn
 /******/ 					promises.push(installedWasmModuleData);
 /******/ 				else {
 /******/ 					var importObject = wasmImportObjects[wasmModuleId]();
-/******/ 					var req = fetch(__webpack_require__.p + "" + {"index_js":{"../pkg/textwrap_wasm_demo_bg.wasm":"d7e779c70b2918484bdd"}}[chunkId][wasmModuleId] + ".module.wasm");
+/******/ 					var req = fetch(__webpack_require__.p + "" + {"index_js":{"../pkg/textwrap_wasm_demo_bg.wasm":"f7190203ffcd7084ae68"}}[chunkId][wasmModuleId] + ".module.wasm");
 /******/ 					var promise;
 /******/ 					if(importObject instanceof Promise && typeof WebAssembly.compileStreaming === 'function') {
 /******/ 						promise = Promise.all([WebAssembly.compileStreaming(req), importObject]).then(function(items) {
