@@ -7,9 +7,9 @@
 
 Textwrap is a library for wrapping and indenting text. It is most
 often used by command-line programs to format dynamic output nicely so
-it looks good in a terminal. However, you can use the library to wrap
-arbitrary things by implementing the `Fragment` trait — an example
-would be wrapping text for PDF files.
+it looks good in a terminal. You can also use Textwrap to wrap text
+set in a proportional font—such as text used to generate PDF files, or
+drawn on a [HTML5 canvas using WebAssembly][wasm-demo].
 
 ## Usage
 
@@ -20,7 +20,7 @@ textwrap = "0.13"
 ```
 
 By default, this enables word wrapping with support for Unicode
-strings. Extra features can be enabled with Cargo features — and the
+strings. Extra features can be enabled with Cargo features—and the
 Unicode support can be disabled if needed. This allows you slim down
 the library and so you will only pay for the features you actually
 use. Please see the [_Cargo Features_ in the crate
@@ -112,14 +112,20 @@ procedural macros from the [`textwrap-macros` crate].
 
 The library comes with [a
 collection](https://github.com/mgeisler/textwrap/tree/master/examples)
-of small example programs that shows various features. You’re invited
-to clone the repository and try them out for yourself!
+of small example programs that shows various features.
 
-Of special note is the `interactive` example. This is a demo program
-which demonstrates most of the available features: you can enter text
-and adjust the width at which it is wrapped interactively. You can
-also adjust the `Options` used to see the effect of different
-`WordSplitter`s and wrap algorithms.
+If you want to see Textwrap in action right away, then take a look at
+[`examples/wasm/`], which shows how to wrap sans-serif, serif, and
+monospace text. It uses WebAssembly and is automatically deployed to
+https://mgeisler.github.io/textwrap/.
+
+For the command-line examples, you’re invited to clone the repository
+and try them out for yourself! Of special note is
+[`examples/interactive.rs`]. This is a demo program which demonstrates
+most of the available features: you can enter text and adjust the
+width at which it is wrapped interactively. You can also adjust the
+`Options` used to see the effect of different `WordSplitter`s and wrap
+algorithms.
 
 Run the demo with
 
@@ -142,6 +148,7 @@ Contributions will be accepted under the same license.
 [crates-io]: https://crates.io/crates/textwrap
 [build-status]: https://github.com/mgeisler/textwrap/actions?query=workflow%3Abuild+branch%3Amaster
 [codecov]: https://codecov.io/gh/mgeisler/textwrap
+[wasm-demo]: https://mgeisler.github.io/textwrap/
 [`textwrap-macros` crate]: https://crates.io/crates/textwrap-macros
 [`hyphenation` example]: https://github.com/mgeisler/textwrap/blob/master/examples/hyphenation.rs
 [`termwidth` example]: https://github.com/mgeisler/textwrap/blob/master/examples/termwidth.rs
@@ -149,6 +156,8 @@ Contributions will be accepted under the same license.
 [en-us license]: https://github.com/hyphenation/tex-hyphen/blob/master/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-en-us.tex
 [bincode]: https://github.com/tapeinosyne/hyphenation/tree/master/dictionaries
 [`hyphenation` documentation]: http://docs.rs/hyphenation
+[`examples/wasm/`]: https://github.com/mgeisler/textwrap/tree/master/examples/wasm
+[`examples/interactive.rs`]: https://github.com/mgeisler/textwrap/tree/master/examples/interactive.rs
 [api-docs]: https://docs.rs/textwrap/
 [CHANGELOG file]: https://github.com/mgeisler/textwrap/blob/master/CHANGELOG.md
 [mit]: LICENSE
