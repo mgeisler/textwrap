@@ -143,6 +143,7 @@ dependencies = [
  "console_error_panic_hook",
  "js-sys",
  "textwrap",
+ "unicode-segmentation",
  "wasm-bindgen",
  "wasm-bindgen-test",
  "web-sys",
@@ -156,6 +157,12 @@ checksum = "05a31f45d18a3213b918019f78fe6a73a14ab896807f0aaf5622aa0684749455"
 dependencies = [
  "regex",
 ]
+
+[[package]]
+name = "unicode-segmentation"
+version = "1.7.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bb0d2e7be6ae3a5fa87eed5fb451aff96f2573d2694942e40543ae0bbe19c796"
 
 [[package]]
 name = "unicode-width"
