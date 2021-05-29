@@ -21,15 +21,17 @@ function redraw(event) {
 
     let text = document.getElementById("text").value;
     let lineWidth = document.getElementById("line-width").valueAsNumber;
+    let breakWords = document.getElementById("break-words").checked;
     let wordSeparator = document.getElementById("word-separator").value;
     let wordSplitter = document.getElementById("word-splitter").value;
     let wrapAlgorithm = document.getElementById("wrap-algorithm").value;
-    let options = new WasmOptions(lineWidth, wordSeparator, wordSplitter, wrapAlgorithm);
+    let options = new WasmOptions(lineWidth, breakWords, wordSeparator, wordSplitter, wrapAlgorithm);
     draw_wrapped_text(ctx, options, text);
 }
 
 document.getElementById("text").addEventListener("input", redraw);
 document.getElementById("font-family").addEventListener("input", redraw);
+document.getElementById("break-words").addEventListener("input", redraw);
 document.getElementById("word-separator").addEventListener("input", redraw);
 document.getElementById("word-splitter").addEventListener("input", redraw);
 document.getElementById("wrap-algorithm").addEventListener("input", redraw);

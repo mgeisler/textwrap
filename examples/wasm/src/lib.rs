@@ -1,3 +1,4 @@
+use unicode_segmentation::UnicodeSegmentation;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 
@@ -58,6 +59,88 @@ impl<'a> CanvasWord<'a> {
             penalty: word.penalty,
             penalty_width: canvas_width(ctx, word.penalty),
         }
+    }
+
+    fn break_apart(
+        self,
+        ctx: &'_ web_sys::CanvasRenderingContext2d,
+        max_width: f64,
+    ) -> Vec<CanvasWord<'a>> {
+        if self.width <= max_width {
+            return vec![self];
+        }
+
+        let mut start = 0;
+        let mut words = Vec::new();
+        for (idx, grapheme) in self.word.grapheme_indices(true) {
+            let with_grapheme = &self.word[start..idx + grapheme.len()];
+            let without_grapheme = &self.word[start..idx];
+            if idx > 0 && canvas_width(&ctx, with_grapheme) > max_width {
+                // The part without the grapheme fits on the line. We
+                // give it a width of max_width instead of its natural
+                // width to ensure that it takes up the full line.
+                //
+                // Otherwise, we can end up with a situation where a
+                // text fits in _fewer_ lines when the line width is
+                // _smaller_. This happens with proportional fonts,
+                // such as the sans-serif or serif fonts. An example
+                // text which illustrates the problem is:
+                //
+                //   i XYZ
+                //
+                // Line width: 42px. Normal break, XYZ doesn't fit on
+                // first line:
+                //
+                //   i
+                //   XYZ
+                //
+                // Line width: 41px. XYZ takes up 41.1px, so it is
+                // broken apart. The first part now fits on the first
+                // line:
+                //
+                //   i XY
+                //   Z
+                //
+                // Line width: 39px. There is no longer room for XY on
+                // the first line:
+                //
+                //   i
+                //   XY
+                //   Z
+                //
+                // Line width: 28px. XY takes up 28.9px, so it is
+                // broken apart. YZ takes up 26.7px, so everything
+                // suddenly fits on two lines again:
+                //
+                //   i X
+                //   YZ
+                //
+                // We can be a more "natural" or "monotone" behavior
+                // by making the parts take up at least the full line
+                // width.
+                let natural_width = canvas_width(ctx, &without_grapheme);
+                words.push(CanvasWord {
+                    word: &without_grapheme,
+                    width: max_width.max(natural_width),
+                    whitespace: "",
+                    whitespace_width: 0.0,
+                    penalty: "",
+                    penalty_width: 0.0,
+                });
+                start = idx;
+            }
+        }
+
+        words.push(CanvasWord {
+            word: &self.word[start..],
+            width: canvas_width(ctx, &self.word[start..]),
+            whitespace: self.whitespace,
+            whitespace_width: self.whitespace_width,
+            penalty: self.penalty,
+            penalty_width: self.penalty_width,
+        });
+
+        words
     }
 }
 
@@ -167,6 +250,7 @@ pub enum WasmWrapAlgorithm {
 #[derive(Copy, Clone, Debug)]
 pub struct WasmOptions {
     pub width: usize,
+    pub break_words: bool,
     pub word_separator: WasmWordSeparator,
     pub word_splitter: WasmWordSplitter,
     pub wrap_algorithm: WasmWrapAlgorithm,
@@ -177,12 +261,14 @@ impl WasmOptions {
     #[wasm_bindgen(constructor)]
     pub fn new(
         width: usize,
+        break_words: bool,
         word_separator: WasmWordSeparator,
         word_splitter: WasmWordSplitter,
         wrap_algorithm: WasmWrapAlgorithm,
     ) -> WasmOptions {
         WasmOptions {
             width,
+            break_words,
             word_separator,
             word_splitter,
             wrap_algorithm,
@@ -224,7 +310,14 @@ pub fn draw_wrapped_text(
         let split_words = core::split_words(words, &word_splitter);
 
         let canvas_words = split_words
-            .map(|word| CanvasWord::from(ctx, word))
+            .flat_map(|word| {
+                let canvas_word = CanvasWord::from(ctx, word);
+                if options.break_words {
+                    canvas_word.break_apart(ctx, options.width as f64)
+                } else {
+                    vec![canvas_word]
+                }
+            })
             .collect::<Vec<_>>();
 
         let line_lengths = [options.width * PRECISION];
