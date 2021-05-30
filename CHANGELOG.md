@@ -13,10 +13,10 @@ configure the wrapping algorithm and the word separator:
   `core::WrapAlgorithm` enum. The enum variants are now two structs:
   `wrap_algorithms::FirstFit` and `wrap_algorithms::OptimalFit`.
 
-* `WordSeparator`: this new trait lets you specify how words are
-  separated in the text. Until now, Textwrap would simply split on
-  spaces. While this works okay for Western languages, it fails to
-  take emojis and East-Asian languages into account.
+* `word_separators::WordSeparator`: this new trait lets you specify
+  how words are separated in the text. Until now, Textwrap would
+  simply split on spaces. While this works okay for Western languages,
+  it fails to take emojis and East-Asian languages into account.
 
   The new `AsciiSpace` and `UnicodeBreakProperties` structs implement
   the trait. The latter is available if the new optional
@@ -33,11 +33,17 @@ let options: Options<HyphenSplitter> = Options::new(80);
 need to change to
 
 ```rust
-let options: Options<wrap_algorithms::FirstFit, AsciiSpace, HyphenSplitter> = Options::new(80);
+let options: Options<
+    wrap_algorithms::FirstFit,
+    word_separators::AsciiSpace,
+    word_splitters::HyphenSplitter,
+> = Options::new(80);
 ```
 
+This is quite a mouthful, so we suggest using `_` where possible.
+
 You won’t see any chance if you call `wrap` directly with a width or
-with an `Options` constructed on the fly.
+with an `Options` value constructed on the fly.
 
 ## Version 0.13.4 (2021-02-23)
 
