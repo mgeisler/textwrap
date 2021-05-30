@@ -42,7 +42,7 @@ features = ["embed_en-us"]
 
 [dev-dependencies]
 criterion = "0.3"
-lipsum = "0.7"
+lipsum = "0.8"
 unic-emoji-char = "0.9.0"
 version-sync = "0.9"
 
