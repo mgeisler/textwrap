@@ -105,15 +105,14 @@ jobs:
 
             let q = [`repo:${context.repo.owner}/${context.repo.repo}`,
                      'is:pr', 'is:merged', `merged:>${cutoff}`]
-            // Need to use https://octokit.github.io/rest.js/v18#pagination!
-            const prs = await github.search.issuesAndPullRequests({
+            const prs = await github.paginate(github.search.issuesAndPullRequests, {
               q: q.join(' '),
               sort: 'created',
               order: 'asc',
             })
-            core.info(`Found ${prs.data.items.length} merged PRs`)
+            core.info(`Found ${prs.length} merged PRs`)
 
-            const changelog = prs.data.items.map(
+            const changelog = prs.map(
               pr => `* [#${pr.number}](${pr.html_url}): ${pr.title}`
             ).join('\n')
             core.exportVariable('CHANGELOG', changelog)
