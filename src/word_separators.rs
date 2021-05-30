@@ -1,4 +1,18 @@
-//! Line breaking functionality.
+//! Functionality for finding words.
+//!
+//! In order to wrap text, we need to know where the legal break
+//! points are, i.e., where the words of the text are. This means that
+//! we need to define what a "word" is.
+//!
+//! A simple approach is to simply split the text on whitespace, but
+//! this does not work for East-Asian languages such as Chinese or
+//! Japanese where there are no spaces between words. Breaking a long
+//! sequence of emojis is another example where line breaks might be
+//! wanted even if there are no whitespace to be found.
+//!
+//! The [`WordSeparator`] trait is responsible for determining where
+//! there words are in a line of text. Please refer to the trait and
+//! the structs which implement it for more information.
 
 #[cfg(feature = "unicode-linebreak")]
 use crate::core::skip_ansi_escape_sequence;
@@ -12,14 +26,15 @@ use crate::core::Word;
 /// breaking algorithm, which finds break points in non-ASCII text.
 ///
 /// The line breaks occur between words, please see the
-/// [`WordSplitter`](crate::WordSplitter) trait for options of how
-/// to handle hyphenation of individual words.
+/// [`WordSplitter`](crate::word_splitters::WordSplitter) trait for
+/// options of how to handle hyphenation of individual words.
 ///
 /// # Examples
 ///
 /// ```
-/// use textwrap::{WordSeparator, AsciiSpace};
 /// use textwrap::core::Word;
+/// use textwrap::word_separators::{WordSeparator, AsciiSpace};
+///
 /// let words = AsciiSpace.find_words("Hello World!").collect::<Vec<_>>();
 /// assert_eq!(words, vec![Word::from("Hello "), Word::from("World!")]);
 /// ```
@@ -35,6 +50,7 @@ pub trait WordSeparator: WordSeparatorClone + std::fmt::Debug {
 // `Clone` for `Box<dyn WordSeparator>`. This in used in the
 // `From<&Options<'_, WrapAlgo, WordSep, WordSplit>> for Options<'a,
 // WrapAlgo, WordSep, WordSplit>` implementation.
+#[doc(hidden)]
 pub trait WordSeparatorClone {
     fn clone_box(&self) -> Box<dyn WordSeparator>;
 }
@@ -69,7 +85,7 @@ pub struct AsciiSpace;
 ///
 /// ```
 /// use textwrap::core::Word;
-/// use textwrap::{AsciiSpace, WordSeparator};
+/// use textwrap::word_separators::{AsciiSpace, WordSeparator};
 ///
 /// let words = AsciiSpace.find_words("Hello   World!").collect::<Vec<_>>();
 /// assert_eq!(words, vec![Word::from("Hello   "),
@@ -123,8 +139,8 @@ pub struct UnicodeBreakProperties;
 /// to break lines. There is a small difference in that the U+002D
 /// (Hyphen-Minus) and U+00AD (Soft Hyphen) don’t create a line break:
 /// to allow a line break at a hyphen, use the
-/// [`HyphenSplitter`](super::HyphenSplitter). Soft hyphens are not
-/// currently supported.
+/// [`HyphenSplitter`](crate::word_splitters::HyphenSplitter). Soft
+/// hyphens are not currently supported.
 ///
 /// # Examples
 ///
@@ -134,7 +150,7 @@ pub struct UnicodeBreakProperties;
 ///
 /// ```
 /// #[cfg(feature = "unicode-linebreak")] {
-/// use textwrap::{WordSeparator, UnicodeBreakProperties};
+/// use textwrap::word_separators::{WordSeparator, UnicodeBreakProperties};
 /// use textwrap::core::Word;
 ///
 /// assert_eq!(UnicodeBreakProperties.find_words("Emojis: 😂😍").collect::<Vec<_>>(),
@@ -154,7 +170,7 @@ pub struct UnicodeBreakProperties;
 ///
 /// ```
 /// #[cfg(feature = "unicode-linebreak")] {
-/// use textwrap::{UnicodeBreakProperties, WordSeparator};
+/// use textwrap::word_separators::{UnicodeBreakProperties, WordSeparator};
 /// use textwrap::core::Word;
 ///
 /// assert_eq!(UnicodeBreakProperties.find_words("Emojis: 😂\u{2060}😍").collect::<Vec<_>>(),
@@ -168,7 +184,7 @@ pub struct UnicodeBreakProperties;
 ///
 /// ```
 /// #[cfg(feature = "unicode-linebreak")] {
-/// use textwrap::{UnicodeBreakProperties, WordSeparator};
+/// use textwrap::word_separators::{UnicodeBreakProperties, WordSeparator};
 /// use textwrap::core::Word;
 ///
 /// assert_eq!(UnicodeBreakProperties.find_words("[ foo ] bar !").collect::<Vec<_>>(),

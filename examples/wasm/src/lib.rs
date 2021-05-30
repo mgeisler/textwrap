@@ -3,6 +3,8 @@ use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 
 use textwrap::core;
+use textwrap::word_separators::{AsciiSpace, UnicodeBreakProperties, WordSeparator};
+use textwrap::word_splitters::{split_words, HyphenSplitter, NoHyphenation, WordSplitter};
 use textwrap::wrap_algorithms::{wrap_first_fit, wrap_optimal_fit};
 
 #[wasm_bindgen]
@@ -292,22 +294,22 @@ pub fn draw_wrapped_text(
     let line_height = metrics.actual_bounding_box_ascent() + metrics.actual_bounding_box_descent();
     let baseline_distance = 1.5 * line_height;
 
-    let word_separator: Box<dyn textwrap::WordSeparator> = match options.word_separator {
-        WasmWordSeparator::AsciiSpace => Box::new(textwrap::AsciiSpace),
-        WasmWordSeparator::UnicodeBreakProperties => Box::new(textwrap::UnicodeBreakProperties),
+    let word_separator: Box<dyn WordSeparator> = match options.word_separator {
+        WasmWordSeparator::AsciiSpace => Box::new(AsciiSpace),
+        WasmWordSeparator::UnicodeBreakProperties => Box::new(UnicodeBreakProperties),
         _ => Err("WasmOptions has an invalid word_separator field")?,
     };
 
-    let word_splitter: Box<dyn textwrap::WordSplitter> = match options.word_splitter {
-        WasmWordSplitter::NoHyphenation => Box::new(textwrap::NoHyphenation),
-        WasmWordSplitter::HyphenSplitter => Box::new(textwrap::HyphenSplitter),
+    let word_splitter: Box<dyn WordSplitter> = match options.word_splitter {
+        WasmWordSplitter::NoHyphenation => Box::new(NoHyphenation),
+        WasmWordSplitter::HyphenSplitter => Box::new(HyphenSplitter),
         _ => Err("WasmOptions has an invalid word_splitter field")?,
     };
 
     let mut lineno = 0;
     for line in text.split('\n') {
         let words = word_separator.find_words(line);
-        let split_words = core::split_words(words, &word_splitter);
+        let split_words = split_words(words, &word_splitter);
 
         let canvas_words = split_words
             .flat_map(|word| {

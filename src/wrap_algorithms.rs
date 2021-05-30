@@ -108,7 +108,7 @@ impl WrapAlgorithm for FirstFit {
 /// ```
 /// use textwrap::core::Word;
 /// use textwrap::wrap_algorithms;
-/// use textwrap::{AsciiSpace, WordSeparator};
+/// use textwrap::word_separators::{AsciiSpace, WordSeparator};
 ///
 /// // Helper to convert wrapped lines to a Vec<String>.
 /// fn lines_to_strings(lines: Vec<&[Word<'_>]>) -> Vec<String> {

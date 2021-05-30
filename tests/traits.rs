@@ -1,14 +1,11 @@
+use textwrap::word_separators::{AsciiSpace, WordSeparator};
+use textwrap::word_splitters::{HyphenSplitter, NoHyphenation, WordSplitter};
 use textwrap::wrap_algorithms::{FirstFit, WrapAlgorithm};
 use textwrap::Options;
-use textwrap::{AsciiSpace, WordSeparator};
-use textwrap::{NoHyphenation, WordSplitter};
 
 /// Cleaned up type name.
 fn type_name<T: ?Sized>(_val: &T) -> String {
-    std::any::type_name::<T>()
-        .replace("alloc::boxed::Box", "Box")
-        .replace("textwrap::word_separator", "textwrap")
-        .replace("textwrap::splitting", "textwrap")
+    std::any::type_name::<T>().replace("alloc::boxed::Box", "Box")
 }
 
 #[test]
@@ -22,20 +19,20 @@ fn static_hyphensplitter() {
         format!(
             "textwrap::Options<{}, {}, {}>",
             "textwrap::wrap_algorithms::FirstFit",
-            "textwrap::AsciiSpace",
-            "textwrap::HyphenSplitter"
+            "textwrap::word_separators::AsciiSpace",
+            "textwrap::word_splitters::HyphenSplitter"
         )
     );
 
     // Inferring part of the type.
-    let options: Options<_, _, textwrap::HyphenSplitter> = Options::new(10);
+    let options: Options<_, _, HyphenSplitter> = Options::new(10);
     assert_eq!(
         type_name(&options),
         format!(
             "textwrap::Options<{}, {}, {}>",
             "textwrap::wrap_algorithms::FirstFit",
-            "textwrap::AsciiSpace",
-            "textwrap::HyphenSplitter"
+            "textwrap::word_separators::AsciiSpace",
+            "textwrap::word_splitters::HyphenSplitter"
         )
     );
 
@@ -46,8 +43,8 @@ fn static_hyphensplitter() {
         format!(
             "textwrap::Options<{}, {}, {}>",
             "textwrap::wrap_algorithms::FirstFit",
-            "textwrap::AsciiSpace",
-            "textwrap::HyphenSplitter"
+            "textwrap::word_separators::AsciiSpace",
+            "textwrap::word_splitters::HyphenSplitter"
         )
     );
 }
@@ -64,8 +61,8 @@ fn box_static_nohyphenation() {
         format!(
             "textwrap::Options<{}, {}, {}>",
             "Box<textwrap::wrap_algorithms::FirstFit>",
-            "Box<textwrap::AsciiSpace>",
-            "Box<textwrap::NoHyphenation>"
+            "Box<textwrap::word_separators::AsciiSpace>",
+            "Box<textwrap::word_splitters::NoHyphenation>"
         )
     );
 }
@@ -75,15 +72,15 @@ fn box_dyn_wordsplitter() {
     // Inferred dynamic type due to default type parameter.
     let options = Options::new(10)
         .wrap_algorithm(Box::new(FirstFit) as Box<dyn WrapAlgorithm>)
-        .splitter(Box::new(NoHyphenation) as Box<dyn WordSplitter>)
+        .splitter(Box::new(HyphenSplitter) as Box<dyn WordSplitter>)
         .word_separator(Box::new(AsciiSpace) as Box<dyn WordSeparator>);
     assert_eq!(
         type_name(&options),
         format!(
             "textwrap::Options<{}, {}, {}>",
             "Box<dyn textwrap::wrap_algorithms::WrapAlgorithm>",
-            "Box<dyn textwrap::WordSeparator>",
-            "Box<dyn textwrap::WordSplitter>"
+            "Box<dyn textwrap::word_separators::WordSeparator>",
+            "Box<dyn textwrap::word_splitters::WordSplitter>"
         )
     );
 }

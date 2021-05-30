@@ -1,4 +1,5 @@
-use textwrap::{wrap, HyphenSplitter, Options, WordSplitter};
+use textwrap::word_splitters::{HyphenSplitter, WordSplitter};
+use textwrap::{wrap, Options};
 
 fn main() {
     let example = "Memory safety without garbage collection. \

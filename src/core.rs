@@ -9,12 +9,14 @@
 //!
 //! 1. Split your input into [`Fragment`]s. These are abstract blocks
 //!    of text or content which can be wrapped into lines. See
-//!    [`WordSeparator`](crate::WordSeparator) for how to do this for
-//!    text.
+//!    [`WordSeparator`](crate::word_separators::WordSeparator) for
+//!    how to do this for text.
 //!
 //! 2. Potentially split your fragments into smaller pieces. This
-//!    allows you to implement things like hyphenation. If wrapping
-//!    text, [`split_words`] can help you do this.
+//!    allows you to implement things like hyphenation. If you are
+//!    wrapping text represented as a sequence of [`Word`]s, then you
+//!    can use [`split_words`](crate::word_splitters::split_words) can
+//!    help you do this.
 //!
 //! 3. Potentially break apart fragments that are still too large to
 //!    fit on a single line. This is implemented in [`break_words`].
@@ -32,8 +34,6 @@
 //! Please [open an issue](https://github.com/mgeisler/textwrap/) if
 //! the functionality here is not sufficient or if you have ideas for
 //! improving it. We would love to hear from you!
-
-use crate::WordSplitter;
 
 /// The CSI or “Control Sequence Introducer” introduces an ANSI escape
 /// sequence. This is typically used for colored text and will be
@@ -221,7 +221,7 @@ pub struct Word<'a> {
     /// Penalty string to insert if the word falls at the end of a line.
     pub penalty: &'a str,
     // Cached width in columns.
-    width: usize,
+    pub(crate) width: usize,
 }
 
 impl std::ops::Deref for Word<'_> {
@@ -323,70 +323,6 @@ impl Fragment for Word<'_> {
     }
 }
 
-/// Split words into smaller words according to the split points given
-/// by `options`.
-///
-/// Note that we split all words, regardless of their length. This is
-/// to more cleanly separate the business of splitting (including
-/// automatic hyphenation) from the business of word wrapping.
-///
-/// # Examples
-///
-/// ```
-/// use textwrap::core::{split_words, Word};
-/// use textwrap::{NoHyphenation, HyphenSplitter};
-///
-/// assert_eq!(
-///     split_words(vec![Word::from("foo-bar")], &HyphenSplitter).collect::<Vec<_>>(),
-///     vec![Word::from("foo-"), Word::from("bar")]
-/// );
-///
-/// // The NoHyphenation splitter ignores the '-':
-/// assert_eq!(
-///     split_words(vec![Word::from("foo-bar")], &NoHyphenation).collect::<Vec<_>>(),
-///     vec![Word::from("foo-bar")]
-/// );
-/// ```
-pub fn split_words<'a, I, WordSplit>(
-    words: I,
-    word_splitter: &'a WordSplit,
-) -> impl Iterator<Item = Word<'a>>
-where
-    I: IntoIterator<Item = Word<'a>>,
-    WordSplit: WordSplitter,
-{
-    words.into_iter().flat_map(move |word| {
-        let mut prev = 0;
-        let mut split_points = word_splitter.split_points(&word).into_iter();
-        std::iter::from_fn(move || {
-            if let Some(idx) = split_points.next() {
-                let need_hyphen = !word[..idx].ends_with('-');
-                let w = Word {
-                    word: &word.word[prev..idx],
-                    width: display_width(&word[prev..idx]),
-                    whitespace: "",
-                    penalty: if need_hyphen { "-" } else { "" },
-                };
-                prev = idx;
-                return Some(w);
-            }
-
-            if prev < word.word.len() || prev == 0 {
-                let w = Word {
-                    word: &word.word[prev..],
-                    width: display_width(&word[prev..]),
-                    whitespace: word.whitespace,
-                    penalty: word.penalty,
-                };
-                prev = word.word.len() + 1;
-                return Some(w);
-            }
-
-            None
-        })
-    })
-}
-
 /// Forcibly break words wider than `line_width` into smaller words.
 ///
 /// This simply calls [`Word::break_apart`] on words that are too
@@ -410,17 +346,9 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::HyphenSplitter;
 
     #[cfg(feature = "unicode-width")]
     use unicode_width::UnicodeWidthChar;
-
-    // Like assert_eq!, but the left expression is an iterator.
-    macro_rules! assert_iter_eq {
-        ($left:expr, $right:expr) => {
-            assert_eq!($left.collect::<Vec<_>>(), $right);
-        };
-    }
 
     #[test]
     fn skip_ansi_escape_sequence_works() {
@@ -502,81 +430,5 @@ mod tests {
     #[test]
     fn display_width_emojis() {
         assert_eq!(display_width("😂😭🥺🤣✨😍🙏🥰😊🔥"), 20);
-    }
-
-    #[test]
-    fn split_words_no_words() {
-        assert_iter_eq!(split_words(vec![], &HyphenSplitter), vec![]);
-    }
-
-    #[test]
-    fn split_words_empty_word() {
-        assert_iter_eq!(
-            split_words(vec![Word::from("   ")], &HyphenSplitter),
-            vec![Word::from("   ")]
-        );
-    }
-
-    #[test]
-    fn split_words_single_word() {
-        assert_iter_eq!(
-            split_words(vec![Word::from("foobar")], &HyphenSplitter),
-            vec![Word::from("foobar")]
-        );
-    }
-
-    #[test]
-    fn split_words_hyphen_splitter() {
-        assert_iter_eq!(
-            split_words(vec![Word::from("foo-bar")], &HyphenSplitter),
-            vec![Word::from("foo-"), Word::from("bar")]
-        );
-    }
-
-    #[test]
-    fn split_words_adds_penalty() {
-        #[derive(Clone, Debug)]
-        struct FixedSplitPoint;
-        impl WordSplitter for FixedSplitPoint {
-            fn split_points(&self, _: &str) -> Vec<usize> {
-                vec![3]
-            }
-        }
-
-        assert_iter_eq!(
-            split_words(vec![Word::from("foobar")].into_iter(), &FixedSplitPoint),
-            vec![
-                Word {
-                    word: "foo",
-                    width: 3,
-                    whitespace: "",
-                    penalty: "-"
-                },
-                Word {
-                    word: "bar",
-                    width: 3,
-                    whitespace: "",
-                    penalty: ""
-                }
-            ]
-        );
-
-        assert_iter_eq!(
-            split_words(vec![Word::from("fo-bar")].into_iter(), &FixedSplitPoint),
-            vec![
-                Word {
-                    word: "fo-",
-                    width: 3,
-                    whitespace: "",
-                    penalty: ""
-                },
-                Word {
-                    word: "bar",
-                    width: 3,
-                    whitespace: "",
-                    penalty: ""
-                }
-            ]
-        );
     }
 }
