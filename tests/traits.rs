@@ -54,7 +54,7 @@ fn box_static_nohyphenation() {
     // Inferred static type.
     let options = Options::new(10)
         .wrap_algorithm(Box::new(FirstFit))
-        .splitter(Box::new(NoHyphenation))
+        .word_splitter(Box::new(NoHyphenation))
         .word_separator(Box::new(AsciiSpace));
     assert_eq!(
         type_name(&options),
@@ -72,7 +72,7 @@ fn box_dyn_wordsplitter() {
     // Inferred dynamic type due to default type parameter.
     let options = Options::new(10)
         .wrap_algorithm(Box::new(FirstFit) as Box<dyn WrapAlgorithm>)
-        .splitter(Box::new(HyphenSplitter) as Box<dyn WordSplitter>)
+        .word_splitter(Box::new(HyphenSplitter) as Box<dyn WordSplitter>)
         .word_separator(Box::new(AsciiSpace) as Box<dyn WordSeparator>);
     assert_eq!(
         type_name(&options),

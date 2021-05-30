@@ -24,7 +24,7 @@ use crate::core::{display_width, Word};
 ///
 ///     let text = "Oxidation is the loss of electrons.";
 ///     let dictionary = Standard::from_embedded(Language::EnglishUS).unwrap();
-///     let options = Options::new(8).splitter(dictionary);
+///     let options = Options::new(8).word_splitter(dictionary);
 ///     assert_eq!(wrap(text, &options), vec!["Oxida-",
 ///                                           "tion is",
 ///                                           "the loss",
@@ -82,19 +82,19 @@ impl WordSplitter for Box<dyn WordSplitter> {
     }
 }
 
-/// Use this as a [`Options.splitter`] to avoid any kind of
+/// Use this as a [`Options.word_splitter`] to avoid any kind of
 /// hyphenation:
 ///
 /// ```
 /// use textwrap::{wrap, Options};
 /// use textwrap::word_splitters::NoHyphenation;
 ///
-/// let options = Options::new(8).splitter(NoHyphenation);
+/// let options = Options::new(8).word_splitter(NoHyphenation);
 /// assert_eq!(wrap("foo bar-baz", &options),
 ///            vec!["foo", "bar-baz"]);
 /// ```
 ///
-/// [`Options.splitter`]: super::Options::splitter
+/// [`Options.word_splitter`]: super::Options::word_splitter
 #[derive(Clone, Copy, Debug)]
 pub struct NoHyphenation;
 

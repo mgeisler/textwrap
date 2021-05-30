@@ -21,7 +21,7 @@ fn main() {
     #[cfg(feature = "hyphenation")]
     let (msg, options) = (
         "with hyphenation",
-        Options::with_termwidth().splitter(
+        Options::with_termwidth().word_splitter(
             hyphenation::Standard::from_embedded(hyphenation::Language::EnglishUS).unwrap(),
         ),
     );

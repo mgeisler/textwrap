@@ -61,7 +61,7 @@ mod unix_only {
             Box<dyn word_separators::WordSeparator>,
             Box<dyn word_splitters::WordSplitter>,
         >,
-        splitter_label: &str,
+        word_splitter_label: &str,
         stdout: &mut RawTerminal<io::Stdout>,
     ) -> Result<(), io::Error> {
         let mut left_row: u16 = 1;
@@ -102,7 +102,7 @@ mod unix_only {
             "{}- splitter: {}{}{} (cycle with Ctrl-s)",
             cursor::Goto(left_col, left_row),
             style::Bold,
-            splitter_label,
+            word_splitter_label,
             style::Reset,
         )?;
         left_row += 1;
@@ -237,12 +237,12 @@ mod unix_only {
         #[cfg(feature = "smawk")]
         wrap_algorithms.push(Box::new(wrap_algorithms::OptimalFit));
 
-        let mut splitters: Vec<Box<dyn word_splitters::WordSplitter>> = vec![
+        let mut word_splitters: Vec<Box<dyn word_splitters::WordSplitter>> = vec![
             Box::new(word_splitters::HyphenSplitter),
             Box::new(word_splitters::NoHyphenation),
         ];
-        let mut splitter_labels: Vec<String> =
-            splitters.iter().map(|s| format!("{:?}", s)).collect();
+        let mut word_splitter_labels: Vec<String> =
+            word_splitters.iter().map(|s| format!("{:?}", s)).collect();
 
         // If you like, you can download more dictionaries from
         // https://github.com/tapeinosyne/hyphenation/tree/master/dictionaries
@@ -258,19 +258,19 @@ mod unix_only {
             });
 
             if let Ok(dict) = dictionary {
-                splitters.insert(0, Box::new(dict));
-                splitter_labels.insert(0, format!("{} hyphenation", lang.code()));
+                word_splitters.insert(0, Box::new(dict));
+                word_splitter_labels.insert(0, format!("{} hyphenation", lang.code()));
             }
         }
 
         let mut options = Options::new(35)
             .break_words(false)
             .wrap_algorithm(wrap_algorithms.remove(0))
-            .splitter(splitters.remove(0))
+            .word_splitter(word_splitters.remove(0))
             .word_separator(
                 Box::new(word_separators::AsciiSpace) as Box<dyn word_separators::WordSeparator>
             );
-        let mut splitter_label = splitter_labels.remove(0);
+        let mut word_splitter_label = word_splitter_labels.remove(0);
 
         let args = std::env::args().collect::<Vec<_>>();
         let mut text = if args.len() > 1 {
@@ -294,7 +294,7 @@ mod unix_only {
         let stdin = io::stdin();
         let mut screen = AlternateScreen::from(io::stdout().into_raw_mode()?);
         write!(screen, "{}", cursor::BlinkingUnderline)?;
-        draw_text(&text, &options, &splitter_label, &mut screen)?;
+        draw_text(&text, &options, &word_splitter_label, &mut screen)?;
 
         for c in stdin.keys() {
             match c? {
@@ -309,10 +309,10 @@ mod unix_only {
                 }
                 Key::Ctrl('s') => {
                     // We always keep the next splitter at position 0.
-                    std::mem::swap(&mut options.splitter, &mut splitters[0]);
-                    splitters.rotate_left(1);
-                    std::mem::swap(&mut splitter_label, &mut splitter_labels[0]);
-                    splitter_labels.rotate_left(1);
+                    std::mem::swap(&mut options.word_splitter, &mut word_splitters[0]);
+                    word_splitters.rotate_left(1);
+                    std::mem::swap(&mut word_splitter_label, &mut word_splitter_labels[0]);
+                    word_splitter_labels.rotate_left(1);
                 }
                 Key::Char(c) => text.push(c),
                 Key::Backspace => {
@@ -323,7 +323,7 @@ mod unix_only {
                 _ => {}
             }
 
-            draw_text(&text, &options, &splitter_label, &mut screen)?;
+            draw_text(&text, &options, &word_splitter_label, &mut screen)?;
         }
 
         // TODO: change to cursor::DefaultStyle if

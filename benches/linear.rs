@@ -80,7 +80,7 @@ pub fn benchmark(c: &mut Criterion) {
                 .join("benches")
                 .join("la.standard.bincode");
             let dictionary = Standard::from_path(Language::Latin, &path).unwrap();
-            let options = options.splitter(dictionary);
+            let options = options.word_splitter(dictionary);
             group.bench_with_input(BenchmarkId::new("hyphenation", length), &text, |b, text| {
                 b.iter(|| textwrap::fill(text, &options));
             });
