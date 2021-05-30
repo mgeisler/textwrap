@@ -349,57 +349,57 @@ eval("// A dependency graph that contains any wasm must all be imported\n// asyn
 /******/ 							if(wasmImportedFuncCache6 === undefined) wasmImportedFuncCache6 = __webpack_require__.c["../pkg/textwrap_wasm_demo_bg.js"].exports;
 /******/ 							return wasmImportedFuncCache6["__wbg_error_4bb6c2a97407129a"](p0i32,p1i32);
 /******/ 						},
-/******/ 						"__wbg_setstrokeStyle_72f1ad8117744d41": function(p0i32,p1i32) {
+/******/ 						"__wbg_setstrokeStyle_2939ee453716e462": function(p0i32,p1i32) {
 /******/ 							if(wasmImportedFuncCache7 === undefined) wasmImportedFuncCache7 = __webpack_require__.c["../pkg/textwrap_wasm_demo_bg.js"].exports;
-/******/ 							return wasmImportedFuncCache7["__wbg_setstrokeStyle_72f1ad8117744d41"](p0i32,p1i32);
+/******/ 							return wasmImportedFuncCache7["__wbg_setstrokeStyle_2939ee453716e462"](p0i32,p1i32);
 /******/ 						},
-/******/ 						"__wbg_setfont_781d8a4777f9b05d": function(p0i32,p1i32,p2i32) {
+/******/ 						"__wbg_setfont_0ad3a6749ddee168": function(p0i32,p1i32,p2i32) {
 /******/ 							if(wasmImportedFuncCache8 === undefined) wasmImportedFuncCache8 = __webpack_require__.c["../pkg/textwrap_wasm_demo_bg.js"].exports;
-/******/ 							return wasmImportedFuncCache8["__wbg_setfont_781d8a4777f9b05d"](p0i32,p1i32,p2i32);
+/******/ 							return wasmImportedFuncCache8["__wbg_setfont_0ad3a6749ddee168"](p0i32,p1i32,p2i32);
 /******/ 						},
-/******/ 						"__wbg_settextAlign_92c91d5fffbd336b": function(p0i32,p1i32,p2i32) {
+/******/ 						"__wbg_settextAlign_2c62539f9ab6f6bb": function(p0i32,p1i32,p2i32) {
 /******/ 							if(wasmImportedFuncCache9 === undefined) wasmImportedFuncCache9 = __webpack_require__.c["../pkg/textwrap_wasm_demo_bg.js"].exports;
-/******/ 							return wasmImportedFuncCache9["__wbg_settextAlign_92c91d5fffbd336b"](p0i32,p1i32,p2i32);
+/******/ 							return wasmImportedFuncCache9["__wbg_settextAlign_2c62539f9ab6f6bb"](p0i32,p1i32,p2i32);
 /******/ 						},
-/******/ 						"__wbg_settextBaseline_62a9471d2b93428a": function(p0i32,p1i32,p2i32) {
+/******/ 						"__wbg_settextBaseline_25c94eb2aac0036b": function(p0i32,p1i32,p2i32) {
 /******/ 							if(wasmImportedFuncCache10 === undefined) wasmImportedFuncCache10 = __webpack_require__.c["../pkg/textwrap_wasm_demo_bg.js"].exports;
-/******/ 							return wasmImportedFuncCache10["__wbg_settextBaseline_62a9471d2b93428a"](p0i32,p1i32,p2i32);
+/******/ 							return wasmImportedFuncCache10["__wbg_settextBaseline_25c94eb2aac0036b"](p0i32,p1i32,p2i32);
 /******/ 						},
-/******/ 						"__wbg_beginPath_0dcd4a1d09e0223c": function(p0i32) {
+/******/ 						"__wbg_beginPath_2378575e37027ad3": function(p0i32) {
 /******/ 							if(wasmImportedFuncCache11 === undefined) wasmImportedFuncCache11 = __webpack_require__.c["../pkg/textwrap_wasm_demo_bg.js"].exports;
-/******/ 							return wasmImportedFuncCache11["__wbg_beginPath_0dcd4a1d09e0223c"](p0i32);
+/******/ 							return wasmImportedFuncCache11["__wbg_beginPath_2378575e37027ad3"](p0i32);
 /******/ 						},
-/******/ 						"__wbg_stroke_bed807f727b58a90": function(p0i32) {
+/******/ 						"__wbg_stroke_c1e0313c58997dcf": function(p0i32) {
 /******/ 							if(wasmImportedFuncCache12 === undefined) wasmImportedFuncCache12 = __webpack_require__.c["../pkg/textwrap_wasm_demo_bg.js"].exports;
-/******/ 							return wasmImportedFuncCache12["__wbg_stroke_bed807f727b58a90"](p0i32);
+/******/ 							return wasmImportedFuncCache12["__wbg_stroke_c1e0313c58997dcf"](p0i32);
 /******/ 						},
-/******/ 						"__wbg_lineTo_3acee3da29728cb9": function(p0i32,p1f64,p2f64) {
+/******/ 						"__wbg_lineTo_13bbc57988274391": function(p0i32,p1f64,p2f64) {
 /******/ 							if(wasmImportedFuncCache13 === undefined) wasmImportedFuncCache13 = __webpack_require__.c["../pkg/textwrap_wasm_demo_bg.js"].exports;
-/******/ 							return wasmImportedFuncCache13["__wbg_lineTo_3acee3da29728cb9"](p0i32,p1f64,p2f64);
+/******/ 							return wasmImportedFuncCache13["__wbg_lineTo_13bbc57988274391"](p0i32,p1f64,p2f64);
 /******/ 						},
-/******/ 						"__wbg_moveTo_bd43ecdbb947f343": function(p0i32,p1f64,p2f64) {
+/******/ 						"__wbg_moveTo_a7bfe2be52f6286b": function(p0i32,p1f64,p2f64) {
 /******/ 							if(wasmImportedFuncCache14 === undefined) wasmImportedFuncCache14 = __webpack_require__.c["../pkg/textwrap_wasm_demo_bg.js"].exports;
-/******/ 							return wasmImportedFuncCache14["__wbg_moveTo_bd43ecdbb947f343"](p0i32,p1f64,p2f64);
+/******/ 							return wasmImportedFuncCache14["__wbg_moveTo_a7bfe2be52f6286b"](p0i32,p1f64,p2f64);
 /******/ 						},
-/******/ 						"__wbg_restore_c480175de20d25ec": function(p0i32) {
+/******/ 						"__wbg_restore_544014131c1efb4a": function(p0i32) {
 /******/ 							if(wasmImportedFuncCache15 === undefined) wasmImportedFuncCache15 = __webpack_require__.c["../pkg/textwrap_wasm_demo_bg.js"].exports;
-/******/ 							return wasmImportedFuncCache15["__wbg_restore_c480175de20d25ec"](p0i32);
+/******/ 							return wasmImportedFuncCache15["__wbg_restore_544014131c1efb4a"](p0i32);
 /******/ 						},
-/******/ 						"__wbg_save_d60be08cdef5b02f": function(p0i32) {
+/******/ 						"__wbg_save_a36632e08be03836": function(p0i32) {
 /******/ 							if(wasmImportedFuncCache16 === undefined) wasmImportedFuncCache16 = __webpack_require__.c["../pkg/textwrap_wasm_demo_bg.js"].exports;
-/******/ 							return wasmImportedFuncCache16["__wbg_save_d60be08cdef5b02f"](p0i32);
+/******/ 							return wasmImportedFuncCache16["__wbg_save_a36632e08be03836"](p0i32);
 /******/ 						},
-/******/ 						"__wbg_fillText_1a4eaffef23bd8b7": function(p0i32,p1i32,p2i32,p3f64,p4f64) {
+/******/ 						"__wbg_fillText_ca163c7a12c0c43d": function(p0i32,p1i32,p2i32,p3f64,p4f64) {
 /******/ 							if(wasmImportedFuncCache17 === undefined) wasmImportedFuncCache17 = __webpack_require__.c["../pkg/textwrap_wasm_demo_bg.js"].exports;
-/******/ 							return wasmImportedFuncCache17["__wbg_fillText_1a4eaffef23bd8b7"](p0i32,p1i32,p2i32,p3f64,p4f64);
+/******/ 							return wasmImportedFuncCache17["__wbg_fillText_ca163c7a12c0c43d"](p0i32,p1i32,p2i32,p3f64,p4f64);
 /******/ 						},
-/******/ 						"__wbg_measureText_8c14bb26761d3435": function(p0i32,p1i32,p2i32) {
+/******/ 						"__wbg_measureText_74c9c33b65b27282": function(p0i32,p1i32,p2i32) {
 /******/ 							if(wasmImportedFuncCache18 === undefined) wasmImportedFuncCache18 = __webpack_require__.c["../pkg/textwrap_wasm_demo_bg.js"].exports;
-/******/ 							return wasmImportedFuncCache18["__wbg_measureText_8c14bb26761d3435"](p0i32,p1i32,p2i32);
+/******/ 							return wasmImportedFuncCache18["__wbg_measureText_74c9c33b65b27282"](p0i32,p1i32,p2i32);
 /******/ 						},
-/******/ 						"__wbg_width_9c3c9e775c405aaa": function(p0i32) {
+/******/ 						"__wbg_width_333f7e8d784a56a8": function(p0i32) {
 /******/ 							if(wasmImportedFuncCache19 === undefined) wasmImportedFuncCache19 = __webpack_require__.c["../pkg/textwrap_wasm_demo_bg.js"].exports;
-/******/ 							return wasmImportedFuncCache19["__wbg_width_9c3c9e775c405aaa"](p0i32);
+/******/ 							return wasmImportedFuncCache19["__wbg_width_333f7e8d784a56a8"](p0i32);
 /******/ 						},
 /******/ 						"__wbindgen_string_get": function(p0i32,p1i32) {
 /******/ 							if(wasmImportedFuncCache20 === undefined) wasmImportedFuncCache20 = __webpack_require__.c["../pkg/textwrap_wasm_demo_bg.js"].exports;
@@ -444,7 +444,7 @@ eval("// A dependency graph that contains any wasm must all be imported\n// asyn
 /******/ 					promises.push(installedWasmModuleData);
 /******/ 				else {
 /******/ 					var importObject = wasmImportObjects[wasmModuleId]();
-/******/ 					var req = fetch(__webpack_require__.p + "" + {"index_js":{"../pkg/textwrap_wasm_demo_bg.wasm":"202e2153d36d8c3a4d2b"}}[chunkId][wasmModuleId] + ".module.wasm");
+/******/ 					var req = fetch(__webpack_require__.p + "" + {"index_js":{"../pkg/textwrap_wasm_demo_bg.wasm":"1aeb630c63ff0a587415"}}[chunkId][wasmModuleId] + ".module.wasm");
 /******/ 					var promise;
 /******/ 					if(importObject instanceof Promise && typeof WebAssembly.compileStreaming === 'function') {
 /******/ 						promise = Promise.all([WebAssembly.compileStreaming(req), importObject]).then(function(items) {
