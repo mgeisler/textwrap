@@ -7,13 +7,13 @@ fn main() {
                    Zero-cost abstractions.";
     let mut prev_lines = vec![];
 
-    let mut options = Options::new(0).splitter(Box::new(HyphenSplitter) as Box<dyn WordSplitter>);
+    let mut options = Options::new(0).word_splitter(Box::new(HyphenSplitter) as Box<dyn WordSplitter>);
     #[cfg(feature = "hyphenation")]
     {
         use hyphenation::Load;
         let language = hyphenation::Language::EnglishUS;
         let dictionary = hyphenation::Standard::from_embedded(language).unwrap();
-        options.splitter = Box::new(dictionary);
+        options.word_splitter = Box::new(dictionary);
     }
 
     for width in 15..60 {
