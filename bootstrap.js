@@ -1,11 +1,3 @@
-/*
- * ATTENTION: The "eval" devtool has been used (maybe by default in mode: "development").
- * This devtool is neither made for production nor for readable output files.
- * It uses "eval()" calls to create a separate source file in the browser devtools.
- * If you are trying to read the output file, select a different devtool (https://webpack.js.org/configuration/devtool/)
- * or disable the default devtool with "devtool: false".
- * If you are looking for production-ready output files, see mode: "production" (https://webpack.js.org/configuration/mode/).
- */
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
@@ -15,7 +7,12 @@
   \**********************/
 /***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
 
-eval("// A dependency graph that contains any wasm must all be imported\n// asynchronously. This `bootstrap.js` file does the single async import, so\n// that no one else needs to worry about it again.\n__webpack_require__.e(/*! import() */ \"index_js\").then(__webpack_require__.bind(__webpack_require__, /*! ./index.js */ \"./index.js\"))\n  .catch(e => console.error(\"Error importing `index.js`:\", e));\n\n\n//# sourceURL=webpack://textwrap-wasm-demo-app/./bootstrap.js?");
+// A dependency graph that contains any wasm must all be imported
+// asynchronously. This `bootstrap.js` file does the single async import, so
+// that no one else needs to worry about it again.
+__webpack_require__.e(/*! import() */ "index_js").then(__webpack_require__.bind(__webpack_require__, /*! ./index.js */ "./index.js"))
+  .catch(e => console.error("Error importing `index.js`:", e));
+
 
 /***/ })
 
@@ -475,3 +472,4 @@ eval("// A dependency graph that contains any wasm must all be imported\n// asyn
 /******/ 	
 /******/ })()
 ;
+//# sourceMappingURL=bootstrap.js.map
