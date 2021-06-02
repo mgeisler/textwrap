@@ -526,12 +526,13 @@ fetch("build-info.json").then(response => response.json()).then(buildInfo => {
 })
 
 function redraw(event) {
+    let fontSize = document.getElementById("font-size").valueAsNumber;
     let fontFamily = document.getElementById("font-family").value;
     let canvas = document.getElementById("canvas");
     let ctx = canvas.getContext("2d");
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.font = `20px ${fontFamily}`;
+    ctx.font = `${fontSize}px ${fontFamily}`;
 
     let text = document.getElementById("text").value;
     let lineWidth = document.getElementById("line-width").valueAsNumber;
@@ -543,23 +544,19 @@ function redraw(event) {
     (0,textwrap_wasm_demo__WEBPACK_IMPORTED_MODULE_0__.draw_wrapped_text)(ctx, options, text);
 }
 
-document.getElementById("text").addEventListener("input", redraw);
-document.getElementById("font-family").addEventListener("input", redraw);
-document.getElementById("break-words").addEventListener("input", redraw);
-document.getElementById("word-separator").addEventListener("input", redraw);
-document.getElementById("word-splitter").addEventListener("input", redraw);
-document.getElementById("wrap-algorithm").addEventListener("input", redraw);
-
 document.getElementById("line-width").addEventListener("input", (event) => {
     let lineWidthText = document.getElementById("line-width-text");
     lineWidthText.value = event.target.valueAsNumber;
-    redraw();
 });
 
 document.getElementById("line-width-text").addEventListener("input", (event) => {
     let lineWidth = document.getElementById("line-width");
     lineWidth.value = event.target.valueAsNumber;
-    redraw();
+});
+
+
+document.querySelectorAll("select, input").forEach((elem) => {
+    elem.addEventListener("input", redraw);
 });
 
 window.addEventListener("resize", (event) => {
