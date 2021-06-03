@@ -168,7 +168,8 @@
 //!   [`Options::with_termwidth`] constructor for details.
 //!
 //! * `hyphenation`: enables language-sensitive hyphenation via the
-//!   [hyphenation] crate. See the [`word_splitters::WordSplitter`] trait for details.
+//!   [hyphenation] crate. See the [`word_splitters::WordSplitter`]
+//!   trait for details.
 //!
 //! [unicode-linebreak]: https://docs.rs/unicode-linebreak/
 //! [unicode-width]: https://docs.rs/unicode-width/
