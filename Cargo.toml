@@ -35,8 +35,7 @@ unicode-linebreak = { version = "0.1", optional = true }
 unicode-width = { version= "0.1", optional = true }
 
 [dependencies.hyphenation]
-git = "https://github.com/tapeinosyne/hyphenation"
-rev = "d8d501a3731d"  # Until `Standard` implements `Clone`
+version = "0.8.2"
 optional = true
 features = ["embed_en-us"]
 
