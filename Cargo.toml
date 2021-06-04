@@ -29,16 +29,11 @@ path = "benches/indent.rs"
 default = ["unicode-linebreak", "unicode-width", "smawk"]
 
 [dependencies]
+hyphenation = { version = "0.8.2", optional = true, features = ["embed_en-us"] }
 smawk = { version = "0.3", optional = true }
 terminal_size = { version = "0.1", optional = true }
 unicode-linebreak = { version = "0.1", optional = true }
 unicode-width = { version= "0.1", optional = true }
-
-[dependencies.hyphenation]
-git = "https://github.com/tapeinosyne/hyphenation"
-rev = "d8d501a3731d"  # Until `Standard` implements `Clone`
-optional = true
-features = ["embed_en-us"]
 
 [dev-dependencies]
 criterion = "0.3"
