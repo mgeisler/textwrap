@@ -3,41 +3,110 @@
 This file lists the most important changes made in each release of
 `textwrap`.
 
-## Unreleased
+## Version 0.14.0 (2021-06-05)
 
-This is a major feature release which adds new generic type parameters
+This is a major feature release which makes Textwrap more configurable
+and flexible. The high-level API of `textwrap::wrap` and
+`textwrap::fill` remains unchanged, but low-level structs have moved
+around.
+
+The biggest change is the introduction of new generic type parameters
 to the `Options` struct. These parameters lets you statically
-configure the wrapping algorithm and the word separator:
-
-* `wrap_algorithms::WrapAlgorithm`: this trait replaces the old
-  `core::WrapAlgorithm` enum. The enum variants are now two structs:
-  `wrap_algorithms::FirstFit` and `wrap_algorithms::OptimalFit`.
-
-* `WordSeparator`: this new trait lets you specify how words are
-  separated in the text. Until now, Textwrap would simply split on
-  spaces. While this works okay for Western languages, it fails to
-  take emojis and East-Asian languages into account.
-
-  The new `AsciiSpace` and `UnicodeBreakProperties` structs implement
-  the trait. The latter is available if the new optional
-  `unicode-linebreak` Cargo feature is enabled.
-
-Common usages of textwrap stays unchanged, but if you previously
-spelled out the full type for `Options`, you now need to take the
-extra type parameters into account. This means that
+configure the wrapping algorithm, the word separator, and the word
+splitter. If you previously spelled out the full type for `Options`,
+you now need to take the extra type parameters into account. This
+means that
 
 ```rust
 let options: Options<HyphenSplitter> = Options::new(80);
 ```
 
-need to change to
+changes to
 
 ```rust
-let options: Options<wrap_algorithms::FirstFit, AsciiSpace, HyphenSplitter> = Options::new(80);
+let options: Options<
+    wrap_algorithms::FirstFit,
+    word_separators::AsciiSpace,
+    word_splitters::HyphenSplitter,
+> = Options::new(80);
 ```
 
-You won’t see any chance if you call `wrap` directly with a width or
-with an `Options` constructed on the fly.
+This is quite a mouthful, so we suggest using type inferrence where
+possible. You won’t see any chance if you call `wrap` directly with a
+width or with an `Options` value constructed on the fly. Please open
+an issue if this causes problems for you!
+
+### New `WordSeparator` Trait
+
+* [#332](https://github.com/mgeisler/textwrap/pull/332): Add
+  `WordSeparator` trait to allow customizing how words are found in a
+  line of text. Until now, Textwrap would always assume that words are
+  separated by ASCII space characters. You can now customize this as
+  needed.
+
+* [#313](https://github.com/mgeisler/textwrap/pull/313): Add support
+  for using the Unicode line breaking algorithm to find words. This is
+  done by adding a second implementation of the new `WordSeparator`
+  trait. The implementation uses the unicode-linebreak crate, which is
+  a new optional dependency.
+
+  With this, Textwrap can be used with East-Asian languages such as
+  Chinese or Japanese where there are no spaces between words.
+  Breaking a long sequence of emojis is another example where line
+  breaks might be wanted even if there are no whitespace to be found.
+  Feedback would be appreciated for this feature.
+
+
+### Indent
+
+* [#353](https://github.com/mgeisler/textwrap/pull/353): Trim trailing
+  whitespace from `prefix` in `indent`.
+
+  Before, empty lines would get no prefix added. Now, empty lines have
+  a trimmed prefix added. This little trick makes `indent` much more
+  useful since you can now safely indent with `"# "` without creating
+  trailing whitespace in the output due to the trailing whitespace in
+  your prefix.
+
+* [#354](https://github.com/mgeisler/textwrap/pull/354): Make `indent`
+  about 20% faster by preallocating the output string.
+
+
+### Documentation
+
+* [#308](https://github.com/mgeisler/textwrap/pull/308): Document
+  handling of leading and trailing whitespace when wrapping text.
+
+### WebAssembly Demo
+
+* [#310](https://github.com/mgeisler/textwrap/pull/310): Thanks to
+  WebAssembly, you can now try out Textwrap directly in your browser.
+  Please try it out: https://mgeisler.github.io/textwrap/.
+
+### New Generic Parameters
+
+* [#331](https://github.com/mgeisler/textwrap/pull/331): Remove outer
+  boxing from `Options`.
+
+* [#357](https://github.com/mgeisler/textwrap/pull/357): Replace
+  `core::WrapAlgorithm` enum with a `wrap_algorithms::WrapAlgorithm`
+  trait. This allows for arbitrary wrapping algorithms to be plugged
+  into the library.
+
+* [#358](https://github.com/mgeisler/textwrap/pull/358): Switch
+  wrapping functions to use a slice for `line_widths`.
+
+* [#368](https://github.com/mgeisler/textwrap/pull/368): Move
+  `WordSeparator` and `WordSplitter` traits to separate modules.
+  Before, Textwrap had several top-level structs such as
+  `NoHyphenation` and `HyphenSplitter`. These implementations of
+  `WordSplitter` now lives in a dedicated `word_splitters` module.
+  Similarly, we have a new `word_separators` module for
+  implementations of `WordSeparator`.
+
+* [#369](https://github.com/mgeisler/textwrap/pull/369): Rename
+  `Options::splitter` to `Options::word_splitter` for consistency with
+  the other fields backed by traits.
 
 ## Version 0.13.4 (2021-02-23)
 
