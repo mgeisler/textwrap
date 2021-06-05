@@ -293,89 +293,121 @@ mod tests {
         };
     }
 
-    #[test]
-    fn ascii_space_empty() {
-        assert_iter_eq!(AsciiSpace.find_words(""), vec![]);
+    fn to_words<'a>(words: Vec<&'a str>) -> Vec<Word<'a>> {
+        words.into_iter().map(|w: &str| Word::from(&w)).collect()
     }
 
-    #[test]
-    fn ascii_space_single_word() {
-        assert_iter_eq!(AsciiSpace.find_words("foo"), vec![Word::from("foo")]);
+    macro_rules! test_find_words {
+        ($ascii_name:ident,
+         $unicode_name:ident,
+         $([ $line:expr, $ascii_words:expr, $unicode_words:expr ]),+) => {
+            #[test]
+            fn $ascii_name() {
+                $(
+                    let expected_words = to_words($ascii_words.to_vec());
+                    let actual_words = AsciiSpace
+                        .find_words($line)
+                        .collect::<Vec<_>>();
+                    assert_eq!(actual_words, expected_words, "Line: {:?}", $line);
+                )+
+            }
+
+            #[test]
+            #[cfg(feature = "unicode-linebreak")]
+            fn $unicode_name() {
+                $(
+                    let expected_words = to_words($unicode_words.to_vec());
+                    let actual_words = UnicodeBreakProperties
+                        .find_words($line)
+                        .collect::<Vec<_>>();
+                    assert_eq!(actual_words, expected_words, "Line: {:?}", $line);
+                )+
+            }
+        };
     }
 
-    #[test]
-    fn ascii_space_two_words() {
-        assert_iter_eq!(
-            AsciiSpace.find_words("foo bar"),
-            vec![Word::from("foo "), Word::from("bar")]
-        );
-    }
+    test_find_words!(ascii_space_empty, unicode_empty, ["", [], []]);
 
-    #[test]
-    fn ascii_space_multiple_words() {
-        assert_iter_eq!(
-            AsciiSpace.find_words("foo bar baz"),
-            vec![Word::from("foo "), Word::from("bar "), Word::from("baz")]
-        );
-    }
+    test_find_words!(
+        ascii_single_word,
+        unicode_single_word,
+        ["foo", ["foo"], ["foo"]]
+    );
 
-    #[test]
-    fn ascii_space_only_whitespace() {
-        assert_iter_eq!(AsciiSpace.find_words("    "), vec![Word::from("    ")]);
-    }
+    test_find_words!(
+        ascii_two_words,
+        unicode_two_words,
+        ["foo bar", ["foo ", "bar"], ["foo ", "bar"]]
+    );
 
-    #[test]
-    fn ascii_space_inter_word_whitespace() {
-        assert_iter_eq!(
-            AsciiSpace.find_words("foo   bar"),
-            vec![Word::from("foo   "), Word::from("bar")]
-        )
-    }
+    test_find_words!(
+        ascii_multiple_words,
+        unicode_multiple_words,
+        ["foo bar", ["foo ", "bar"], ["foo ", "bar"]],
+        ["x y z", ["x ", "y ", "z"], ["x ", "y ", "z"]]
+    );
 
-    #[test]
-    fn ascii_space_trailing_whitespace() {
-        assert_iter_eq!(AsciiSpace.find_words("foo   "), vec![Word::from("foo   ")]);
-    }
+    test_find_words!(
+        ascii_only_whitespace,
+        unicode_only_whitespace,
+        [" ", [" "], [" "]],
+        ["    ", ["    "], ["    "]]
+    );
 
-    #[test]
-    fn ascii_space_leading_whitespace() {
-        assert_iter_eq!(
-            AsciiSpace.find_words("   foo"),
-            vec![Word::from("   "), Word::from("foo")]
-        );
-    }
+    test_find_words!(
+        ascii_inter_word_whitespace,
+        unicode_inter_word_whitespace,
+        ["foo   bar", ["foo   ", "bar"], ["foo   ", "bar"]]
+    );
 
-    #[test]
-    fn ascii_space_multi_column_char() {
-        assert_iter_eq!(
-            AsciiSpace.find_words("\u{1f920}"), // cowboy emoji 🤠
-            vec![Word::from("\u{1f920}")]
-        );
-    }
+    test_find_words!(
+        ascii_trailing_whitespace,
+        unicode_trailing_whitespace,
+        ["foo   ", ["foo   "], ["foo   "]]
+    );
 
-    #[test]
-    fn ascii_space_hyphens() {
-        assert_iter_eq!(
-            AsciiSpace.find_words("foo-bar"),
-            vec![Word::from("foo-bar")]
-        );
-        assert_iter_eq!(
-            AsciiSpace.find_words("foo- bar"),
-            vec![Word::from("foo- "), Word::from("bar")]
-        );
-        assert_iter_eq!(
-            AsciiSpace.find_words("foo - bar"),
-            vec![Word::from("foo "), Word::from("- "), Word::from("bar")]
-        );
-        assert_iter_eq!(
-            AsciiSpace.find_words("foo -bar"),
-            vec![Word::from("foo "), Word::from("-bar")]
-        );
-    }
+    test_find_words!(
+        ascii_leading_whitespace,
+        unicode_leading_whitespace,
+        ["   foo", ["   ", "foo"], ["   ", "foo"]]
+    );
+
+    test_find_words!(
+        ascii_multi_column_char,
+        unicode_multi_column_char,
+        ["\u{1f920}", ["\u{1f920}"], ["\u{1f920}"]] // cowboy emoji 🤠
+    );
+
+    test_find_words!(
+        ascii_hyphens,
+        unicode_hyphens,
+        ["foo-bar", ["foo-bar"], ["foo-bar"]],
+        ["foo- bar", ["foo- ", "bar"], ["foo- ", "bar"]],
+        ["foo - bar", ["foo ", "- ", "bar"], ["foo ", "- ", "bar"]],
+        ["foo -bar", ["foo ", "-bar"], ["foo ", "-bar"]]
+    );
+
+    test_find_words!(
+        ascii_newline,
+        unicode_newline,
+        ["foo\nbar", ["foo\nbar"], ["foo\n", "bar"]]
+    );
+
+    test_find_words!(
+        ascii_tab,
+        unicode_tab,
+        ["foo\tbar", ["foo\tbar"], ["foo\t", "bar"]]
+    );
+
+    test_find_words!(
+        ascii_non_breaking_space,
+        unicode_non_breaking_space,
+        ["foo\u{00A0}bar", ["foo\u{00A0}bar"], ["foo\u{00A0}bar"]]
+    );
 
     #[test]
     #[cfg(unix)]
-    fn ascii_space_colored_text() {
+    fn find_words_colored_text() {
         use termion::color::{Blue, Fg, Green, Reset};
 
         let green_hello = format!("{}Hello{} ", Fg(Green), Fg(Reset));
@@ -393,7 +425,7 @@ mod tests {
     }
 
     #[test]
-    fn ascii_space_color_inside_word() {
+    fn find_words_color_inside_word() {
         let text = "foo\u{1b}[0m\u{1b}[32mbar\u{1b}[0mbaz";
         assert_iter_eq!(AsciiSpace.find_words(&text), vec![Word::from(text)]);
 
