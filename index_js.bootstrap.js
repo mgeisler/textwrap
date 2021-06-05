@@ -539,7 +539,10 @@ function redraw(event) {
     let breakWords = document.getElementById("break-words").checked;
     let wordSeparator = document.getElementById("word-separator").value;
     let wordSplitter = document.getElementById("word-splitter").value;
-    let wrapAlgorithm = document.getElementById("wrap-algorithm").value;
+    // TODO: The optimal-fit algorithm does not work well for
+    // proportional fonts, so we always use FirstFit. See
+    // https://github.com/mgeisler/textwrap/issues/326.
+    let wrapAlgorithm = "FirstFit"; // document.getElementById("wrap-algorithm").value;
     let options = new textwrap_wasm_demo__WEBPACK_IMPORTED_MODULE_0__.WasmOptions(lineWidth, breakWords, wordSeparator, wordSplitter, wrapAlgorithm);
     (0,textwrap_wasm_demo__WEBPACK_IMPORTED_MODULE_0__.draw_wrapped_text)(ctx, options, text);
 }
