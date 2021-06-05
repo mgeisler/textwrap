@@ -44,7 +44,7 @@ fn main() {
 
 The output is wrapped within 28 columns:
 
-```
+```text
 textwrap: an efficient
 and powerful library for
 wrapping text.
@@ -61,7 +61,7 @@ chooses line breaks which minimize the gaps left at ends of lines.
 Without look-ahead, the first line would be longer and the text would
 look like this:
 
-```
+```text
 textwrap: an efficient and
 powerful library for
 wrapping text.
@@ -90,7 +90,8 @@ fn main() {
 ```
 
 The output now looks like this:
-```
+
+```text
 textwrap: an efficient and
 powerful library for wrap-
 ping text.
