@@ -44,7 +44,7 @@ document.getElementById("line-width-text").addEventListener("input", (event) => 
 });
 
 
-document.querySelectorAll("select, input").forEach((elem) => {
+document.querySelectorAll("textarea, select, input").forEach((elem) => {
     elem.addEventListener("input", redraw);
 });
 
