@@ -1,4 +1,4 @@
-import { draw_wrapped_text, WasmOptions } from "textwrap-wasm-demo";
+import { draw_wrapped_text, WasmOptions, WasmOptimalFit } from "textwrap-wasm-demo";
 
 fetch("build-info.json").then(response => response.json()).then(buildInfo => {
     if (buildInfo.date && buildInfo.commit) {
@@ -25,24 +25,45 @@ function redraw(event) {
     let breakWords = document.getElementById("break-words").checked;
     let wordSeparator = document.getElementById("word-separator").value;
     let wordSplitter = document.getElementById("word-splitter").value;
-    // TODO: The optimal-fit algorithm does not work well for
-    // proportional fonts, so we always use FirstFit. See
-    // https://github.com/mgeisler/textwrap/issues/326.
-    let wrapAlgorithm = "FirstFit"; // document.getElementById("wrap-algorithm").value;
-    let options = new WasmOptions(lineWidth, breakWords, wordSeparator, wordSplitter, wrapAlgorithm);
-    draw_wrapped_text(ctx, options, text);
+    let wrapAlgorithm = document.getElementById("wrap-algorithm").value;
+    let optimalFit = new WasmOptimalFit(document.getElementById("nline-penalty").valueAsNumber,
+                                        document.getElementById("overflow-penalty").valueAsNumber,
+                                        document.getElementById("short-line-fraction").valueAsNumber,
+                                        document.getElementById("short-last-line-penalty").valueAsNumber,
+                                        document.getElementById("hyphen-penalty").valueAsNumber);
+    let options = new WasmOptions(lineWidth, breakWords, wordSeparator, wordSplitter, wrapAlgorithm, optimalFit);
+    draw_wrapped_text(ctx, options, text, optimalFit);
 }
 
-document.getElementById("line-width").addEventListener("input", (event) => {
-    let lineWidthText = document.getElementById("line-width-text");
-    lineWidthText.value = event.target.valueAsNumber;
+document.getElementById("wrap-algorithm").addEventListener("input", (event) => {
+    let disableOptimalFitParams = (event.target.value == "FirstFit");
+    let rangeInputIds = ["nline-penalty",
+               "overflow-penalty",
+               "short-line-fraction",
+               "short-last-line-penalty",
+               "hyphen-penalty"];
+    rangeInputIds.forEach((rangeInputId) => {
+        let rangeInput = document.getElementById(rangeInputId);
+        let textInput = document.getElementById(`${rangeInputId}-text`);
+        rangeInput.disabled = disableOptimalFitParams;
+        textInput.disabled = disableOptimalFitParams;
+    });
 });
 
-document.getElementById("line-width-text").addEventListener("input", (event) => {
-    let lineWidth = document.getElementById("line-width");
-    lineWidth.value = event.target.valueAsNumber;
-});
 
+document.querySelectorAll("input[type=range]").forEach((rangeInput) => {
+    let textInput = document.getElementById(`${rangeInput.id}-text`);
+    textInput.min = rangeInput.min;
+    textInput.max = rangeInput.max;
+    textInput.value = rangeInput.value;
+
+    rangeInput.addEventListener("input", (event) => {
+        textInput.value = rangeInput.valueAsNumber;
+    });
+    textInput.addEventListener("input", (event) => {
+        rangeInput.value = textInput.valueAsNumber;
+    });
+});
 
 document.querySelectorAll("textarea, select, input").forEach((elem) => {
     elem.addEventListener("input", redraw);

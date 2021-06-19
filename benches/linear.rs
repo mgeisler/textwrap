@@ -31,7 +31,7 @@ pub fn benchmark(c: &mut Criterion) {
             #[cfg(feature = "unicode-linebreak")]
             {
                 let options = textwrap::Options::new(LINE_LENGTH)
-                    .wrap_algorithm(textwrap::wrap_algorithms::OptimalFit)
+                    .wrap_algorithm(textwrap::wrap_algorithms::OptimalFit::new())
                     .word_separator(textwrap::word_separators::UnicodeBreakProperties);
                 group.bench_with_input(
                     BenchmarkId::new("fill_optimal_fit_unicode", length),
@@ -43,7 +43,7 @@ pub fn benchmark(c: &mut Criterion) {
             }
 
             let options = textwrap::Options::new(LINE_LENGTH)
-                .wrap_algorithm(textwrap::wrap_algorithms::OptimalFit)
+                .wrap_algorithm(textwrap::wrap_algorithms::OptimalFit::new())
                 .word_separator(textwrap::word_separators::AsciiSpace);
             group.bench_with_input(
                 BenchmarkId::new("fill_optimal_fit_ascii", length),

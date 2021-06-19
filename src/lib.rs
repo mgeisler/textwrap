@@ -317,9 +317,9 @@ impl<'a>
     ///     #[cfg(not(feature = "unicode-linebreak"))]
     ///     word_separator: textwrap::word_separators::AsciiSpace,
     ///     #[cfg(feature = "smawk")]
-    ///     wrap_algorithm: textwrap::wrap_algorithms::OptimalFit,
+    ///     wrap_algorithm: textwrap::wrap_algorithms::OptimalFit::new(),
     ///     #[cfg(not(feature = "smawk"))]
-    ///     wrap_algorithm: textwrap::wrap_algorithms::FirstFit,
+    ///     wrap_algorithm: textwrap::wrap_algorithms::FirstFit::new(),
     ///     word_splitter: textwrap::word_splitters::HyphenSplitter,
     /// }
     /// # ;
@@ -429,9 +429,9 @@ impl<'a, WordSplit> Options<'a, DefaultWrapAlgorithm!(), DefaultWordSeparator!()
     ///     #[cfg(not(feature = "unicode-linebreak"))]
     ///     word_separator: textwrap::word_separators::AsciiSpace,
     ///     #[cfg(feature = "smawk")]
-    ///     wrap_algorithm: textwrap::wrap_algorithms::OptimalFit,
+    ///     wrap_algorithm: textwrap::wrap_algorithms::OptimalFit::new(),
     ///     #[cfg(not(feature = "smawk"))]
-    ///     wrap_algorithm: textwrap::wrap_algorithms::FirstFit,
+    ///     wrap_algorithm: textwrap::wrap_algorithms::FirstFit::new(),
     ///     word_splitter: word_splitter,
     /// }
     /// # ;
@@ -492,7 +492,7 @@ impl<'a, WordSplit> Options<'a, DefaultWrapAlgorithm!(), DefaultWordSeparator!()
             subsequent_indent: "",
             break_words: true,
             word_separator: DefaultWordSeparator!(),
-            wrap_algorithm: DefaultWrapAlgorithm!(),
+            wrap_algorithm: <DefaultWrapAlgorithm!()>::new(),
             word_splitter: word_splitter,
         }
     }
@@ -993,7 +993,7 @@ where
 /// # use textwrap::wrap_algorithms::OptimalFit;
 /// #
 /// # let lines = wrap("To be, or not to be: that is the question",
-/// #                  Options::new(10).wrap_algorithm(OptimalFit));
+/// #                  Options::new(10).wrap_algorithm(OptimalFit::new()));
 /// # assert_eq!(lines.join("\n") + "\n", "\
 /// To be,
 /// or not to

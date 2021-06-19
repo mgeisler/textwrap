@@ -5,7 +5,7 @@ use wasm_bindgen::JsCast;
 use textwrap::core;
 use textwrap::word_separators::{AsciiSpace, UnicodeBreakProperties, WordSeparator};
 use textwrap::word_splitters::{split_words, HyphenSplitter, NoHyphenation, WordSplitter};
-use textwrap::wrap_algorithms::{wrap_first_fit, wrap_optimal_fit};
+use textwrap::wrap_algorithms::{wrap_first_fit, wrap_optimal_fit, OptimalFit};
 
 #[wasm_bindgen]
 extern "C" {
@@ -249,6 +249,48 @@ pub enum WasmWrapAlgorithm {
 }
 
 #[wasm_bindgen]
+#[derive(Copy, Clone, Debug, Default)]
+pub struct WasmOptimalFit {
+    pub nline_penalty: i32,
+    pub overflow_penalty: i32,
+    pub short_last_line_fraction: usize,
+    pub short_last_line_penalty: i32,
+    pub hyphen_penalty: i32,
+}
+
+#[wasm_bindgen]
+impl WasmOptimalFit {
+    #[wasm_bindgen(constructor)]
+    pub fn new(
+        nline_penalty: i32,
+        overflow_penalty: i32,
+        short_last_line_fraction: usize,
+        short_last_line_penalty: i32,
+        hyphen_penalty: i32,
+    ) -> WasmOptimalFit {
+        WasmOptimalFit {
+            nline_penalty,
+            overflow_penalty,
+            short_last_line_fraction,
+            short_last_line_penalty,
+            hyphen_penalty,
+        }
+    }
+}
+
+impl Into<OptimalFit> for WasmOptimalFit {
+    fn into(self) -> OptimalFit {
+        OptimalFit {
+            nline_penalty: self.nline_penalty,
+            overflow_penalty: self.overflow_penalty,
+            short_last_line_fraction: self.short_last_line_fraction,
+            short_last_line_penalty: self.short_last_line_penalty,
+            hyphen_penalty: self.hyphen_penalty,
+        }
+    }
+}
+
+#[wasm_bindgen]
 #[derive(Copy, Clone, Debug)]
 pub struct WasmOptions {
     pub width: usize,
@@ -256,6 +298,7 @@ pub struct WasmOptions {
     pub word_separator: WasmWordSeparator,
     pub word_splitter: WasmWordSplitter,
     pub wrap_algorithm: WasmWrapAlgorithm,
+    pub optimal_fit: WasmOptimalFit,
 }
 
 #[wasm_bindgen]
@@ -267,6 +310,7 @@ impl WasmOptions {
         word_separator: WasmWordSeparator,
         word_splitter: WasmWordSplitter,
         wrap_algorithm: WasmWrapAlgorithm,
+        optimal_fit: WasmOptimalFit,
     ) -> WasmOptions {
         WasmOptions {
             width,
@@ -274,6 +318,7 @@ impl WasmOptions {
             word_separator,
             word_splitter,
             wrap_algorithm,
+            optimal_fit,
         }
     }
 }
@@ -325,7 +370,10 @@ pub fn draw_wrapped_text(
         let line_lengths = [options.width * PRECISION];
         let wrapped_words = match options.wrap_algorithm {
             WasmWrapAlgorithm::FirstFit => wrap_first_fit(&canvas_words, &line_lengths),
-            WasmWrapAlgorithm::OptimalFit => wrap_optimal_fit(&canvas_words, &line_lengths),
+            WasmWrapAlgorithm::OptimalFit => {
+                let penalties = options.optimal_fit.into();
+                wrap_optimal_fit(&canvas_words, &line_lengths, &penalties)
+            }
             _ => Err("WasmOptions has an invalid wrap_algorithm field")?,
         };
 

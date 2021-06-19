@@ -109,12 +109,20 @@ mod unix_only {
 
         #[cfg(feature = "smawk")]
         {
+            // The OptimalFit struct formats itself with a ton of
+            // parameters. This removes the parameters, leaving only
+            // the struct name behind.
+            let wrap_algorithm_label = format!("{:?}", options.wrap_algorithm)
+                .split(' ')
+                .next()
+                .unwrap()
+                .to_string();
             write!(
                 stdout,
-                "{}- algorithm: {}{:?}{} (toggle with Ctrl-o)",
+                "{}- algorithm: {}{}{} (toggle with Ctrl-o)",
                 cursor::Goto(left_col, left_row),
                 style::Bold,
-                options.wrap_algorithm,
+                wrap_algorithm_label,
                 style::Reset,
             )?;
             left_row += 1;
@@ -233,9 +241,9 @@ mod unix_only {
 
     pub fn main() -> Result<(), io::Error> {
         let mut wrap_algorithms: Vec<Box<dyn wrap_algorithms::WrapAlgorithm>> =
-            vec![Box::new(wrap_algorithms::FirstFit)];
+            vec![Box::new(wrap_algorithms::FirstFit::new())];
         #[cfg(feature = "smawk")]
-        wrap_algorithms.push(Box::new(wrap_algorithms::OptimalFit));
+        wrap_algorithms.push(Box::new(wrap_algorithms::OptimalFit::new()));
 
         let mut word_splitters: Vec<Box<dyn word_splitters::WordSplitter>> = vec![
             Box::new(word_splitters::HyphenSplitter),
