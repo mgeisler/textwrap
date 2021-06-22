@@ -74,8 +74,21 @@ impl WrapAlgorithm for Box<dyn WrapAlgorithm> {
 /// This algorithm uses no look-ahead when finding line breaks.
 /// Implemented by [`wrap_first_fit`], please see that function for
 /// details and examples.
-#[derive(Clone, Copy, Debug, Default)]
+#[derive(Clone, Copy, Debug)]
 pub struct FirstFit;
+
+impl FirstFit {
+    /// Create a new empty struct.
+    pub const fn new() -> Self {
+        FirstFit
+    }
+}
+
+impl Default for FirstFit {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 impl WrapAlgorithm for FirstFit {
     #[inline]
@@ -107,7 +120,7 @@ impl WrapAlgorithm for FirstFit {
 ///
 /// ```
 /// use textwrap::core::Word;
-/// use textwrap::wrap_algorithms;
+/// use textwrap::wrap_algorithms::wrap_first_fit;
 /// use textwrap::word_separators::{AsciiSpace, WordSeparator};
 ///
 /// // Helper to convert wrapped lines to a Vec<String>.
@@ -119,7 +132,7 @@ impl WrapAlgorithm for FirstFit {
 ///
 /// let text = "These few words will unfortunately not wrap nicely.";
 /// let words = AsciiSpace.find_words(text).collect::<Vec<_>>();
-/// assert_eq!(lines_to_strings(wrap_algorithms::wrap_first_fit(&words, &[15])),
+/// assert_eq!(lines_to_strings(wrap_first_fit(&words, &[15])),
 ///            vec!["These few words",
 ///                 "will",  // <-- short line
 ///                 "unfortunately",
@@ -128,7 +141,9 @@ impl WrapAlgorithm for FirstFit {
 ///
 /// // We can avoid the short line if we look ahead:
 /// #[cfg(feature = "smawk")]
-/// assert_eq!(lines_to_strings(wrap_algorithms::wrap_optimal_fit(&words, &[15])),
+/// use textwrap::wrap_algorithms::{wrap_optimal_fit, OptimalFit};
+/// #[cfg(feature = "smawk")]
+/// assert_eq!(lines_to_strings(wrap_optimal_fit(&words, &[15], &OptimalFit::new())),
 ///            vec!["These few",
 ///                 "words will",
 ///                 "unfortunately",
