@@ -80,15 +80,43 @@ You can test the word-wrapping behavior by editing the text 😍✨</textarea>
         </select>
       </div>
 
-      <!-- See https://github.com/mgeisler/textwrap/issues/326
       <div class="option">
         <label for="wrap-algorithm">Wrap algorithm:</label>
         <select id="wrap-algorithm">
           <option value="OptimalFit">Optimal-fit</option>
           <option value="FirstFit">First-fit</option>
-        </select>
+        </select>	
       </div>
-      -->
+
+      <div class="option">
+        <label for="nline-penalty">Nth line penalty:</label>
+        <input type="number" id="nline-penalty-text">
+        <input type="range" id="nline-penalty" min="0" max="10000" value="1000">
+      </div>
+
+      <div class="option">
+        <label for="overflow-penalty">Overflow penalty:</label>
+        <input type="number" id="overflow-penalty-text">
+        <input type="range" id="overflow-penalty" min="-1000" max="10000" value="7500">
+      </div>
+
+      <div class="option">
+        <label for="short-line-fraction">Short line fraction:</label>
+        <input type="number" id="short-line-fraction-text">
+        <input type="range" id="short-line-fraction" min="1" max="10" value="4">
+      </div>
+
+      <div class="option">
+        <label for="short-last-line-penalty">Short line penalty:</label>
+        <input type="number" id="short-last-line-penalty-text">
+        <input type="range" id="short-last-line-penalty" min="-2000" max="2000" value="100">
+      </div>
+
+      <div class="option">
+        <label for="hyphen-penalty">Hyphen penalty:</label>
+        <input type="number" id="hyphen-penalty-text">
+        <input type="range" id="hyphen-penalty" min="-2000" max="2000" value="100">
+      </div>
     </div>
 
     <div>

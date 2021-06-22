@@ -10,6 +10,7 @@
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "draw_wrapped_text": () => (/* binding */ draw_wrapped_text),
+/* harmony export */   "WasmOptimalFit": () => (/* binding */ WasmOptimalFit),
 /* harmony export */   "WasmOptions": () => (/* binding */ WasmOptions),
 /* harmony export */   "__wbindgen_object_drop_ref": () => (/* binding */ __wbindgen_object_drop_ref),
 /* harmony export */   "__wbindgen_string_new": () => (/* binding */ __wbindgen_string_new),
@@ -221,19 +222,19 @@ function debugString(val) {
     return className;
 }
 
+function _assertClass(instance, klass) {
+    if (!(instance instanceof klass)) {
+        throw new Error(`expected instance of ${klass.name}`);
+    }
+    return instance.ptr;
+}
+
 let stack_pointer = 32;
 
 function addBorrowedObject(obj) {
     if (stack_pointer == 1) throw new Error('out of js stack');
     heap[--stack_pointer] = obj;
     return stack_pointer;
-}
-
-function _assertClass(instance, klass) {
-    if (!(instance instanceof klass)) {
-        throw new Error(`expected instance of ${klass.name}`);
-    }
-    return instance.ptr;
 }
 /**
 * @param {CanvasRenderingContext2D} ctx
@@ -256,6 +257,105 @@ function handleError(f, args) {
         return f.apply(this, args);
     } catch (e) {
         _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbindgen_exn_store(addHeapObject(e));
+    }
+}
+/**
+*/
+class WasmOptimalFit {
+
+    static __wrap(ptr) {
+        const obj = Object.create(WasmOptimalFit.prototype);
+        obj.ptr = ptr;
+
+        return obj;
+    }
+
+    __destroy_into_raw() {
+        const ptr = this.ptr;
+        this.ptr = 0;
+
+        return ptr;
+    }
+
+    free() {
+        const ptr = this.__destroy_into_raw();
+        _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_wasmoptimalfit_free(ptr);
+    }
+    /**
+    * @returns {number}
+    */
+    get nline_penalty() {
+        var ret = _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_get_wasmoptimalfit_nline_penalty(this.ptr);
+        return ret;
+    }
+    /**
+    * @param {number} arg0
+    */
+    set nline_penalty(arg0) {
+        _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_set_wasmoptimalfit_nline_penalty(this.ptr, arg0);
+    }
+    /**
+    * @returns {number}
+    */
+    get overflow_penalty() {
+        var ret = _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_get_wasmoptimalfit_overflow_penalty(this.ptr);
+        return ret;
+    }
+    /**
+    * @param {number} arg0
+    */
+    set overflow_penalty(arg0) {
+        _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_set_wasmoptimalfit_overflow_penalty(this.ptr, arg0);
+    }
+    /**
+    * @returns {number}
+    */
+    get short_last_line_fraction() {
+        var ret = _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_get_wasmoptimalfit_short_last_line_fraction(this.ptr);
+        return ret >>> 0;
+    }
+    /**
+    * @param {number} arg0
+    */
+    set short_last_line_fraction(arg0) {
+        _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_set_wasmoptimalfit_short_last_line_fraction(this.ptr, arg0);
+    }
+    /**
+    * @returns {number}
+    */
+    get short_last_line_penalty() {
+        var ret = _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_get_wasmoptimalfit_short_last_line_penalty(this.ptr);
+        return ret;
+    }
+    /**
+    * @param {number} arg0
+    */
+    set short_last_line_penalty(arg0) {
+        _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_set_wasmoptimalfit_short_last_line_penalty(this.ptr, arg0);
+    }
+    /**
+    * @returns {number}
+    */
+    get hyphen_penalty() {
+        var ret = _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_get_wasmoptimalfit_hyphen_penalty(this.ptr);
+        return ret;
+    }
+    /**
+    * @param {number} arg0
+    */
+    set hyphen_penalty(arg0) {
+        _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_set_wasmoptimalfit_hyphen_penalty(this.ptr, arg0);
+    }
+    /**
+    * @param {number} nline_penalty
+    * @param {number} overflow_penalty
+    * @param {number} short_last_line_fraction
+    * @param {number} short_last_line_penalty
+    * @param {number} hyphen_penalty
+    */
+    constructor(nline_penalty, overflow_penalty, short_last_line_fraction, short_last_line_penalty, hyphen_penalty) {
+        var ret = _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.wasmoptimalfit_new(nline_penalty, overflow_penalty, short_last_line_fraction, short_last_line_penalty, hyphen_penalty);
+        return WasmOptimalFit.__wrap(ret);
     }
 }
 /**
@@ -346,14 +446,34 @@ class WasmOptions {
         _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_set_wasmoptions_wrap_algorithm(this.ptr, addHeapObject(arg0));
     }
     /**
+    * @returns {WasmOptimalFit}
+    */
+    get optimal_fit() {
+        var ret = _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_get_wasmoptions_optimal_fit(this.ptr);
+        return WasmOptimalFit.__wrap(ret);
+    }
+    /**
+    * @param {WasmOptimalFit} arg0
+    */
+    set optimal_fit(arg0) {
+        _assertClass(arg0, WasmOptimalFit);
+        var ptr0 = arg0.ptr;
+        arg0.ptr = 0;
+        _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_set_wasmoptions_optimal_fit(this.ptr, ptr0);
+    }
+    /**
     * @param {number} width
     * @param {boolean} break_words
     * @param {any} word_separator
     * @param {any} word_splitter
     * @param {any} wrap_algorithm
+    * @param {WasmOptimalFit} optimal_fit
     */
-    constructor(width, break_words, word_separator, word_splitter, wrap_algorithm) {
-        var ret = _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.wasmoptions_new(width, break_words, addHeapObject(word_separator), addHeapObject(word_splitter), addHeapObject(wrap_algorithm));
+    constructor(width, break_words, word_separator, word_splitter, wrap_algorithm, optimal_fit) {
+        _assertClass(optimal_fit, WasmOptimalFit);
+        var ptr0 = optimal_fit.ptr;
+        optimal_fit.ptr = 0;
+        var ret = _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.wasmoptions_new(width, break_words, addHeapObject(word_separator), addHeapObject(word_splitter), addHeapObject(wrap_algorithm), ptr0);
         return WasmOptions.__wrap(ret);
     }
 }
@@ -539,24 +659,45 @@ function redraw(event) {
     let breakWords = document.getElementById("break-words").checked;
     let wordSeparator = document.getElementById("word-separator").value;
     let wordSplitter = document.getElementById("word-splitter").value;
-    // TODO: The optimal-fit algorithm does not work well for
-    // proportional fonts, so we always use FirstFit. See
-    // https://github.com/mgeisler/textwrap/issues/326.
-    let wrapAlgorithm = "FirstFit"; // document.getElementById("wrap-algorithm").value;
-    let options = new textwrap_wasm_demo__WEBPACK_IMPORTED_MODULE_0__.WasmOptions(lineWidth, breakWords, wordSeparator, wordSplitter, wrapAlgorithm);
-    (0,textwrap_wasm_demo__WEBPACK_IMPORTED_MODULE_0__.draw_wrapped_text)(ctx, options, text);
+    let wrapAlgorithm = document.getElementById("wrap-algorithm").value;
+    let optimalFit = new textwrap_wasm_demo__WEBPACK_IMPORTED_MODULE_0__.WasmOptimalFit(document.getElementById("nline-penalty").valueAsNumber,
+                                        document.getElementById("overflow-penalty").valueAsNumber,
+                                        document.getElementById("short-line-fraction").valueAsNumber,
+                                        document.getElementById("short-last-line-penalty").valueAsNumber,
+                                        document.getElementById("hyphen-penalty").valueAsNumber);
+    let options = new textwrap_wasm_demo__WEBPACK_IMPORTED_MODULE_0__.WasmOptions(lineWidth, breakWords, wordSeparator, wordSplitter, wrapAlgorithm, optimalFit);
+    (0,textwrap_wasm_demo__WEBPACK_IMPORTED_MODULE_0__.draw_wrapped_text)(ctx, options, text, optimalFit);
 }
 
-document.getElementById("line-width").addEventListener("input", (event) => {
-    let lineWidthText = document.getElementById("line-width-text");
-    lineWidthText.value = event.target.valueAsNumber;
+document.getElementById("wrap-algorithm").addEventListener("input", (event) => {
+    let disableOptimalFitParams = (event.target.value == "FirstFit");
+    let rangeInputIds = ["nline-penalty",
+               "overflow-penalty",
+               "short-line-fraction",
+               "short-last-line-penalty",
+               "hyphen-penalty"];
+    rangeInputIds.forEach((rangeInputId) => {
+        let rangeInput = document.getElementById(rangeInputId);
+        let textInput = document.getElementById(`${rangeInputId}-text`);
+        rangeInput.disabled = disableOptimalFitParams;
+        textInput.disabled = disableOptimalFitParams;
+    });
 });
 
-document.getElementById("line-width-text").addEventListener("input", (event) => {
-    let lineWidth = document.getElementById("line-width");
-    lineWidth.value = event.target.valueAsNumber;
-});
 
+document.querySelectorAll("input[type=range]").forEach((rangeInput) => {
+    let textInput = document.getElementById(`${rangeInput.id}-text`);
+    textInput.min = rangeInput.min;
+    textInput.max = rangeInput.max;
+    textInput.value = rangeInput.value;
+
+    rangeInput.addEventListener("input", (event) => {
+        textInput.value = rangeInput.valueAsNumber;
+    });
+    textInput.addEventListener("input", (event) => {
+        rangeInput.value = textInput.valueAsNumber;
+    });
+});
 
 document.querySelectorAll("textarea, select, input").forEach((elem) => {
     elem.addEventListener("input", redraw);
