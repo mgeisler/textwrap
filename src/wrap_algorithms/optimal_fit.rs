@@ -272,7 +272,7 @@ pub fn wrap_optimal_fit<'a, 'b, T: Fragment>(
         // breaking before fragments[i].
         //
         // First, every extra line cost NLINE_PENALTY.
-        let mut cost = minima[i].1 + penalties.nline_penalty;
+        let mut cost = (minima[i].1 as i32).saturating_add(penalties.nline_penalty);
 
         // Next, we add a penalty depending on the line length.
         if line_width > target_width {
@@ -283,12 +283,12 @@ pub fn wrap_optimal_fit<'a, 'b, T: Fragment>(
             // Other lines (except for the last line) get a milder
             // penalty which depend on the size of the gap.
             let gap = (target_width - line_width) as i32;
-            cost += gap * gap;
+            cost = cost.saturating_add(gap.saturating_mul(gap));
         } else if i + 1 == j && line_width < target_width / penalties.short_last_line_fraction {
             // The last line can have any size gap, but we do add a
             // penalty if the line is very short (typically because it
             // contains just a single word).
-            cost += penalties.short_last_line_penalty;
+            cost = cost.saturating_add(penalties.short_last_line_penalty);
         }
 
         // Finally, we discourage hyphens.

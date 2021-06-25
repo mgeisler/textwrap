@@ -1852,6 +1852,11 @@ mod tests {
     }
 
     #[test]
+    fn fill_large_width() {
+        fill("!@", 18446743798827450368);
+    }
+
+    #[test]
     #[cfg(not(feature = "smawk"))]
     #[cfg(not(feature = "unicode-linebreak"))]
     fn cloning_works() {
