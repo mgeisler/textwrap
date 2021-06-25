@@ -1851,6 +1851,12 @@ mod tests {
     }
 
     #[test]
+    fn fill_unicode_boundary() {
+        // https://github.com/mgeisler/textwrap/issues/390
+        fill("\u{1b}!Ͽ", 10);
+    }
+
+    #[test]
     #[cfg(not(feature = "smawk"))]
     #[cfg(not(feature = "unicode-linebreak"))]
     fn cloning_works() {

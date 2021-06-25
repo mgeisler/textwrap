@@ -216,7 +216,7 @@ impl WordSeparator for UnicodeBreakProperties {
         let mut opportunities = unicode_linebreak::linebreaks(&stripped)
             .filter(|(idx, _)| {
                 #[allow(clippy::match_like_matches_macro)]
-                match &line[..*idx].chars().next_back() {
+                match &stripped[..*idx].chars().next_back() {
                     // We suppress breaks at ‘-’ since we want to control
                     // this via the WordSplitter.
                     Some('-') => false,
