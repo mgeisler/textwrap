@@ -120,6 +120,15 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: cargo install cargo-fuzz
 
+      - name: Cache fuzz corpus
+        id: cache-fuzz-corpus
+        uses: actions/cache@v2
+        with:
+          path: fuzz/corpus
+          key: fuzz-corpus-${{ github.run_id }}
+          restore-keys: |
+            fuzz-corpus-
+
       - name: 30 second fuzz test
         run: cargo fuzz run fill_first_fit -- -max_total_time=30
 
