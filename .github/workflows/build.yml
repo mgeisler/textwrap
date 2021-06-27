@@ -93,6 +93,22 @@ jobs:
       - name: Lint for left-over debug prints
         run: cargo clippy -- -D clippy::print_stdout -D clippy::print_stderr
 
+  fuzz:
+    name: Fuzz test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install nightly Rust
+        run: rustup default nightly
+
+      - name: Install cargo-fuzz
+        run: cargo install cargo-fuzz
+
+      - name: 30 second fuzz test
+        run: cargo fuzz run fill_first_fit -- -max_total_time=30
+
   wasm-build:
     name: Build Wasm demo
     runs-on: ubuntu-latest
