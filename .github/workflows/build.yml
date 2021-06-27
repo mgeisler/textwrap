@@ -17,13 +17,17 @@ env:
 jobs:
 
   ubuntu:
-    name: Build on Ubuntu
+    name: Ubuntu
     runs-on: ubuntu-latest
     strategy:
       matrix:
         rust:
           - stable
           - nightly
+        features:
+          - no default features
+          - all features
+          - default features
 
     steps:
       - name: Checkout repository
@@ -34,17 +38,18 @@ jobs:
 
       - uses: Swatinem/rust-cache@v1
 
-      - name: Test with default features
-        run: cargo test
-
-      - name: Test without default features
-        run: cargo test --no-default-features
-
-      - name: Test with all features
-        run: cargo test --all-features
+      - name: Test with ${{ matrix.features }}
+        run: |
+          FLAG="${{ matrix.features }}"
+          if [[ "$FLAG" = "default features" ]]; then
+            FLAG=''  # Needs no flag
+          else
+            FLAG="--${FLAG// /-}"  # Turn 'foo bar' into '--foo-bar'
+          fi
+          cargo test $FLAG
 
   windows:
-    name: Build on Windows (stable)
+    name: Windows (stable, default features)
     runs-on: windows-latest
     steps:
       - name: Checkout repository
