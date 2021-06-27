@@ -1,6 +1,6 @@
 [package]
 name = "textwrap"
-version = "0.14.1"
+version = "0.14.2"
 authors = ["Martin Geisler <martin@geisler.net>"]
 description = "Powerful library for word wrapping, indenting, and dedenting strings"
 documentation = "https://docs.rs/textwrap/"
