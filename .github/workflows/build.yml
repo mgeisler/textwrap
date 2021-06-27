@@ -129,7 +129,10 @@ jobs:
           restore-keys: |
             fuzz-corpus-
 
-      - name: 30 second fuzz test
+      - name: Build fuzz targets
+        run: cargo fuzz build fill_first_fit
+
+      - name: Fuzz test
         run: cargo fuzz run fill_first_fit -- -max_total_time=30
 
   wasm-build:
