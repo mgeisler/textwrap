@@ -135,6 +135,9 @@ jobs:
       - name: Fuzz test
         run: cargo fuzz run fill_first_fit -- -max_total_time=30
 
+      - name: Minimize fuzz corpus
+        run: cargo fuzz cmin fill_first_fit
+
   wasm-build:
     name: Build Wasm demo
     runs-on: ubuntu-latest
