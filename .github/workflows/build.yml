@@ -32,6 +32,8 @@ jobs:
       - name: Install ${{ matrix.rust }} Rust
         run: rustup default ${{ matrix.rust }}
 
+      - uses: Swatinem/rust-cache@v1
+
       - name: Test with default features
         run: cargo test
 
@@ -48,6 +50,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
+      - uses: Swatinem/rust-cache@v1
+
       - name: Test with default features
         run: cargo test
 
@@ -58,6 +62,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
+
+      - uses: Swatinem/rust-cache@v1
 
       - name: Build all targets with default features
         run: cargo build --all-targets
@@ -75,6 +81,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
+      - uses: Swatinem/rust-cache@v1
+
       - name: Build documentation and check intra-doc links
         env:
           RUSTDOCFLAGS: --deny broken_intra_doc_links
@@ -86,6 +94,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
+
+      - uses: Swatinem/rust-cache@v1
 
       - name: Clippy with default lints
         run: cargo clippy
@@ -103,25 +113,12 @@ jobs:
       - name: Install nightly Rust
         run: rustup default nightly
 
-      - name: Get latest cargo-fuzz version
-        id: cargo-fuzz-version
-        run: |
-          VERSION=$(cargo search cargo-fuzz | grep cargo-fuzz | cut -d '"' -f 2)
-          echo "::set-output name=version::$VERSION"
-
-      - name: Cache cargo-fuzz
-        id: cache
-        uses: actions/cache@v2
-        with:
-          path: ~/.cargo/bin/cargo-fuzz
-          key: cargo-fuzz-${{ steps.cargo-fuzz-version.outputs.version }}
+      - uses: Swatinem/rust-cache@v1
 
       - name: Install cargo-fuzz
-        if: steps.cache.outputs.cache-hit != 'true'
         run: cargo install cargo-fuzz
 
       - name: Cache fuzz corpus
-        id: cache-fuzz-corpus
         uses: actions/cache@v2
         with:
           path: fuzz/corpus
@@ -147,6 +144,8 @@ jobs:
 
       - name: Install wasm-pack
         run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - uses: Swatinem/rust-cache@v1
 
       - name: Build textwrap-wasm-demo
         run: wasm-pack build
