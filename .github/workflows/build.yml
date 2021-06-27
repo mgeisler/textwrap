@@ -103,11 +103,40 @@ jobs:
       - name: Install nightly Rust
         run: rustup default nightly
 
+      - name: Get latest cargo-fuzz version
+        id: cargo-fuzz-version
+        run: |
+          VERSION=$(cargo search cargo-fuzz | grep cargo-fuzz | cut -d '"' -f 2)
+          echo "::set-output name=version::$VERSION"
+
+      - name: Cache cargo-fuzz
+        id: cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.cargo/bin/cargo-fuzz
+          key: cargo-fuzz-${{ steps.cargo-fuzz-version.outputs.version }}
+
       - name: Install cargo-fuzz
+        if: steps.cache.outputs.cache-hit != 'true'
         run: cargo install cargo-fuzz
 
-      - name: 30 second fuzz test
+      - name: Cache fuzz corpus
+        id: cache-fuzz-corpus
+        uses: actions/cache@v2
+        with:
+          path: fuzz/corpus
+          key: fuzz-corpus-${{ github.run_id }}
+          restore-keys: |
+            fuzz-corpus-
+
+      - name: Build fuzz targets
+        run: cargo fuzz build fill_first_fit
+
+      - name: Fuzz test
         run: cargo fuzz run fill_first_fit -- -max_total_time=30
+
+      - name: Minimize fuzz corpus
+        run: cargo fuzz cmin fill_first_fit
 
   wasm-build:
     name: Build Wasm demo
