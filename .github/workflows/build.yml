@@ -24,10 +24,36 @@ jobs:
         rust:
           - stable
           - nightly
+    env:
+      RUSTC_WRAPPER: sccache
+      CARGO_INCREMENTAL: 0  # To let sccache cache the compilation
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
+
+      - name: Install sccache
+        run: |
+          RELEASES=https://github.com/mozilla/sccache/releases/download
+          VERSION=0.2.15
+          FILE=sccache-v$VERSION-x86_64-unknown-linux-musl
+
+          mkdir -p ~/.local/bin
+          curl -L "$RELEASES/v$VERSION/$FILE.tar.gz" \
+            | tar -xz \
+                --directory ~/.local/bin \
+                --strip-components 1 \
+                $FILE/sccache
+          chmod +x ~/.local/bin/sccache
+
+      - name: Setup sccache cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/sccache
+          key: ${{ runner.os }}-sccache-${{ matrix.rust }}-${{ github.run_id }}
+          restore-keys: |
+            ${{ runner.os }}-sccache-${{ matrix.rust }}-
+            ${{ runner.os }}-sccache-
 
       - name: Install ${{ matrix.rust }} Rust
         run: rustup default ${{ matrix.rust }}
@@ -40,6 +66,9 @@ jobs:
 
       - name: Test with all features
         run: cargo test --all-features
+
+      - name: Show sccache statistics
+        run: sccache --show-stats
 
   windows:
     name: Build on Windows (stable)
