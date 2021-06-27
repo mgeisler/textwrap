@@ -103,7 +103,21 @@ jobs:
       - name: Install nightly Rust
         run: rustup default nightly
 
+      - name: Get latest cargo-fuzz version
+        id: cargo-fuzz-version
+        run: |
+          VERSION=$(cargo search cargo-fuzz | grep cargo-fuzz | cut -d '"' -f 2)
+          echo "::set-output name=version::$VERSION"
+
+      - name: Cache cargo-fuzz
+        id: cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.cargo/bin/cargo-fuzz
+          key: cargo-fuzz-${{ steps.cargo-fuzz-version.outputs.version }}
+
       - name: Install cargo-fuzz
+        if: steps.cache.outputs.cache-hit != 'true'
         run: cargo install cargo-fuzz
 
       - name: 30 second fuzz test
