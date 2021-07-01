@@ -196,39 +196,25 @@ where
 }
 
 #[allow(missing_docs)]
-#[derive(Debug)]
-pub struct Fragments<'a, I: Iterator<Item = usize>> {
-    word: Word<'a>,
-    split_points: I,
-    prev: usize,
-}
+pub trait Splittable: AsRef<str> {
+    type Output;
 
-impl<'a> Fragments<'a, std::vec::IntoIter<usize>> {
     #[allow(missing_docs)]
-    pub fn new(word: Word<'a>, word_splitter: &impl WordSplitter) -> Self {
-        let split_points = word_splitter.split_points(&word).into_iter();
-        Self {
-            word,
-            split_points,
-            prev: 0,
-        }
-    }
+    fn split(&self, range: std::ops::Range<usize>, keep_ending: bool) -> Self::Output;
 }
 
-impl<'a, I: Iterator<Item = usize>> Fragments<'a, I> {
-    fn split(&self, range: std::ops::Range<usize>, keep_ending: bool) -> Word<'a> {
-        let word = &self.word.word[range];
+impl<'a> Splittable for Word<'a> {
+    type Output = Self;
+
+    fn split(&self, range: std::ops::Range<usize>, keep_ending: bool) -> Self::Output {
+        let word = &self.word[range];
         Word {
             word,
             width: display_width(word),
-            whitespace: if keep_ending {
-                self.word.whitespace
-            } else {
-                ""
-            },
+            whitespace: if keep_ending { self.whitespace } else { "" },
             penalty: if keep_ending {
-                self.word.penalty
-            } else if word.ends_with('-') {
+                self.penalty
+            } else if !word.ends_with('-') {
                 "-"
             } else {
                 ""
@@ -237,19 +223,41 @@ impl<'a, I: Iterator<Item = usize>> Fragments<'a, I> {
     }
 }
 
-impl<'a, I: Iterator<Item = usize>> Iterator for Fragments<'a, I> {
-    type Item = Word<'a>;
+#[allow(missing_docs)]
+#[derive(Debug)]
+pub struct Fragments<W: Splittable, I: Iterator<Item = usize>> {
+    word: W,
+    split_points: I,
+    prev: usize,
+}
+
+impl<W: Splittable> Fragments<W, std::vec::IntoIter<usize>> {
+    #[allow(missing_docs)]
+    pub fn new(word: W, word_splitter: &impl WordSplitter) -> Self {
+        let split_points = word_splitter.split_points(word.as_ref()).into_iter();
+        Self {
+            word,
+            split_points,
+            prev: 0,
+        }
+    }
+}
+
+impl<W: Splittable, I: Iterator<Item = usize>> Iterator for Fragments<W, I> {
+    type Item = W::Output;
 
     fn next(&mut self) -> Option<Self::Item> {
         if let Some(idx) = self.split_points.next() {
-            let w = self.split(self.prev..idx, false);
+            let w = self.word.split(self.prev..idx, false);
             self.prev = idx;
             return Some(w);
         }
 
-        if self.prev < self.word.word.len() || self.prev == 0 {
-            let w = self.split(self.prev..self.word.len(), true);
-            self.prev = self.word.word.len() + 1;
+        let len = self.word.as_ref().len();
+        if self.prev < len || self.prev == 0 {
+            let w = self.word.split(self.prev..len, true);
+            // TODO: shouldn’t this be just len?
+            self.prev = len + 1;
             return Some(w);
         }
 
