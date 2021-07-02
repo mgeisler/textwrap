@@ -12,6 +12,14 @@ license = "MIT"
 edition = "2018"
 exclude = [".github/", ".gitignore", "benches/", "examples/", "fuzz/", "images/"]
 
+[[example]]
+name = "hyphenation"
+required-features = ["hyphenation"]
+
+[[example]]
+name = "termwidth"
+required-features = ["terminal_size"]
+
 [package.metadata.docs.rs]
 all-features = true
 
