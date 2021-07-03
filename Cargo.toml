@@ -40,12 +40,14 @@ default = ["unicode-linebreak", "unicode-width", "smawk"]
 hyphenation = { version = "0.8.2", optional = true, features = ["embed_en-us"] }
 smawk = { version = "0.3", optional = true }
 terminal_size = { version = "0.1", optional = true }
+text-style = { version = "0.3", features = ["termion"] }
 unicode-linebreak = { version = "0.1", optional = true }
 unicode-width = { version= "0.1", optional = true }
 
 [dev-dependencies]
 criterion = "0.3"
 lipsum = "0.8"
+rand = "0.8"
 unic-emoji-char = "0.9.0"
 version-sync = "0.9"
 

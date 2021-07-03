@@ -224,6 +224,12 @@ pub struct Word<'a> {
     pub(crate) width: usize,
 }
 
+impl AsRef<str> for Word<'_> {
+    fn as_ref(&self) -> &str {
+        &self.word
+    }
+}
+
 impl std::ops::Deref for Word<'_> {
     type Target = str;
 

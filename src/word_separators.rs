@@ -43,7 +43,18 @@ pub trait WordSeparator: WordSeparatorClone + std::fmt::Debug {
     // this isn't possible until Rust supports higher-kinded types:
     // https://github.com/rust-lang/rfcs/blob/master/text/1522-conservative-impl-trait.md
     /// Find all words in `line`.
-    fn find_words<'a>(&self, line: &'a str) -> Box<dyn Iterator<Item = Word<'a>> + 'a>;
+    fn find_words<'a>(&self, line: &'a str) -> Box<dyn Iterator<Item = Word<'a>> + 'a> {
+        Box::new(
+            self.find_word_ranges(line)
+                .map(move |range| Word::from(&line[range])),
+        )
+    }
+
+    /// Find all words in `line` and return their positions in `line`.
+    fn find_word_ranges<'a>(
+        &self,
+        line: &'a str,
+    ) -> Box<dyn Iterator<Item = std::ops::Range<usize>> + 'a>;
 }
 
 // The internal `WordSeparatorClone` trait is allows us to implement
@@ -69,9 +80,12 @@ impl Clone for Box<dyn WordSeparator> {
 }
 
 impl WordSeparator for Box<dyn WordSeparator> {
-    fn find_words<'a>(&self, line: &'a str) -> Box<dyn Iterator<Item = Word<'a>> + 'a> {
+    fn find_word_ranges<'a>(
+        &self,
+        line: &'a str,
+    ) -> Box<dyn Iterator<Item = std::ops::Range<usize>> + 'a> {
         use std::ops::Deref;
-        self.deref().find_words(line)
+        self.deref().find_word_ranges(line)
     }
 }
 
@@ -92,7 +106,10 @@ pub struct AsciiSpace;
 ///                        Word::from("World!")]);
 /// ```
 impl WordSeparator for AsciiSpace {
-    fn find_words<'a>(&self, line: &'a str) -> Box<dyn Iterator<Item = Word<'a>> + 'a> {
+    fn find_word_ranges<'a>(
+        &self,
+        line: &'a str,
+    ) -> Box<dyn Iterator<Item = std::ops::Range<usize>> + 'a> {
         let mut start = 0;
         let mut in_whitespace = false;
         let mut char_indices = line.char_indices();
@@ -106,19 +123,19 @@ impl WordSeparator for AsciiSpace {
             #[allow(clippy::while_let_on_iterator)]
             while let Some((idx, ch)) = char_indices.next() {
                 if in_whitespace && ch != ' ' {
-                    let word = Word::from(&line[start..idx]);
+                    let word_range = start..idx;
                     start = idx;
                     in_whitespace = ch == ' ';
-                    return Some(word);
+                    return Some(word_range);
                 }
 
                 in_whitespace = ch == ' ';
             }
 
             if start < line.len() {
-                let word = Word::from(&line[start..]);
+                let word_range = start..line.len();
                 start = line.len();
-                return Some(word);
+                return Some(word_range);
             }
 
             None
@@ -194,7 +211,10 @@ pub struct UnicodeBreakProperties;
 /// ```
 #[cfg(feature = "unicode-linebreak")]
 impl WordSeparator for UnicodeBreakProperties {
-    fn find_words<'a>(&self, line: &'a str) -> Box<dyn Iterator<Item = Word<'a>> + 'a> {
+    fn find_word_ranges<'a>(
+        &self,
+        line: &'a str,
+    ) -> Box<dyn Iterator<Item = std::ops::Range<usize>> + 'a> {
         // Construct an iterator over (original index, stripped index)
         // tuples. We find the Unicode linebreaks on a stripped string,
         // but we need the original indices so we can form words based on
@@ -242,16 +262,16 @@ impl WordSeparator for UnicodeBreakProperties {
             while let Some((idx, _)) = opportunities.next() {
                 if let Some((orig_idx, _)) = idx_map.find(|&(_, stripped_idx)| stripped_idx == idx)
                 {
-                    let word = Word::from(&line[start..orig_idx]);
+                    let word_range = start..orig_idx;
                     start = orig_idx;
-                    return Some(word);
+                    return Some(word_range);
                 }
             }
 
             if start < line.len() {
-                let word = Word::from(&line[start..]);
+                let word_range = start..line.len();
                 start = line.len();
-                return Some(word);
+                return Some(word_range);
             }
 
             None
