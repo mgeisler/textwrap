@@ -148,7 +148,7 @@ impl<'a> CanvasWord<'a> {
 
 const PRECISION: usize = 10;
 
-impl core::Fragment for CanvasWord<'_> {
+impl core::MeasuredFragment for CanvasWord<'_> {
     #[inline]
     fn width(&self) -> usize {
         (self.width * PRECISION as f64) as usize

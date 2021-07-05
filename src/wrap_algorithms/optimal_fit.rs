@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 
-use crate::core::{Fragment, Word};
+use crate::core::{MeasuredFragment, Word};
 use crate::wrap_algorithms::WrapAlgorithm;
 
 /// Wrap words using an advanced algorithm with look-ahead.
@@ -266,7 +266,7 @@ impl LineNumbers {
 ///
 /// **Note:** Only available when the `smawk` Cargo feature is
 /// enabled.
-pub fn wrap_optimal_fit<'a, 'b, T: Fragment>(
+pub fn wrap_optimal_fit<'a, 'b, T: MeasuredFragment>(
     fragments: &'a [T],
     line_widths: &'b [usize],
     penalties: &'b OptimalFit,

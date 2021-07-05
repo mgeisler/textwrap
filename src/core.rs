@@ -7,8 +7,8 @@
 //! In general, you want to follow these steps when wrapping
 //! something:
 //!
-//! 1. Split your input into [`Fragment`]s. These are abstract blocks
-//!    of text or content which can be wrapped into lines. See
+//! 1. Split your input into [`MeasuredFragment`]s. These are abstract
+//!    blocks of text or content which can be wrapped into lines. See
 //!    [`WordSeparator`](crate::word_separators::WordSeparator) for
 //!    how to do this for text.
 //!
@@ -187,7 +187,7 @@ pub fn display_width(text: &str) -> usize {
 
 /// A (text) fragment denotes the unit which we wrap into lines.
 ///
-/// Fragments represent an abstract _word_ plus the _whitespace_
+/// MeasuredFragments represent an abstract _word_ plus the _whitespace_
 /// following the word. In case the word falls at the end of the line,
 /// the whitespace is dropped and a so-called _penalty_ is inserted
 /// instead (typically `"-"` if the word was hyphenated).
@@ -195,7 +195,7 @@ pub fn display_width(text: &str) -> usize {
 /// For wrapping purposes, the precise content of the word, the
 /// whitespace, and the penalty is irrelevant. All we need to know is
 /// the displayed width of each part, which this trait provides.
-pub trait Fragment: std::fmt::Debug {
+pub trait MeasuredFragment: std::fmt::Debug {
     /// Displayed width of word represented by this fragment.
     fn width(&self) -> usize;
 
@@ -210,8 +210,8 @@ pub trait Fragment: std::fmt::Debug {
 
 /// A piece of wrappable text, including any trailing whitespace.
 ///
-/// A `Word` is an example of a [`Fragment`], so it has a width,
-/// trailing whitespace, and potentially a penalty item.
+/// A `Word` is an example of a [`MeasuredFragment`], so it has a
+/// width, trailing whitespace, and potentially a penalty item.
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct Word<'a> {
     /// Word content.
@@ -302,7 +302,7 @@ impl<'a> Word<'a> {
     }
 }
 
-impl Fragment for Word<'_> {
+impl MeasuredFragment for Word<'_> {
     #[inline]
     fn width(&self) -> usize {
         self.width

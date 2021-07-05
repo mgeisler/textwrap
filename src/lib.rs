@@ -149,8 +149,8 @@
 //!
 //!   This feature can be disabled if you only need to wrap ASCII
 //!   text, or if the functions in [`core`] are used directly with
-//!   [`core::Fragment`]s for which the widths have been computed in
-//!   other ways.
+//!   [`core::MeasuredFragment`]s for which the widths have been
+//!   computed in other ways.
 //!
 //! * `smawk`: enables linear-time wrapping of the whole paragraph via
 //!   the [smawk] crate. See the [`wrap_algorithms::wrap_optimal_fit`]

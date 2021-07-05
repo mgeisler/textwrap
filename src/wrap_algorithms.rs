@@ -1,13 +1,13 @@
 //! Word wrapping algorithms.
 //!
-//! After a text has been broken into words (or [`Fragment`]s), one
-//! now has to decide how to break the fragments into lines. The
-//! simplest algorithm for this is implemented by [`wrap_first_fit`]:
-//! it uses no look-ahead and simply adds fragments to the line as
-//! long as they fit. However, this can lead to poor line breaks if a
-//! large fragment almost-but-not-quite fits on a line. When that
-//! happens, the fragment is moved to the next line and it will leave
-//! behind a large gap. A more advanced algorithm, implemented by
+//! After a text has been broken into smaller fragments, one now has
+//! to decide how to break the fragments into lines. The simplest
+//! algorithm for this is implemented by [`wrap_first_fit`]: it uses
+//! no look-ahead and simply adds fragments to the line as long as
+//! they fit. However, this can lead to poor line breaks if a large
+//! fragment almost-but-not-quite fits on a line. When that happens,
+//! the fragment is moved to the next line and it will leave behind a
+//! large gap. A more advanced algorithm, implemented by
 //! [`wrap_optimal_fit`], will take this into account. The optimal-fit
 //! algorithm considers all possible line breaks and will attempt to
 //! minimize the gaps left behind by overly short lines.
@@ -20,7 +20,7 @@ mod optimal_fit;
 #[cfg(feature = "smawk")]
 pub use optimal_fit::{wrap_optimal_fit, OptimalFit};
 
-use crate::core::{Fragment, Word};
+use crate::core::{MeasuredFragment, Word};
 
 /// Describes how to wrap words into lines.
 ///
@@ -173,7 +173,7 @@ impl WrapAlgorithm for FirstFit {
 ///
 /// ```
 /// use textwrap::wrap_algorithms::wrap_first_fit;
-/// use textwrap::core::{Fragment, Word};
+/// use textwrap::core::{MeasuredFragment, Word};
 ///
 /// #[derive(Debug)]
 /// struct Task<'a> {
@@ -183,7 +183,7 @@ impl WrapAlgorithm for FirstFit {
 ///     cleanup: usize, // Time needed for full cleanup if day ends with this task.
 /// }
 ///
-/// impl Fragment for Task<'_> {
+/// impl MeasuredFragment for Task<'_> {
 ///     fn width(&self) -> usize { self.hours }
 ///     fn whitespace_width(&self) -> usize { self.sweep }
 ///     fn penalty_width(&self) -> usize { self.cleanup }
@@ -245,7 +245,7 @@ impl WrapAlgorithm for FirstFit {
 ///
 /// Apologies to anyone who actually knows how to build a house and
 /// knows how long each step takes :-)
-pub fn wrap_first_fit<'a, 'b, T: Fragment>(
+pub fn wrap_first_fit<'a, 'b, T: MeasuredFragment>(
     fragments: &'a [T],
     line_widths: &'b [usize],
 ) -> Vec<&'a [T]> {
