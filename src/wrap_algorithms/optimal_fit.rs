@@ -69,32 +69,63 @@ pub struct OptimalFit {
     /// seen above.
     pub overflow_penalty: i32,
 
-    /// When should the last line be considered "short"?
+    /// When should the a single word on the last line be considered
+    /// "too short"?
     ///
-    /// If the last line of the text is shorter than `1 /
-    /// short_last_line_fraction` of the line width, it will be
-    /// considered "short". Short lines will have
-    /// `short_last_line_penalty` added as an extra penalty.
+    /// If the last line of the text consist of a single word and if
+    /// this word is shorter than `1 / short_last_line_fraction` of
+    /// the line width, then the final line will be considered "short"
+    /// and `short_last_line_penalty` is added as an extra penalty.
     ///
-    /// The effect of this is to avoid a final line consisting of just
-    /// a single word. For example, with a `short_last_line_penalty`
-    /// of 25 (the default), a gap of up to 5 columns will be seen as
-    /// more desirable than having a final short line. So you get
+    /// The effect of this is to avoid a final line consisting of a
+    /// single small word. For example, with a
+    /// `short_last_line_penalty` of 25 (the default), a gap of up to
+    /// 5 columns will be seen as more desirable than having a final
+    /// short line.
     ///
-    /// ```text
-    /// This is a demo of the short last
-    /// line penalty.
+    /// ## Examples
+    ///
+    ///
+    ///
+    ///
     /// ```
+    /// use textwrap::{wrap, wrap_algorithms, Options};
     ///
-    /// instead of
+    /// let text = "This is a demo of the short last line penalty.";
     ///
-    /// ```text
-    /// This is a demo of the short last line
-    /// penalty.
+    /// // The first-fit algorithm leaves a single short word on the last line:
+    /// assert_eq!(wrap(text, Options::new(37).wrap_algorithm(wrap_algorithms::FirstFit::new())),
+    ///            vec!["This is a demo of the short last line",
+    ///                 "penalty."]);
+    ///
+    /// #[cfg(feature = "smawk")] {
+    /// let mut wrap_algorithm = wrap_algorithms::OptimalFit::new();
+    ///
+    /// // Since "penalty." is shorter than 25% of the line width, the
+    /// // optimal-fit algorithm adds a penalty of 25. This is enough
+    /// // to move "line " down:
+    /// assert_eq!(wrap(text, Options::new(37).wrap_algorithm(wrap_algorithm)),
+    ///            vec!["This is a demo of the short last",
+    ///                 "line penalty."]);
+    ///
+    /// // We can change the meaning of "short" lines. Here, only words
+    /// // shorter than 1/10th of the line width will be considered short:
+    /// wrap_algorithm.short_last_line_fraction = 10;
+    /// assert_eq!(wrap(text, Options::new(37).wrap_algorithm(wrap_algorithm)),
+    ///            vec!["This is a demo of the short last line",
+    ///                 "penalty."]);
+    ///
+    /// // If desired, the penalty can also be disabled:
+    /// wrap_algorithm.short_last_line_fraction = 4;
+    /// wrap_algorithm.short_last_line_penalty = 0;
+    /// assert_eq!(wrap(text, Options::new(37).wrap_algorithm(wrap_algorithm)),
+    ///            vec!["This is a demo of the short last line",
+    ///                 "penalty."]);
+    /// }
     /// ```
     pub short_last_line_fraction: usize,
 
-    /// Penalty for a short last line.
+    /// Penalty for a last line with a single short word.
     ///
     /// Set this to zero if you do not want to penalize short last lines.
     pub short_last_line_penalty: i32,
