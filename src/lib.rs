@@ -226,7 +226,7 @@ macro_rules! DefaultWordSeparator {
     };
 }
 
-/// Holds settings for wrapping and filling text.
+/// Holds configuration options for wrapping and filling text.
 #[derive(Debug, Clone)]
 pub struct Options<
     'a,
@@ -293,13 +293,10 @@ impl<'a> From<usize>
     }
 }
 
-/// Constructors for boxed Options, specifically.
 impl<'a>
     Options<'a, DefaultWrapAlgorithm!(), DefaultWordSeparator!(), word_splitters::HyphenSplitter>
 {
-    /// Creates a new [`Options`] with the specified width and static
-    /// dispatch using the [`word_splitters::HyphenSplitter`].
-    /// Equivalent to
+    /// Creates a new [`Options`] with the specified width. Equivalent to
     ///
     /// ```
     /// # use textwrap::word_splitters::{HyphenSplitter, WordSplitter};
@@ -331,56 +328,7 @@ impl<'a>
     ///
     /// Note that the default word separator and wrap algorithms
     /// changes based on the available Cargo features. The best
-    /// available algorithm is used by default.
-    ///
-    /// Static dispatch means here, that the word splitter is stored as-is
-    /// and the type is known at compile-time. Thus the returned value
-    /// is actually a `Options<AsciiSpace, HyphenSplitter>`.
-    ///
-    /// Dynamic dispatch on the other hand, means that the word
-    /// separator and/or word splitter is stored as a trait object
-    /// such as a `Box<dyn word_splitters::WordSplitter>`. This way
-    /// the word splitter's inner type can be changed without changing
-    /// the type of this struct, which then would be just `Options` as
-    /// a short cut for `Options<Box<dyn
-    /// word_separators::WordSeparator>, Box<dyn
-    /// word_splitters::WordSplitter>>`.
-    ///
-    /// The value and type of the word splitter can be choose from the
-    /// start using the [`Options::with_word_splitter`] constructor or
-    /// changed afterwards using the [`Options::word_splitter`]
-    /// method. Whether static or dynamic dispatch is used, depends on
-    /// whether these functions are given a boxed
-    /// [`word_splitters::WordSplitter`] or not. Take for example:
-    ///
-    /// ```
-    /// use textwrap::Options;
-    /// use textwrap::word_splitters::{HyphenSplitter, NoHyphenation};
-    /// # use textwrap::word_splitters::WordSplitter;
-    /// # use textwrap::word_separators::AsciiSpace;
-    /// # let width = 80;
-    ///
-    /// // uses HyphenSplitter with static dispatch
-    /// // the actual type: Options<AsciiSpace, HyphenSplitter>
-    /// let opt = Options::new(width);
-    ///
-    /// // uses NoHyphenation with static dispatch
-    /// // the actual type: Options<AsciiSpace, NoHyphenation>
-    /// let opt = Options::new(width).word_splitter(NoHyphenation);
-    ///
-    /// // uses HyphenSplitter with dynamic dispatch
-    /// // the actual type: Options<AsciiSpace, Box<dyn word_splitters::WordSplitter>>
-    /// let opt: Options<_, _, _> = Options::new(width).word_splitter(Box::new(HyphenSplitter));
-    ///
-    /// // uses NoHyphenation with dynamic dispatch
-    /// // the actual type: Options<AsciiSpace, Box<dyn word_splitters::WordSplitter>>
-    /// let opt: Options<_, _, _> = Options::new(width).word_splitter(Box::new(NoHyphenation));
-    /// ```
-    ///
-    /// Notice that the last two variables have the same type, despite
-    /// the different `WordSplitter` in use. Thus dynamic dispatch
-    /// allows to change the word splitter at run-time without
-    /// changing the variables type.
+    /// available algorithms are used by default.
     pub const fn new(width: usize) -> Self {
         Options::with_word_splitter(width, word_splitters::HyphenSplitter)
     }
@@ -419,21 +367,7 @@ impl<'a, WordSplit> Options<'a, DefaultWrapAlgorithm!(), DefaultWordSeparator!()
     /// # const width: usize = 80;
     /// # let actual = Options::with_word_splitter(width, word_splitter);
     /// # let expected =
-    /// Options {
-    ///     width: width,
-    ///     initial_indent: "",
-    ///     subsequent_indent: "",
-    ///     break_words: true,
-    ///     #[cfg(feature = "unicode-linebreak")]
-    ///     word_separator: textwrap::word_separators::UnicodeBreakProperties,
-    ///     #[cfg(not(feature = "unicode-linebreak"))]
-    ///     word_separator: textwrap::word_separators::AsciiSpace,
-    ///     #[cfg(feature = "smawk")]
-    ///     wrap_algorithm: textwrap::wrap_algorithms::OptimalFit::new(),
-    ///     #[cfg(not(feature = "smawk"))]
-    ///     wrap_algorithm: textwrap::wrap_algorithms::FirstFit::new(),
-    ///     word_splitter: word_splitter,
-    /// }
+    /// Options::new(width).word_splitter(word_splitter)
     /// # ;
     /// # assert_eq!(actual.width, expected.width);
     /// # assert_eq!(actual.initial_indent, expected.initial_indent);
@@ -441,40 +375,36 @@ impl<'a, WordSplit> Options<'a, DefaultWrapAlgorithm!(), DefaultWordSeparator!()
     /// # assert_eq!(actual.break_words, expected.break_words);
     /// ```
     ///
-    /// This constructor allows to specify the word splitter to be
-    /// used. It is like a short-cut for
-    /// `Options::new(w).word_splitter(s)`, but this function is a
-    /// `const fn`. The given word splitter may be in a [`Box`], which
-    /// then can be coerced into a trait object for dynamic dispatch:
+    /// However, this function is a `const fn`.
+    ///
+    /// The given word splitter may be in a [`Box`], which then can be
+    /// coerced into a trait object for dynamic dispatch:
     ///
     /// ```
     /// use textwrap::Options;
     /// use textwrap::word_splitters::{HyphenSplitter, NoHyphenation, WordSplitter};
     /// # const width: usize = 80;
     ///
-    /// // This opt contains a boxed trait object as splitter.
     /// // The type annotation is important, otherwise it will be not a trait object
-    /// let mut opt: Options<_, _, Box<dyn WordSplitter>>
+    /// let mut options: Options<_, _, Box<dyn WordSplitter>>
     ///     = Options::with_word_splitter(width, Box::new(NoHyphenation));
-    /// // Its type is actually: `Options<AsciiSpace, Box<dyn word_splitters::WordSplitter>>`:
-    /// let opt_coerced: Options<_, _, Box<dyn WordSplitter>> = opt;
     ///
-    /// // Thus, it can be overridden with a different word splitter.
-    /// opt = Options::with_word_splitter(width, Box::new(HyphenSplitter));
+    /// // It can be overridden with a different word splitter.
+    /// options = Options::with_word_splitter(width, Box::new(HyphenSplitter));
     /// // Now, containing a `HyphenSplitter` instead.
     /// ```
     ///
     /// Since the word splitter is given by value, which determines
-    /// the generic type parameter, it can be used to produce both an
-    /// [`Options`] with static and dynamic dispatch, respectively.
-    /// While dynamic dispatch allows to change the type of the inner
-    /// word splitter at run time as seen above, static dispatch
-    /// especially can store the word splitter directly, without the
-    /// need for a box. This in turn allows it to be used in constant
-    /// and static context:
+    /// the generic type parameter, it can be used to produce
+    /// `Options` with both static and dynamic dispatch. While dynamic
+    /// dispatch allows to change the type of the inner word splitter
+    /// at runtime as seen above, static dispatch especially can store
+    /// the word splitter directly, without the need for a box. This
+    /// in turn allows it to be used in constant and static context:
     ///
     /// ```
-    /// use textwrap::word_splitters::HyphenSplitter; use textwrap::{ Options};
+    /// use textwrap::Options;
+    /// use textwrap::word_splitters::HyphenSplitter;
     /// use textwrap::word_separators::AsciiSpace;
     /// use textwrap::wrap_algorithms::FirstFit;
     /// # const width: usize = 80;
