@@ -79,13 +79,13 @@ Your program must load the hyphenation pattern and configure
 
 ```rust
 use hyphenation::{Language, Load, Standard};
-use textwrap::Options;
+use textwrap::{fill, Options};
 
 fn main() {
     let hyphenator = Standard::from_embedded(Language::EnglishUS).unwrap();
     let options = Options::new(28).word_splitter(hyphenator);
     let text = "textwrap: an efficient and powerful library for wrapping text.";
-    println!("{}", fill(text, &options);
+    println!("{}", fill(text, &options));
 }
 ```
 
