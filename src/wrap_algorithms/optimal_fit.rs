@@ -191,6 +191,46 @@ impl LineNumbers {
     }
 }
 
+/// Compute the cost of the line containing `fragments[i..j]` given a
+/// pre-computed `line_width` and `target_width`.
+fn line_penalty<'a, 'b, F: Fragment>(
+    (i, j): (usize, usize),
+    fragments: &'a [F],
+    line_width: usize,
+    target_width: usize,
+    penalties: &'b OptimalFit,
+) -> i32 {
+    // Each new line costs NLINE_PENALTY. This prevents creating more
+    // lines than necessary.
+    let mut cost = penalties.nline_penalty;
+
+    // Next, we add a penalty depending on the line length.
+    if line_width > target_width {
+        // Lines that overflow get a hefty penalty.
+        let overflow = (line_width - target_width) as i32;
+        cost += overflow * penalties.overflow_penalty;
+    } else if j < fragments.len() {
+        // Other lines (except for the last line) get a milder penalty
+        // which depend on the size of the gap.
+        let gap = (target_width - line_width) as i32;
+        cost += gap * gap;
+    } else if i + 1 == j && line_width < target_width / penalties.short_last_line_fraction {
+        // The last line can have any size gap, but we do add a
+        // penalty if the line is very short (typically because it
+        // contains just a single word).
+        cost += penalties.short_last_line_penalty;
+    }
+
+    // Finally, we discourage hyphens.
+    if fragments[j - 1].penalty_width() > 0 {
+        // TODO: this should use a penalty value from the fragment
+        // instead.
+        cost += penalties.hyphen_penalty;
+    }
+
+    cost
+}
+
 /// Wrap abstract fragments into lines with an optimal-fit algorithm.
 ///
 /// The `line_widths` slice gives the target line width for each line
@@ -298,38 +338,11 @@ pub fn wrap_optimal_fit<'a, 'b, T: Fragment>(
         let line_width = widths[j] - widths[i] - fragments[j - 1].whitespace_width()
             + fragments[j - 1].penalty_width();
 
-        // We compute cost of the line containing fragments[i..j]. We
-        // start with values[i].1, which is the optimal cost for
-        // breaking before fragments[i].
-        //
-        // First, every extra line cost NLINE_PENALTY.
-        let mut cost = minima[i].1 + penalties.nline_penalty;
-
-        // Next, we add a penalty depending on the line length.
-        if line_width > target_width {
-            // Lines that overflow get a hefty penalty.
-            let overflow = (line_width - target_width) as i32;
-            cost += overflow * penalties.overflow_penalty;
-        } else if j < fragments.len() {
-            // Other lines (except for the last line) get a milder
-            // penalty which depend on the size of the gap.
-            let gap = (target_width - line_width) as i32;
-            cost += gap * gap;
-        } else if i + 1 == j && line_width < target_width / penalties.short_last_line_fraction {
-            // The last line can have any size gap, but we do add a
-            // penalty if the line is very short (typically because it
-            // contains just a single word).
-            cost += penalties.short_last_line_penalty;
-        }
-
-        // Finally, we discourage hyphens.
-        if fragments[j - 1].penalty_width() > 0 {
-            // TODO: this should use a penalty value from the fragment
-            // instead.
-            cost += penalties.hyphen_penalty;
-        }
-
-        cost
+        // The line containing fragments[i..j]. We start with
+        // minima[i].1, which is the optimal cost for breaking
+        // before fragments[i].
+        let minimum_cost = minima[i].1;
+        minimum_cost + line_penalty((i, j), fragments, line_width, target_width, penalties)
     });
 
     let mut lines = Vec::with_capacity(line_numbers.get(fragments.len(), &minima));
