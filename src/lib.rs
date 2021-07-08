@@ -185,9 +185,7 @@
 #![allow(clippy::redundant_field_names)]
 
 #[cfg(all(doctest, feature = "hyphenation"))]
-mod readme_doctest {
-    doc_comment::doctest!("../README.md");
-}
+doc_comment::doctest!("../README.md", readme_doctest);
 
 use std::borrow::Cow;
 
