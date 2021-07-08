@@ -22,52 +22,16 @@ use crate::wrap_algorithms::WrapAlgorithm;
 /// enabled.
 #[derive(Clone, Copy, Debug)]
 pub struct OptimalFit {
+    /// Penalty given to a line with the maximum possible gap, i.e., a
+    /// line with a width of zero.
+    pub max_line_penalty: f64,
+
     /// Per-line penalty. This is added for every line, which makes it
     /// expensive to output more lines than the minimum required.
-    pub nline_penalty: i32,
+    pub nline_penalty: f64,
 
     /// Per-character cost for lines that overflow the target line width.
-    ///
-    /// With a default value of 50², every single character costs as
-    /// much as leaving a gap of 50 characters behind. This is because
-    /// we assign as cost of `gap * gap` to a short line. When
-    /// wrapping monospace text, we can overflow the line by 1
-    /// character in extreme cases:
-    ///
-    /// ```
-    /// use textwrap::wrap_algorithms::{wrap_optimal_fit, OptimalFit};
-    /// use textwrap::core::Word;
-    ///
-    /// let short = "foo ";
-    /// let long = "x".repeat(50);
-    /// let fragments = vec![Word::from(short), Word::from(&long)];
-    /// let penalties = OptimalFit::new();
-    ///
-    /// // Perfect fit, both words are on a single line with no overflow.
-    /// let wrapped = wrap_optimal_fit(&fragments, &[short.len() + long.len()], &penalties);
-    /// assert_eq!(wrapped, vec![&[Word::from(short), Word::from(&long)]]);
-    ///
-    /// // The words no longer fit, yet we get a single line back. While
-    /// // the cost of overflow (`1 * 2500`) is the same as the cost of the
-    /// // gap (`50 * 50 = 2500`), the tie is broken by `nline_penalty`
-    /// // which makes it cheaper to overflow than to use two lines.
-    /// let wrapped = wrap_optimal_fit(&fragments, &[short.len() + long.len() - 1], &penalties);
-    /// assert_eq!(wrapped, vec![&[Word::from(short), Word::from(&long)]]);
-    ///
-    /// // The cost of overflow would be 2 * 2500, whereas the cost of
-    /// // the gap is only `49 * 49 + nline_penalty = 2401 + 1000 =
-    /// // 3401`. We therefore get two lines.
-    /// let wrapped = wrap_optimal_fit(&fragments, &[short.len() + long.len() - 2], &penalties);
-    /// assert_eq!(wrapped, vec![&[Word::from(short)],
-    ///                          &[Word::from(&long)]]);
-    /// ```
-    ///
-    /// This only happens if the overflowing word is 50 characters
-    /// long _and_ if the word overflows the line by exactly one
-    /// character. If it overflows by more than one character, the
-    /// overflow penalty will quickly outgrow the cost of the gap, as
-    /// seen above.
-    pub overflow_penalty: i32,
+    pub overflow_penalty: f64,
 
     /// When should the a single word on the last line be considered
     /// "too short"?
@@ -78,15 +42,9 @@ pub struct OptimalFit {
     /// and `short_last_line_penalty` is added as an extra penalty.
     ///
     /// The effect of this is to avoid a final line consisting of a
-    /// single small word. For example, with a
-    /// `short_last_line_penalty` of 25 (the default), a gap of up to
-    /// 5 columns will be seen as more desirable than having a final
-    /// short line.
+    /// single small word.
     ///
     /// ## Examples
-    ///
-    ///
-    ///
     ///
     /// ```
     /// use textwrap::{wrap, wrap_algorithms, Options};
@@ -117,7 +75,7 @@ pub struct OptimalFit {
     ///
     /// // If desired, the penalty can also be disabled:
     /// wrap_algorithm.short_last_line_fraction = 4;
-    /// wrap_algorithm.short_last_line_penalty = 0;
+    /// wrap_algorithm.short_last_line_penalty = 0.0;
     /// assert_eq!(wrap(text, Options::new(37).wrap_algorithm(wrap_algorithm)),
     ///            vec!["This is a demo of the short last line",
     ///                 "penalty."]);
@@ -128,10 +86,10 @@ pub struct OptimalFit {
     /// Penalty for a last line with a single short word.
     ///
     /// Set this to zero if you do not want to penalize short last lines.
-    pub short_last_line_penalty: i32,
+    pub short_last_line_penalty: f64,
 
     /// Penalty for lines ending with a hyphen.
-    pub hyphen_penalty: i32,
+    pub hyphen_penalty: f64,
 }
 
 impl OptimalFit {
@@ -143,11 +101,12 @@ impl OptimalFit {
     /// `overflow_penalty` and `hyphen_penalty` become insignificant.
     pub const fn new() -> Self {
         OptimalFit {
-            nline_penalty: 1000,
-            overflow_penalty: 50 * 50,
+            max_line_penalty: 10_000.0,
+            nline_penalty: 1000.0,
+            overflow_penalty: 20_000.0,
             short_last_line_fraction: 4,
-            short_last_line_penalty: 25,
-            hyphen_penalty: 25,
+            short_last_line_penalty: 200.0,
+            hyphen_penalty: 150.0,
         }
     }
 }
@@ -199,7 +158,7 @@ fn line_penalty<'a, 'b, F: Fragment>(
     line_width: usize,
     target_width: usize,
     penalties: &'b OptimalFit,
-) -> i32 {
+) -> f64 {
     // Each new line costs NLINE_PENALTY. This prevents creating more
     // lines than necessary.
     let mut cost = penalties.nline_penalty;
@@ -207,13 +166,14 @@ fn line_penalty<'a, 'b, F: Fragment>(
     // Next, we add a penalty depending on the line length.
     if line_width > target_width {
         // Lines that overflow get a hefty penalty.
-        let overflow = (line_width - target_width) as i32;
+        let overflow = (line_width - target_width) as f64;
         cost += overflow * penalties.overflow_penalty;
     } else if j < fragments.len() {
         // Other lines (except for the last line) get a milder penalty
-        // which depend on the size of the gap.
-        let gap = (target_width - line_width) as i32;
-        cost += gap * gap;
+        // which increases quadratically from 0.0 to
+        // `max_line_penalty`.
+        let gap = (target_width - line_width) as f64 / target_width as f64;
+        cost += gap * gap * penalties.max_line_penalty;
     } else if i + 1 == j && line_width < target_width / penalties.short_last_line_fraction {
         // The last line can have any size gap, but we do add a
         // penalty if the line is very short (typically because it
@@ -323,7 +283,7 @@ pub fn wrap_optimal_fit<'a, 'b, T: Fragment>(
 
     let line_numbers = LineNumbers::new(fragments.len());
 
-    let minima = smawk::online_column_minima(0, widths.len(), |minima, i, j| {
+    let minima = smawk::online_column_minima(0.0, widths.len(), |minima, i, j| {
         // Line number for fragment `i`.
         let line_number = line_numbers.get(i, &minima);
         let line_width = line_widths
