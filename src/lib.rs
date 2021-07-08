@@ -184,6 +184,9 @@
 #![deny(missing_debug_implementations)]
 #![allow(clippy::redundant_field_names)]
 
+#[cfg(all(doctest, feature = "hyphenation"))]
+doc_comment::doctest!("../README.md");
+
 use std::borrow::Cow;
 
 mod indentation;
