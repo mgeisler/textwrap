@@ -4,6 +4,6 @@ use textwrap::wrap_algorithms;
 use textwrap::Options;
 
 fuzz_target!(|input: (String, usize)| {
-    let options = Options::new(input.1).wrap_algorithm(wrap_algorithms::OptimalFit);
+    let options = Options::new(input.1).wrap_algorithm(wrap_algorithms::OptimalFit::new());
     let _ = textwrap::fill(&input.0, &options);
 });

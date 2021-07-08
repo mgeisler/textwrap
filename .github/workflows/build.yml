@@ -132,13 +132,19 @@ jobs:
             fuzz-corpus-
 
       - name: Build fuzz targets
-        run: cargo fuzz build fill_first_fit
+        run: cargo fuzz build
 
-      - name: Fuzz test
+      - name: Fuzz test wrap_first_fit
         run: cargo fuzz run fill_first_fit -- -max_total_time=30
 
-      - name: Minimize fuzz corpus
+      - name: Minimize wrap_first_fit fuzz corpus
         run: cargo fuzz cmin fill_first_fit
+
+      - name: Fuzz test wrap_optimal_fit
+        run: cargo fuzz run fill_optimal_fit -- -max_total_time=30
+
+      - name: Minimize wrap_optimal_fit fuzz corpus
+        run: cargo fuzz cmin fill_optimal_fit
 
   wasm-build:
     name: Build Wasm demo
