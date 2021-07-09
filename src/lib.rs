@@ -672,7 +672,7 @@ where
         if i > 0 {
             result.push('\n');
         }
-        result.push_str(&line);
+        result.push_str(line);
     }
 
     result
@@ -1089,7 +1089,7 @@ where
             result += &line[idx..idx + len];
 
             if !last_word.penalty.is_empty() {
-                result.to_mut().push_str(&last_word.penalty);
+                result.to_mut().push_str(last_word.penalty);
             }
 
             lines.push(result);
@@ -1197,8 +1197,8 @@ where
         for column_no in 0..columns {
             match wrapped_lines.get(line_no + column_no * lines_per_column) {
                 Some(column_line) => {
-                    line.push_str(&column_line);
-                    line.push_str(&" ".repeat(column_width - core::display_width(&column_line)));
+                    line.push_str(column_line);
+                    line.push_str(&" ".repeat(column_width - core::display_width(column_line)));
                 }
                 None => {
                     line.push_str(&" ".repeat(column_width));
