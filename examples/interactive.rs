@@ -240,10 +240,10 @@ mod unix_only {
     }
 
     pub fn main() -> Result<(), io::Error> {
-        let mut wrap_algorithms: Vec<Box<dyn wrap_algorithms::WrapAlgorithm>> =
-            vec![Box::new(wrap_algorithms::FirstFit::new())];
+        let mut wrap_algorithms: Vec<Box<dyn wrap_algorithms::WrapAlgorithm>> = Vec::new();
         #[cfg(feature = "smawk")]
         wrap_algorithms.push(Box::new(wrap_algorithms::OptimalFit::new()));
+        wrap_algorithms.push(Box::new(wrap_algorithms::FirstFit::new()));
 
         let mut word_splitters: Vec<Box<dyn word_splitters::WordSplitter>> = vec![
             Box::new(word_splitters::HyphenSplitter),
