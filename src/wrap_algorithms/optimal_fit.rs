@@ -161,7 +161,7 @@ impl Default for OptimalFit {
 impl WrapAlgorithm for OptimalFit {
     #[inline]
     fn wrap<'a, 'b>(&self, words: &'b [Word<'a>], line_widths: &'b [usize]) -> Vec<&'b [Word<'a>]> {
-        wrap_optimal_fit(words, line_widths, &self)
+        wrap_optimal_fit(words, line_widths, self)
     }
 }
 
@@ -183,7 +183,7 @@ impl LineNumbers {
     fn get<T>(&self, i: usize, minima: &[(usize, T)]) -> usize {
         while self.line_numbers.borrow_mut().len() < i + 1 {
             let pos = self.line_numbers.borrow().len();
-            let line_number = 1 + self.get(minima[pos].0, &minima);
+            let line_number = 1 + self.get(minima[pos].0, minima);
             self.line_numbers.borrow_mut().push(line_number);
         }
 
@@ -285,7 +285,7 @@ pub fn wrap_optimal_fit<'a, 'b, T: Fragment>(
 
     let minima = smawk::online_column_minima(0, widths.len(), |minima, i, j| {
         // Line number for fragment `i`.
-        let line_number = line_numbers.get(i, &minima);
+        let line_number = line_numbers.get(i, minima);
         let line_width = line_widths
             .get(line_number)
             .copied()

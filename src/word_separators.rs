@@ -212,7 +212,7 @@ impl WordSeparator for UnicodeBreakProperties {
             None => None,
         });
 
-        let stripped = strip_ansi_escape_sequences(&line);
+        let stripped = strip_ansi_escape_sequences(line);
         let mut opportunities = unicode_linebreak::linebreaks(&stripped)
             .filter(|(idx, _)| {
                 #[allow(clippy::match_like_matches_macro)]

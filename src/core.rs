@@ -241,7 +241,7 @@ impl<'a> Word<'a> {
         let trimmed = word.trim_end_matches(' ');
         Word {
             word: trimmed,
-            width: display_width(&trimmed),
+            width: display_width(trimmed),
             whitespace: &word[trimmed.len()..],
             penalty: "",
         }
