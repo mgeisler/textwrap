@@ -7,47 +7,34 @@
 //! you want to format dynamic output nicely so it looks good in a
 //! terminal. A quick example:
 //!
-//! ```no_run
-//! fn main() {
-//!     let text = "textwrap: a small library for wrapping text.";
-//!     println!("{}", textwrap::fill(text, 18));
-//! }
+//! ```
+//! # #[cfg(feature = "smawk")] {
+//! let text = "textwrap: a small library for wrapping text.";
+//! assert_eq!(textwrap::wrap(text, 18),
+//!            vec!["textwrap: a",
+//!                 "small library for",
+//!                 "wrapping text."]);
+//! # }
 //! ```
 //!
-//! When you run this program, it will display the following output:
-//!
-//! ```text
-//! textwrap: a small
-//! library for
-//! wrapping text.
-//! ```
+//! The [`wrap`] function returns the individual lines, use [`fill`]
+//! is you want the lines joined with `'\n'` to form a `String`.
 //!
 //! If you enable the `hyphenation` Cargo feature, you can get
 //! automatic hyphenation for a number of languages:
 //!
-//! ```no_run
-//! # #[cfg(feature = "hyphenation")]
-//! use hyphenation::{Language, Load, Standard};
-//! use textwrap::{fill, Options};
-//!
-//! # #[cfg(feature = "hyphenation")]
-//! fn main() {
-//!     let text = "textwrap: a small library for wrapping text.";
-//!     let dictionary = Standard::from_embedded(Language::EnglishUS).unwrap();
-//!     let options = Options::new(18).word_splitter(dictionary);
-//!     println!("{}", fill(text, &options));
-//! }
-//!
-//! # #[cfg(not(feature = "hyphenation"))]
-//! # fn main() { }
 //! ```
+//! #[cfg(feature = "hyphenation")] {
+//! use hyphenation::{Language, Load, Standard};
 //!
-//! The program will now output:
-//!
-//! ```text
-//! textwrap: a small
-//! library for wrap-
-//! ping text.
+//! let text = "textwrap: a small library for wrapping text.";
+//! let dictionary = Standard::from_embedded(Language::EnglishUS).unwrap();
+//! let options = textwrap::Options::new(18).word_splitter(dictionary);
+//! assert_eq!(textwrap::wrap(text, &options),
+//!            vec!["textwrap: a small",
+//!                 "library for wrap-",
+//!                 "ping text."]);
+//! }
 //! ```
 //!
 //! See also the [`unfill`] and [`refill`] functions which allow you to
