@@ -25,6 +25,6 @@
         "hello-wasm-pack": "^0.1.0",
         "webpack": "^5.36.2",
         "webpack-cli": "^4.6.0",
-        "webpack-dev-server": "^3.11.2"
+        "webpack-dev-server": "4.4.0"
     }
 }
