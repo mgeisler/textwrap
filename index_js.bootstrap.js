@@ -1,3 +1,4 @@
+"use strict";
 (self["webpackChunktextwrap_wasm_demo_app"] = self["webpackChunktextwrap_wasm_demo_app"] || []).push([["index_js"],{
 
 /***/ "../pkg/textwrap_wasm_demo_bg.js":
@@ -6,7 +7,6 @@
   \***************************************/
 /***/ ((module, __webpack_exports__, __webpack_require__) => {
 
-"use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "draw_wrapped_text": () => (/* binding */ draw_wrapped_text),
@@ -14,25 +14,25 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "WasmOptions": () => (/* binding */ WasmOptions),
 /* harmony export */   "__wbindgen_object_drop_ref": () => (/* binding */ __wbindgen_object_drop_ref),
 /* harmony export */   "__wbindgen_string_new": () => (/* binding */ __wbindgen_string_new),
+/* harmony export */   "__wbindgen_string_get": () => (/* binding */ __wbindgen_string_get),
 /* harmony export */   "__wbg_actualBoundingBoxAscent_da96fa51615769e1": () => (/* binding */ __wbg_actualBoundingBoxAscent_da96fa51615769e1),
 /* harmony export */   "__wbg_actualBoundingBoxDescent_e900cdc3ea67db47": () => (/* binding */ __wbg_actualBoundingBoxDescent_e900cdc3ea67db47),
-/* harmony export */   "__wbg_new_59cb74e423758ede": () => (/* binding */ __wbg_new_59cb74e423758ede),
-/* harmony export */   "__wbg_stack_558ba5917b466edd": () => (/* binding */ __wbg_stack_558ba5917b466edd),
-/* harmony export */   "__wbg_error_4bb6c2a97407129a": () => (/* binding */ __wbg_error_4bb6c2a97407129a),
-/* harmony export */   "__wbg_setstrokeStyle_2939ee453716e462": () => (/* binding */ __wbg_setstrokeStyle_2939ee453716e462),
-/* harmony export */   "__wbg_setfont_0ad3a6749ddee168": () => (/* binding */ __wbg_setfont_0ad3a6749ddee168),
-/* harmony export */   "__wbg_settextAlign_2c62539f9ab6f6bb": () => (/* binding */ __wbg_settextAlign_2c62539f9ab6f6bb),
-/* harmony export */   "__wbg_settextBaseline_25c94eb2aac0036b": () => (/* binding */ __wbg_settextBaseline_25c94eb2aac0036b),
-/* harmony export */   "__wbg_beginPath_2378575e37027ad3": () => (/* binding */ __wbg_beginPath_2378575e37027ad3),
-/* harmony export */   "__wbg_stroke_c1e0313c58997dcf": () => (/* binding */ __wbg_stroke_c1e0313c58997dcf),
-/* harmony export */   "__wbg_lineTo_13bbc57988274391": () => (/* binding */ __wbg_lineTo_13bbc57988274391),
-/* harmony export */   "__wbg_moveTo_a7bfe2be52f6286b": () => (/* binding */ __wbg_moveTo_a7bfe2be52f6286b),
-/* harmony export */   "__wbg_restore_544014131c1efb4a": () => (/* binding */ __wbg_restore_544014131c1efb4a),
-/* harmony export */   "__wbg_save_a36632e08be03836": () => (/* binding */ __wbg_save_a36632e08be03836),
-/* harmony export */   "__wbg_fillText_ca163c7a12c0c43d": () => (/* binding */ __wbg_fillText_ca163c7a12c0c43d),
-/* harmony export */   "__wbg_measureText_74c9c33b65b27282": () => (/* binding */ __wbg_measureText_74c9c33b65b27282),
-/* harmony export */   "__wbg_width_333f7e8d784a56a8": () => (/* binding */ __wbg_width_333f7e8d784a56a8),
-/* harmony export */   "__wbindgen_string_get": () => (/* binding */ __wbindgen_string_get),
+/* harmony export */   "__wbg_new_693216e109162396": () => (/* binding */ __wbg_new_693216e109162396),
+/* harmony export */   "__wbg_stack_0ddaca5d1abfb52f": () => (/* binding */ __wbg_stack_0ddaca5d1abfb52f),
+/* harmony export */   "__wbg_error_09919627ac0992f5": () => (/* binding */ __wbg_error_09919627ac0992f5),
+/* harmony export */   "__wbg_width_4dd0ad3fb763f881": () => (/* binding */ __wbg_width_4dd0ad3fb763f881),
+/* harmony export */   "__wbg_setstrokeStyle_947bd4c26c94673f": () => (/* binding */ __wbg_setstrokeStyle_947bd4c26c94673f),
+/* harmony export */   "__wbg_setfont_884816cc1b46ae3f": () => (/* binding */ __wbg_setfont_884816cc1b46ae3f),
+/* harmony export */   "__wbg_settextAlign_1891d6f4d7f9b9a3": () => (/* binding */ __wbg_settextAlign_1891d6f4d7f9b9a3),
+/* harmony export */   "__wbg_settextBaseline_3b90a2129ee3dead": () => (/* binding */ __wbg_settextBaseline_3b90a2129ee3dead),
+/* harmony export */   "__wbg_beginPath_733d5a9e3e769d24": () => (/* binding */ __wbg_beginPath_733d5a9e3e769d24),
+/* harmony export */   "__wbg_stroke_7cdcdf3d07636d76": () => (/* binding */ __wbg_stroke_7cdcdf3d07636d76),
+/* harmony export */   "__wbg_lineTo_fde385edd804f315": () => (/* binding */ __wbg_lineTo_fde385edd804f315),
+/* harmony export */   "__wbg_moveTo_18ace182fe51d75d": () => (/* binding */ __wbg_moveTo_18ace182fe51d75d),
+/* harmony export */   "__wbg_restore_fa948aac9e973228": () => (/* binding */ __wbg_restore_fa948aac9e973228),
+/* harmony export */   "__wbg_save_552f7f081f942847": () => (/* binding */ __wbg_save_552f7f081f942847),
+/* harmony export */   "__wbg_fillText_25221e9cc35a1850": () => (/* binding */ __wbg_fillText_25221e9cc35a1850),
+/* harmony export */   "__wbg_measureText_646aac3696f5cad5": () => (/* binding */ __wbg_measureText_646aac3696f5cad5),
 /* harmony export */   "__wbindgen_debug_string": () => (/* binding */ __wbindgen_debug_string),
 /* harmony export */   "__wbindgen_throw": () => (/* binding */ __wbindgen_throw),
 /* harmony export */   "__wbindgen_rethrow": () => (/* binding */ __wbindgen_rethrow)
@@ -282,7 +282,6 @@ class WasmOptimalFit {
         _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_wasmoptimalfit_free(ptr);
     }
     /**
-    * @returns {number}
     */
     get nline_penalty() {
         var ret = _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_get_wasmoptimalfit_nline_penalty(this.ptr);
@@ -295,7 +294,6 @@ class WasmOptimalFit {
         _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_set_wasmoptimalfit_nline_penalty(this.ptr, arg0);
     }
     /**
-    * @returns {number}
     */
     get overflow_penalty() {
         var ret = _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_get_wasmoptimalfit_overflow_penalty(this.ptr);
@@ -308,7 +306,6 @@ class WasmOptimalFit {
         _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_set_wasmoptimalfit_overflow_penalty(this.ptr, arg0);
     }
     /**
-    * @returns {number}
     */
     get short_last_line_fraction() {
         var ret = _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_get_wasmoptimalfit_short_last_line_fraction(this.ptr);
@@ -321,7 +318,6 @@ class WasmOptimalFit {
         _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_set_wasmoptimalfit_short_last_line_fraction(this.ptr, arg0);
     }
     /**
-    * @returns {number}
     */
     get short_last_line_penalty() {
         var ret = _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_get_wasmoptimalfit_short_last_line_penalty(this.ptr);
@@ -334,7 +330,6 @@ class WasmOptimalFit {
         _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_set_wasmoptimalfit_short_last_line_penalty(this.ptr, arg0);
     }
     /**
-    * @returns {number}
     */
     get hyphen_penalty() {
         var ret = _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_get_wasmoptimalfit_hyphen_penalty(this.ptr);
@@ -381,7 +376,6 @@ class WasmOptions {
         _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_wasmoptions_free(ptr);
     }
     /**
-    * @returns {number}
     */
     get width() {
         var ret = _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_get_wasmoptions_width(this.ptr);
@@ -394,7 +388,6 @@ class WasmOptions {
         _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_set_wasmoptions_width(this.ptr, arg0);
     }
     /**
-    * @returns {boolean}
     */
     get break_words() {
         var ret = _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_get_wasmoptions_break_words(this.ptr);
@@ -407,7 +400,6 @@ class WasmOptions {
         _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_set_wasmoptions_break_words(this.ptr, arg0);
     }
     /**
-    * @returns {any}
     */
     get word_separator() {
         var ret = _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_get_wasmoptions_word_separator(this.ptr);
@@ -420,7 +412,6 @@ class WasmOptions {
         _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_set_wasmoptions_word_separator(this.ptr, addHeapObject(arg0));
     }
     /**
-    * @returns {any}
     */
     get word_splitter() {
         var ret = _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_get_wasmoptions_word_splitter(this.ptr);
@@ -433,7 +424,6 @@ class WasmOptions {
         _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_set_wasmoptions_word_splitter(this.ptr, addHeapObject(arg0));
     }
     /**
-    * @returns {any}
     */
     get wrap_algorithm() {
         var ret = _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_get_wasmoptions_wrap_algorithm(this.ptr);
@@ -446,7 +436,6 @@ class WasmOptions {
         _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_set_wasmoptions_wrap_algorithm(this.ptr, addHeapObject(arg0));
     }
     /**
-    * @returns {WasmOptimalFit}
     */
     get optimal_fit() {
         var ret = _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_get_wasmoptions_optimal_fit(this.ptr);
@@ -487,6 +476,15 @@ function __wbindgen_string_new(arg0, arg1) {
     return addHeapObject(ret);
 };
 
+function __wbindgen_string_get(arg0, arg1) {
+    const obj = getObject(arg1);
+    var ret = typeof(obj) === 'string' ? obj : undefined;
+    var ptr0 = isLikeNone(ret) ? 0 : passStringToWasm0(ret, _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbindgen_malloc, _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbindgen_realloc);
+    var len0 = WASM_VECTOR_LEN;
+    getInt32Memory0()[arg0 / 4 + 1] = len0;
+    getInt32Memory0()[arg0 / 4 + 0] = ptr0;
+};
+
 function __wbg_actualBoundingBoxAscent_da96fa51615769e1(arg0) {
     var ret = getObject(arg0).actualBoundingBoxAscent;
     return ret;
@@ -497,12 +495,12 @@ function __wbg_actualBoundingBoxDescent_e900cdc3ea67db47(arg0) {
     return ret;
 };
 
-function __wbg_new_59cb74e423758ede() {
+function __wbg_new_693216e109162396() {
     var ret = new Error();
     return addHeapObject(ret);
 };
 
-function __wbg_stack_558ba5917b466edd(arg0, arg1) {
+function __wbg_stack_0ddaca5d1abfb52f(arg0, arg1) {
     var ret = getObject(arg1).stack;
     var ptr0 = passStringToWasm0(ret, _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbindgen_malloc, _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbindgen_realloc);
     var len0 = WASM_VECTOR_LEN;
@@ -510,7 +508,7 @@ function __wbg_stack_558ba5917b466edd(arg0, arg1) {
     getInt32Memory0()[arg0 / 4 + 0] = ptr0;
 };
 
-function __wbg_error_4bb6c2a97407129a(arg0, arg1) {
+function __wbg_error_09919627ac0992f5(arg0, arg1) {
     try {
         console.error(getStringFromWasm0(arg0, arg1));
     } finally {
@@ -518,68 +516,59 @@ function __wbg_error_4bb6c2a97407129a(arg0, arg1) {
     }
 };
 
-function __wbg_setstrokeStyle_2939ee453716e462(arg0, arg1) {
-    getObject(arg0).strokeStyle = getObject(arg1);
-};
-
-function __wbg_setfont_0ad3a6749ddee168(arg0, arg1, arg2) {
-    getObject(arg0).font = getStringFromWasm0(arg1, arg2);
-};
-
-function __wbg_settextAlign_2c62539f9ab6f6bb(arg0, arg1, arg2) {
-    getObject(arg0).textAlign = getStringFromWasm0(arg1, arg2);
-};
-
-function __wbg_settextBaseline_25c94eb2aac0036b(arg0, arg1, arg2) {
-    getObject(arg0).textBaseline = getStringFromWasm0(arg1, arg2);
-};
-
-function __wbg_beginPath_2378575e37027ad3(arg0) {
-    getObject(arg0).beginPath();
-};
-
-function __wbg_stroke_c1e0313c58997dcf(arg0) {
-    getObject(arg0).stroke();
-};
-
-function __wbg_lineTo_13bbc57988274391(arg0, arg1, arg2) {
-    getObject(arg0).lineTo(arg1, arg2);
-};
-
-function __wbg_moveTo_a7bfe2be52f6286b(arg0, arg1, arg2) {
-    getObject(arg0).moveTo(arg1, arg2);
-};
-
-function __wbg_restore_544014131c1efb4a(arg0) {
-    getObject(arg0).restore();
-};
-
-function __wbg_save_a36632e08be03836(arg0) {
-    getObject(arg0).save();
-};
-
-function __wbg_fillText_ca163c7a12c0c43d() { return handleError(function (arg0, arg1, arg2, arg3, arg4) {
-    getObject(arg0).fillText(getStringFromWasm0(arg1, arg2), arg3, arg4);
-}, arguments) };
-
-function __wbg_measureText_74c9c33b65b27282() { return handleError(function (arg0, arg1, arg2) {
-    var ret = getObject(arg0).measureText(getStringFromWasm0(arg1, arg2));
-    return addHeapObject(ret);
-}, arguments) };
-
-function __wbg_width_333f7e8d784a56a8(arg0) {
+function __wbg_width_4dd0ad3fb763f881(arg0) {
     var ret = getObject(arg0).width;
     return ret;
 };
 
-function __wbindgen_string_get(arg0, arg1) {
-    const obj = getObject(arg1);
-    var ret = typeof(obj) === 'string' ? obj : undefined;
-    var ptr0 = isLikeNone(ret) ? 0 : passStringToWasm0(ret, _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbindgen_malloc, _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbindgen_realloc);
-    var len0 = WASM_VECTOR_LEN;
-    getInt32Memory0()[arg0 / 4 + 1] = len0;
-    getInt32Memory0()[arg0 / 4 + 0] = ptr0;
+function __wbg_setstrokeStyle_947bd4c26c94673f(arg0, arg1) {
+    getObject(arg0).strokeStyle = getObject(arg1);
 };
+
+function __wbg_setfont_884816cc1b46ae3f(arg0, arg1, arg2) {
+    getObject(arg0).font = getStringFromWasm0(arg1, arg2);
+};
+
+function __wbg_settextAlign_1891d6f4d7f9b9a3(arg0, arg1, arg2) {
+    getObject(arg0).textAlign = getStringFromWasm0(arg1, arg2);
+};
+
+function __wbg_settextBaseline_3b90a2129ee3dead(arg0, arg1, arg2) {
+    getObject(arg0).textBaseline = getStringFromWasm0(arg1, arg2);
+};
+
+function __wbg_beginPath_733d5a9e3e769d24(arg0) {
+    getObject(arg0).beginPath();
+};
+
+function __wbg_stroke_7cdcdf3d07636d76(arg0) {
+    getObject(arg0).stroke();
+};
+
+function __wbg_lineTo_fde385edd804f315(arg0, arg1, arg2) {
+    getObject(arg0).lineTo(arg1, arg2);
+};
+
+function __wbg_moveTo_18ace182fe51d75d(arg0, arg1, arg2) {
+    getObject(arg0).moveTo(arg1, arg2);
+};
+
+function __wbg_restore_fa948aac9e973228(arg0) {
+    getObject(arg0).restore();
+};
+
+function __wbg_save_552f7f081f942847(arg0) {
+    getObject(arg0).save();
+};
+
+function __wbg_fillText_25221e9cc35a1850() { return handleError(function (arg0, arg1, arg2, arg3, arg4) {
+    getObject(arg0).fillText(getStringFromWasm0(arg1, arg2), arg3, arg4);
+}, arguments) };
+
+function __wbg_measureText_646aac3696f5cad5() { return handleError(function (arg0, arg1, arg2) {
+    var ret = getObject(arg0).measureText(getStringFromWasm0(arg1, arg2));
+    return addHeapObject(ret);
+}, arguments) };
 
 function __wbindgen_debug_string(arg0, arg1) {
     var ret = debugString(getObject(arg1));
@@ -601,35 +590,12 @@ function __wbindgen_rethrow(arg0) {
 
 /***/ }),
 
-/***/ "../pkg/textwrap_wasm_demo_bg.wasm":
-/*!*****************************************!*\
-  !*** ../pkg/textwrap_wasm_demo_bg.wasm ***!
-  \*****************************************/
-/***/ ((module, exports, __webpack_require__) => {
-
-"use strict";
-"use strict";
-// Instantiate WebAssembly module
-var wasmExports = __webpack_require__.w[module.id];
-__webpack_require__.r(exports);
-// export exports from WebAssembly module
-for(var name in wasmExports) if(name) exports[name] = wasmExports[name];
-// exec imports from WebAssembly module (for esm order)
-/* harmony import */ var m0 = __webpack_require__(/*! ./textwrap_wasm_demo_bg.js */ "../pkg/textwrap_wasm_demo_bg.js");
-
-
-// exec wasm module
-wasmExports[""]()
-
-/***/ }),
-
 /***/ "./index.js":
 /*!******************!*\
   !*** ./index.js ***!
   \******************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
-"use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var textwrap_wasm_demo__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! textwrap-wasm-demo */ "../pkg/textwrap_wasm_demo_bg.js");
 
@@ -727,6 +693,27 @@ let lineWidthText = document.getElementById("line-width-text");
 lineWidthText.value = lineWidth.valueAsNumber;
 window.dispatchEvent(new Event('resize'));
 
+
+/***/ }),
+
+/***/ "../pkg/textwrap_wasm_demo_bg.wasm":
+/*!*****************************************!*\
+  !*** ../pkg/textwrap_wasm_demo_bg.wasm ***!
+  \*****************************************/
+/***/ ((module, exports, __webpack_require__) => {
+
+"use strict";
+// Instantiate WebAssembly module
+var wasmExports = __webpack_require__.w[module.id];
+__webpack_require__.r(exports);
+// export exports from WebAssembly module
+for(var name in wasmExports) if(name) exports[name] = wasmExports[name];
+// exec imports from WebAssembly module (for esm order)
+/* harmony import */ var m0 = __webpack_require__(/*! ./textwrap_wasm_demo_bg.js */ "../pkg/textwrap_wasm_demo_bg.js");
+
+
+// exec wasm module
+wasmExports[""]()
 
 /***/ })
 
