@@ -2,7 +2,6 @@ use unicode_segmentation::UnicodeSegmentation;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 
-use textwrap::core;
 use textwrap::word_separators::{AsciiSpace, UnicodeBreakProperties, WordSeparator};
 use textwrap::word_splitters::{split_words, HyphenSplitter, NoHyphenation, WordSplitter};
 use textwrap::wrap_algorithms::{wrap_first_fit, wrap_optimal_fit, OptimalFit};
@@ -52,7 +51,7 @@ pub struct CanvasWord<'a> {
 }
 
 impl<'a> CanvasWord<'a> {
-    fn from(ctx: &'_ web_sys::CanvasRenderingContext2d, word: core::Word<'a>) -> Self {
+    fn from(ctx: &'_ web_sys::CanvasRenderingContext2d, word: textwrap::core::Word<'a>) -> Self {
         CanvasWord {
             word: word.word,
             width: canvas_width(ctx, word.word),
@@ -148,7 +147,7 @@ impl<'a> CanvasWord<'a> {
 
 const PRECISION: usize = 10;
 
-impl core::Fragment for CanvasWord<'_> {
+impl textwrap::core::Fragment for CanvasWord<'_> {
     #[inline]
     fn width(&self) -> usize {
         (self.width * PRECISION as f64) as usize
