@@ -140,6 +140,19 @@ jobs:
       - name: Minimize fuzz corpus
         run: cargo fuzz cmin fill_first_fit
 
+  binary-sizes:
+    name: Compute binary sizes
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - uses: Swatinem/rust-cache@v1
+
+      - name: Make binary size table
+        run: cargo run --example make-table
+        working-directory: examples/binary-sizes
+
   wasm-build:
     name: Build Wasm demo
     runs-on: ubuntu-latest
