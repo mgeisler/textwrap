@@ -23,9 +23,12 @@ By default, this enables word wrapping with support for Unicode
 strings. Extra features can be enabled with Cargo features—and the
 Unicode support can be disabled if needed. This allows you slim down
 the library and so you will only pay for the features you actually
-use. Please see the [_Cargo Features_ in the crate
+use.
+
+Please see the [_Cargo Features_ in the crate
 documentation](https://docs.rs/textwrap/#cargo-features) for a full
-list of the available features.
+list of the available features as well as their impact on the size of
+your binary.
 
 ## Documentation
 

@@ -159,6 +159,29 @@
 //!   This feature can be disabled if you only ever intend to use
 //!   [`wrap_algorithms::wrap_first_fit`].
 //!
+//! With Rust 1.54.0, the size impact of the above features on your
+//! binary is as follows:
+//!
+//! | Configuration                            |  Binary Size |    Delta |
+//! | :---                                     |         ---: |     ---: |
+//! | quick-and-dirty implementation           |       252 KB |     — KB |
+//! | textwrap without default features        |       268 KB |    16 KB |
+//! | textwrap with smawk                      |       284 KB |    32 KB |
+//! | textwrap with unicode-width              |       276 KB |    24 KB |
+//! | textwrap with unicode-linebreak          |       362 KB |   110 KB |
+//!
+//! The above sizes are the stripped sizes and the binary is compiled
+//! in release mode with this profile:
+//!
+//! ```toml
+//! [profile.release]
+//! lto = true
+//! codegen-units = 1
+//! ```
+//!
+//! See the [binary-sizes demo] if you want to reproduce these
+//! results.
+//!
 //! ## Optional Features
 //!
 //! These Cargo features enable new functionality:
@@ -174,6 +197,7 @@
 //! [unicode-linebreak]: https://docs.rs/unicode-linebreak/
 //! [unicode-width]: https://docs.rs/unicode-width/
 //! [smawk]: https://docs.rs/smawk/
+//! [binary-sizes demo]: https://github.com/mgeisler/textwrap/tree/master/examples/binary-sizes
 //! [textwrap-macros]: https://docs.rs/textwrap-macros/
 //! [terminal_size]: https://docs.rs/terminal_size/
 //! [hyphenation]: https://docs.rs/hyphenation/
