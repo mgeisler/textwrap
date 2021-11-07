@@ -1,0 +1,22 @@
+[package]
+name = "textwrap-binary-sizes-demo"
+version = "0.1.0"
+authors = ["Martin Geisler <martin@geisler.net>"]
+description = "Textwrap binary size demo"
+repository = "https://github.com/mgeisler/textwrap"
+license-file = "../../LICENSE"
+edition = "2018"
+publish = false  # This demo project should not be uploaded to crates.io
+
+[profile.release]
+lto = true
+codegen-units = 1
+
+[features]
+smawk = ["textwrap/smawk"]
+unicode-linebreak = ["textwrap/unicode-linebreak"]
+unicode-width = ["textwrap/unicode-width"]
+hyphenation = ["textwrap/hyphenation"]
+
+[dependencies]
+textwrap = { path = "../../", default-features = false, optional = true }
