@@ -9,7 +9,7 @@ use criterion::{criterion_group, criterion_main};
 
 use lipsum::lipsum_words_from_seed;
 
-const LINE_LENGTH: usize = 60;
+const LINE_LENGTH: u16 = 60;
 
 /// Generate a lorem ipsum text with the given number of characters.
 fn lorem_ipsum(length: usize) -> String {

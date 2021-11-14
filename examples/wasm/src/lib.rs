@@ -145,22 +145,22 @@ impl<'a> CanvasWord<'a> {
     }
 }
 
-const PRECISION: usize = 10;
+const PRECISION: u16 = 10;
 
 impl textwrap::core::Fragment for CanvasWord<'_> {
     #[inline]
-    fn width(&self) -> usize {
-        (self.width * PRECISION as f64) as usize
+    fn width(&self) -> u16 {
+        (self.width * PRECISION as f64) as u16
     }
 
     #[inline]
-    fn whitespace_width(&self) -> usize {
-        (self.whitespace_width * PRECISION as f64) as usize
+    fn whitespace_width(&self) -> u16 {
+        (self.whitespace_width * PRECISION as f64) as u16
     }
 
     #[inline]
-    fn penalty_width(&self) -> usize {
-        (self.penalty_width * PRECISION as f64) as usize
+    fn penalty_width(&self) -> u16 {
+        (self.penalty_width * PRECISION as f64) as u16
     }
 }
 
@@ -250,22 +250,22 @@ pub enum WasmWrapAlgorithm {
 #[wasm_bindgen]
 #[derive(Copy, Clone, Debug, Default)]
 pub struct WasmOptimalFit {
-    pub nline_penalty: i32,
-    pub overflow_penalty: i32,
-    pub short_last_line_fraction: usize,
-    pub short_last_line_penalty: i32,
-    pub hyphen_penalty: i32,
+    pub nline_penalty: u32,
+    pub overflow_penalty: u32,
+    pub short_last_line_fraction: u32,
+    pub short_last_line_penalty: u32,
+    pub hyphen_penalty: u32,
 }
 
 #[wasm_bindgen]
 impl WasmOptimalFit {
     #[wasm_bindgen(constructor)]
     pub fn new(
-        nline_penalty: i32,
-        overflow_penalty: i32,
-        short_last_line_fraction: usize,
-        short_last_line_penalty: i32,
-        hyphen_penalty: i32,
+        nline_penalty: u32,
+        overflow_penalty: u32,
+        short_last_line_fraction: u32,
+        short_last_line_penalty: u32,
+        hyphen_penalty: u32,
     ) -> WasmOptimalFit {
         WasmOptimalFit {
             nline_penalty,
@@ -292,7 +292,7 @@ impl Into<OptimalFit> for WasmOptimalFit {
 #[wasm_bindgen]
 #[derive(Copy, Clone, Debug)]
 pub struct WasmOptions {
-    pub width: usize,
+    pub width: u16,
     pub break_words: bool,
     pub word_separator: WasmWordSeparator,
     pub word_splitter: WasmWordSplitter,
@@ -304,7 +304,7 @@ pub struct WasmOptions {
 impl WasmOptions {
     #[wasm_bindgen(constructor)]
     pub fn new(
-        width: usize,
+        width: u16,
         break_words: bool,
         word_separator: WasmWordSeparator,
         word_splitter: WasmWordSplitter,

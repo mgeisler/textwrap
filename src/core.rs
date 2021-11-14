@@ -35,6 +35,8 @@
 //! the functionality here is not sufficient or if you have ideas for
 //! improving it. We would love to hear from you!
 
+use std::convert::TryInto;
+
 /// The CSI or “Control Sequence Introducer” introduces an ANSI escape
 /// sequence. This is typically used for colored text and will be
 /// ignored when computing the text width.
@@ -62,8 +64,10 @@ pub(crate) fn skip_ansi_escape_sequence<I: Iterator<Item = char>>(ch: char, char
 
 #[cfg(feature = "unicode-width")]
 #[inline]
-fn ch_width(ch: char) -> usize {
-    unicode_width::UnicodeWidthChar::width(ch).unwrap_or(0)
+fn ch_width(ch: char) -> u16 {
+    unicode_width::UnicodeWidthChar::width(ch)
+        .and_then(|w| w.try_into().ok())
+        .unwrap_or(0)
 }
 
 /// First character which [`ch_width`] will classify as double-width.
@@ -73,7 +77,7 @@ const DOUBLE_WIDTH_CUTOFF: char = '\u{1100}';
 
 #[cfg(not(feature = "unicode-width"))]
 #[inline]
-fn ch_width(ch: char) -> usize {
+fn ch_width(ch: char) -> u16 {
     if ch < DOUBLE_WIDTH_CUTOFF {
         1
     } else {
@@ -173,7 +177,7 @@ fn ch_width(ch: char) -> usize {
 /// [Unicode equivalence]: https://en.wikipedia.org/wiki/Unicode_equivalence
 /// [CJK characters]: https://en.wikipedia.org/wiki/CJK_characters
 /// [emoji modifier sequences]: https://unicode.org/emoji/charts/full-emoji-modifiers.html
-pub fn display_width(text: &str) -> usize {
+pub fn display_width(text: &str) -> u16 {
     let mut chars = text.chars();
     let mut width = 0;
     while let Some(ch) = chars.next() {
@@ -197,15 +201,15 @@ pub fn display_width(text: &str) -> usize {
 /// the displayed width of each part, which this trait provides.
 pub trait Fragment: std::fmt::Debug {
     /// Displayed width of word represented by this fragment.
-    fn width(&self) -> usize;
+    fn width(&self) -> u16;
 
     /// Displayed width of the whitespace that must follow the word
     /// when the word is not at the end of a line.
-    fn whitespace_width(&self) -> usize;
+    fn whitespace_width(&self) -> u16;
 
     /// Displayed width of the penalty that must be inserted if the
     /// word falls at the end of a line.
-    fn penalty_width(&self) -> usize;
+    fn penalty_width(&self) -> u16;
 }
 
 /// A piece of wrappable text, including any trailing whitespace.
@@ -221,7 +225,7 @@ pub struct Word<'a> {
     /// Penalty string to insert if the word falls at the end of a line.
     pub penalty: &'a str,
     // Cached width in columns.
-    pub(crate) width: usize,
+    pub(crate) width: u16,
 }
 
 impl std::ops::Deref for Word<'_> {
@@ -260,7 +264,7 @@ impl<'a> Word<'a> {
     ///     vec![Word::from("Hel"), Word::from("lo!  ")]
     /// );
     /// ```
-    pub fn break_apart<'b>(&'b self, line_width: usize) -> impl Iterator<Item = Word<'a>> + 'b {
+    pub fn break_apart<'b>(&'b self, line_width: u16) -> impl Iterator<Item = Word<'a>> + 'b {
         let mut char_indices = self.word.char_indices();
         let mut offset = 0;
         let mut width = 0;
@@ -304,22 +308,22 @@ impl<'a> Word<'a> {
 
 impl Fragment for Word<'_> {
     #[inline]
-    fn width(&self) -> usize {
+    fn width(&self) -> u16 {
         self.width
     }
 
     // We assume the whitespace consist of ' ' only. This allows us to
     // compute the display width in constant time.
     #[inline]
-    fn whitespace_width(&self) -> usize {
-        self.whitespace.len()
+    fn whitespace_width(&self) -> u16 {
+        self.whitespace.len().try_into().expect("Width exceeds u16")
     }
 
     // We assume the penalty is `""` or `"-"`. This allows us to
     // compute the display width in constant time.
     #[inline]
-    fn penalty_width(&self) -> usize {
-        self.penalty.len()
+    fn penalty_width(&self) -> u16 {
+        self.penalty.len().try_into().expect("Width exceeds u16")
     }
 }
 
@@ -328,7 +332,7 @@ impl Fragment for Word<'_> {
 /// This simply calls [`Word::break_apart`] on words that are too
 /// wide. This means that no extra `'-'` is inserted, the word is
 /// simply broken into smaller pieces.
-pub fn break_words<'a, I>(words: I, line_width: usize) -> Vec<Word<'a>>
+pub fn break_words<'a, I>(words: I, line_width: u16) -> Vec<Word<'a>>
 where
     I: IntoIterator<Item = Word<'a>>,
 {

@@ -24,7 +24,7 @@ use crate::wrap_algorithms::WrapAlgorithm;
 pub struct OptimalFit {
     /// Per-line penalty. This is added for every line, which makes it
     /// expensive to output more lines than the minimum required.
-    pub nline_penalty: i32,
+    pub nline_penalty: u32,
 
     /// Per-character cost for lines that overflow the target line width.
     ///
@@ -40,24 +40,25 @@ pub struct OptimalFit {
     ///
     /// let short = "foo ";
     /// let long = "x".repeat(50);
+    /// let length = (short.len() + long.len()) as u16;
     /// let fragments = vec![Word::from(short), Word::from(&long)];
     /// let penalties = OptimalFit::new();
     ///
     /// // Perfect fit, both words are on a single line with no overflow.
-    /// let wrapped = wrap_optimal_fit(&fragments, &[short.len() + long.len()], &penalties);
+    /// let wrapped = wrap_optimal_fit(&fragments, &[length], &penalties);
     /// assert_eq!(wrapped, vec![&[Word::from(short), Word::from(&long)]]);
     ///
     /// // The words no longer fit, yet we get a single line back. While
     /// // the cost of overflow (`1 * 2500`) is the same as the cost of the
     /// // gap (`50 * 50 = 2500`), the tie is broken by `nline_penalty`
     /// // which makes it cheaper to overflow than to use two lines.
-    /// let wrapped = wrap_optimal_fit(&fragments, &[short.len() + long.len() - 1], &penalties);
+    /// let wrapped = wrap_optimal_fit(&fragments, &[length - 1], &penalties);
     /// assert_eq!(wrapped, vec![&[Word::from(short), Word::from(&long)]]);
     ///
     /// // The cost of overflow would be 2 * 2500, whereas the cost of
     /// // the gap is only `49 * 49 + nline_penalty = 2401 + 1000 =
     /// // 3401`. We therefore get two lines.
-    /// let wrapped = wrap_optimal_fit(&fragments, &[short.len() + long.len() - 2], &penalties);
+    /// let wrapped = wrap_optimal_fit(&fragments, &[length - 2], &penalties);
     /// assert_eq!(wrapped, vec![&[Word::from(short)],
     ///                          &[Word::from(&long)]]);
     /// ```
@@ -67,7 +68,7 @@ pub struct OptimalFit {
     /// character. If it overflows by more than one character, the
     /// overflow penalty will quickly outgrow the cost of the gap, as
     /// seen above.
-    pub overflow_penalty: i32,
+    pub overflow_penalty: u32,
 
     /// When should the a single word on the last line be considered
     /// "too short"?
@@ -123,15 +124,15 @@ pub struct OptimalFit {
     ///                 "penalty."]);
     /// }
     /// ```
-    pub short_last_line_fraction: usize,
+    pub short_last_line_fraction: u32,
 
     /// Penalty for a last line with a single short word.
     ///
     /// Set this to zero if you do not want to penalize short last lines.
-    pub short_last_line_penalty: i32,
+    pub short_last_line_penalty: u32,
 
     /// Penalty for lines ending with a hyphen.
-    pub hyphen_penalty: i32,
+    pub hyphen_penalty: u32,
 }
 
 impl OptimalFit {
@@ -160,7 +161,7 @@ impl Default for OptimalFit {
 
 impl WrapAlgorithm for OptimalFit {
     #[inline]
-    fn wrap<'a, 'b>(&self, words: &'b [Word<'a>], line_widths: &'b [usize]) -> Vec<&'b [Word<'a>]> {
+    fn wrap<'a, 'b>(&self, words: &'b [Word<'a>], line_widths: &'b [u16]) -> Vec<&'b [Word<'a>]> {
         wrap_optimal_fit(words, line_widths, self)
     }
 }
@@ -268,16 +269,16 @@ impl LineNumbers {
 /// enabled.
 pub fn wrap_optimal_fit<'a, 'b, T: Fragment>(
     fragments: &'a [T],
-    line_widths: &'b [usize],
+    line_widths: &'b [u16],
     penalties: &'b OptimalFit,
 ) -> Vec<&'a [T]> {
     // The final line width is used for all remaining lines.
     let default_line_width = line_widths.last().copied().unwrap_or(0);
     let mut widths = Vec::with_capacity(fragments.len() + 1);
-    let mut width = 0;
+    let mut width: u64 = 0;
     widths.push(width);
     for fragment in fragments {
-        width += fragment.width() + fragment.whitespace_width();
+        width += fragment.width() as u64 + fragment.whitespace_width() as u64;
         widths.push(width);
     }
 
@@ -290,43 +291,45 @@ pub fn wrap_optimal_fit<'a, 'b, T: Fragment>(
             .get(line_number)
             .copied()
             .unwrap_or(default_line_width);
-        let target_width = std::cmp::max(1, line_width);
+        let target_width = std::cmp::max(1, line_width as u64);
 
         // Compute the width of a line spanning fragments[i..j] in
         // constant time. We need to adjust widths[j] by subtracting
-        // the whitespace of fragment[j-i] and then add the penalty.
-        let line_width = widths[j] - widths[i] - fragments[j - 1].whitespace_width()
-            + fragments[j - 1].penalty_width();
+        // the whitespace of fragment[j-1] and then add the penalty.
+        let line_width = widths[j] - widths[i] - fragments[j - 1].whitespace_width() as u64
+            + fragments[j - 1].penalty_width() as u64;
 
         // We compute cost of the line containing fragments[i..j]. We
         // start with values[i].1, which is the optimal cost for
         // breaking before fragments[i].
         //
         // First, every extra line cost NLINE_PENALTY.
-        let mut cost = minima[i].1 + penalties.nline_penalty;
+        let mut cost = minima[i].1 + penalties.nline_penalty as u64;
 
         // Next, we add a penalty depending on the line length.
         if line_width > target_width {
             // Lines that overflow get a hefty penalty.
-            let overflow = (line_width - target_width) as i32;
-            cost += overflow * penalties.overflow_penalty;
+            let overflow = line_width - target_width;
+            cost += overflow * penalties.overflow_penalty as u64;
         } else if j < fragments.len() {
             // Other lines (except for the last line) get a milder
             // penalty which depend on the size of the gap.
-            let gap = (target_width - line_width) as i32;
+            let gap = target_width - line_width;
             cost += gap * gap;
-        } else if i + 1 == j && line_width < target_width / penalties.short_last_line_fraction {
+        } else if i + 1 == j
+            && line_width < target_width / penalties.short_last_line_fraction as u64
+        {
             // The last line can have any size gap, but we do add a
             // penalty if the line is very short (typically because it
             // contains just a single word).
-            cost += penalties.short_last_line_penalty;
+            cost += penalties.short_last_line_penalty as u64;
         }
 
         // Finally, we discourage hyphens.
         if fragments[j - 1].penalty_width() > 0 {
             // TODO: this should use a penalty value from the fragment
             // instead.
-            cost += penalties.hyphen_penalty;
+            cost += penalties.hyphen_penalty as u64;
         }
 
         cost
@@ -345,4 +348,45 @@ pub fn wrap_optimal_fit<'a, 'b, T: Fragment>(
 
     lines.reverse();
     lines
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[derive(Debug, Eq, PartialEq)]
+    struct Word(u16);
+
+    #[rustfmt::skip]
+    impl Fragment for Word {
+        fn width(&self) -> u16 { self.0 }
+        fn whitespace_width(&self) -> u16 { 1 }
+        fn penalty_width(&self) -> u16 { 0 }
+    }
+
+    #[test]
+    fn wrap_string_longer_than_u16() {
+        let words = vec![
+            Word(10_000),
+            Word(20_000),
+            Word(30_000),
+            Word(40_000),
+            Word(50_000),
+        ];
+
+        let penalties = &OptimalFit {
+            overflow_penalty: 10_000_000,
+            ..OptimalFit::default()
+        };
+
+        assert_eq!(
+            wrap_optimal_fit(&words, &[45_000], &penalties),
+            &[
+                vec![Word(10_000), Word(20_000)],
+                vec![Word(30_000)],
+                vec![Word(40_000)],
+                vec![Word(50_000)],
+            ]
+        );
+    }
 }
