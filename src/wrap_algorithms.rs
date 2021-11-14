@@ -93,7 +93,12 @@ impl Default for FirstFit {
 impl WrapAlgorithm for FirstFit {
     #[inline]
     fn wrap<'a, 'b>(&self, words: &'b [Word<'a>], line_widths: &'b [usize]) -> Vec<&'b [Word<'a>]> {
-        wrap_first_fit(words, line_widths)
+        // Every integer up to 2u64.pow(f64::MANTISSA_DIGITS) = 2**53
+        // = 9_007_199_254_740_992 can be represented without loss by
+        // a f64. Larger line widths will be rounded to the nearest
+        // representable number.
+        let f64_line_widths = line_widths.iter().map(|w| *w as f64).collect::<Vec<_>>();
+        wrap_first_fit(words, &f64_line_widths)
     }
 }
 
@@ -132,7 +137,7 @@ impl WrapAlgorithm for FirstFit {
 ///
 /// let text = "These few words will unfortunately not wrap nicely.";
 /// let words = AsciiSpace.find_words(text).collect::<Vec<_>>();
-/// assert_eq!(lines_to_strings(wrap_first_fit(&words, &[15])),
+/// assert_eq!(lines_to_strings(wrap_first_fit(&words, &[15.0])),
 ///            vec!["These few words",
 ///                 "will",  // <-- short line
 ///                 "unfortunately",
@@ -143,7 +148,7 @@ impl WrapAlgorithm for FirstFit {
 /// #[cfg(feature = "smawk")]
 /// use textwrap::wrap_algorithms::{wrap_optimal_fit, OptimalFit};
 /// #[cfg(feature = "smawk")]
-/// assert_eq!(lines_to_strings(wrap_optimal_fit(&words, &[15], &OptimalFit::new())),
+/// assert_eq!(lines_to_strings(wrap_optimal_fit(&words, &[15.0], &OptimalFit::new())),
 ///            vec!["These few",
 ///                 "words will",
 ///                 "unfortunately",
@@ -178,41 +183,41 @@ impl WrapAlgorithm for FirstFit {
 /// #[derive(Debug)]
 /// struct Task<'a> {
 ///     name: &'a str,
-///     hours: usize,   // Time needed to complete task.
-///     sweep: usize,   // Time needed for a quick sweep after task during the day.
-///     cleanup: usize, // Time needed for full cleanup if day ends with this task.
+///     hours: f64,   // Time needed to complete task.
+///     sweep: f64,   // Time needed for a quick sweep after task during the day.
+///     cleanup: f64, // Time needed for full cleanup if day ends with this task.
 /// }
 ///
 /// impl Fragment for Task<'_> {
-///     fn width(&self) -> usize { self.hours }
-///     fn whitespace_width(&self) -> usize { self.sweep }
-///     fn penalty_width(&self) -> usize { self.cleanup }
+///     fn width(&self) -> f64 { self.hours }
+///     fn whitespace_width(&self) -> f64 { self.sweep }
+///     fn penalty_width(&self) -> f64 { self.cleanup }
 /// }
 ///
 /// // The morning tasks
 /// let tasks = vec![
-///     Task { name: "Foundation",  hours: 4, sweep: 2, cleanup: 3 },
-///     Task { name: "Framing",     hours: 3, sweep: 1, cleanup: 2 },
-///     Task { name: "Plumbing",    hours: 2, sweep: 2, cleanup: 2 },
-///     Task { name: "Electrical",  hours: 2, sweep: 1, cleanup: 2 },
-///     Task { name: "Insulation",  hours: 2, sweep: 1, cleanup: 2 },
-///     Task { name: "Drywall",     hours: 3, sweep: 1, cleanup: 2 },
-///     Task { name: "Floors",      hours: 3, sweep: 1, cleanup: 2 },
-///     Task { name: "Countertops", hours: 1, sweep: 1, cleanup: 2 },
-///     Task { name: "Bathrooms",   hours: 2, sweep: 1, cleanup: 2 },
+///     Task { name: "Foundation",  hours: 4.0, sweep: 2.0, cleanup: 3.0 },
+///     Task { name: "Framing",     hours: 3.0, sweep: 1.0, cleanup: 2.0 },
+///     Task { name: "Plumbing",    hours: 2.0, sweep: 2.0, cleanup: 2.0 },
+///     Task { name: "Electrical",  hours: 2.0, sweep: 1.0, cleanup: 2.0 },
+///     Task { name: "Insulation",  hours: 2.0, sweep: 1.0, cleanup: 2.0 },
+///     Task { name: "Drywall",     hours: 3.0, sweep: 1.0, cleanup: 2.0 },
+///     Task { name: "Floors",      hours: 3.0, sweep: 1.0, cleanup: 2.0 },
+///     Task { name: "Countertops", hours: 1.0, sweep: 1.0, cleanup: 2.0 },
+///     Task { name: "Bathrooms",   hours: 2.0, sweep: 1.0, cleanup: 2.0 },
 /// ];
 ///
 /// // Fill tasks into days, taking `day_length` into account. The
 /// // output shows the hours worked per day along with the names of
 /// // the tasks for that day.
-/// fn assign_days<'a>(tasks: &[Task<'a>], day_length: usize) -> Vec<(usize, Vec<&'a str>)> {
+/// fn assign_days<'a>(tasks: &[Task<'a>], day_length: f64) -> Vec<(f64, Vec<&'a str>)> {
 ///     let mut days = Vec::new();
 ///     // Assign tasks to days. The assignment is a vector of slices,
 ///     // with a slice per day.
 ///     let assigned_days: Vec<&[Task<'a>]> = wrap_first_fit(&tasks, &[day_length]);
 ///     for day in assigned_days.iter() {
 ///         let last = day.last().unwrap();
-///         let work_hours: usize = day.iter().map(|t| t.hours + t.sweep).sum();
+///         let work_hours: f64 = day.iter().map(|t| t.hours + t.sweep).sum();
 ///         let names = day.iter().map(|t| t.name).collect::<Vec<_>>();
 ///         days.push((work_hours - last.sweep + last.cleanup, names));
 ///     }
@@ -221,24 +226,24 @@ impl WrapAlgorithm for FirstFit {
 ///
 /// // With a single crew working 8 hours a day:
 /// assert_eq!(
-///     assign_days(&tasks, 8),
+///     assign_days(&tasks, 8.0),
 ///     [
-///         (7, vec!["Foundation"]),
-///         (8, vec!["Framing", "Plumbing"]),
-///         (7, vec!["Electrical", "Insulation"]),
-///         (5, vec!["Drywall"]),
-///         (7, vec!["Floors", "Countertops"]),
-///         (4, vec!["Bathrooms"]),
+///         (7.0, vec!["Foundation"]),
+///         (8.0, vec!["Framing", "Plumbing"]),
+///         (7.0, vec!["Electrical", "Insulation"]),
+///         (5.0, vec!["Drywall"]),
+///         (7.0, vec!["Floors", "Countertops"]),
+///         (4.0, vec!["Bathrooms"]),
 ///     ]
 /// );
 ///
 /// // With two crews working in shifts, 16 hours a day:
 /// assert_eq!(
-///     assign_days(&tasks, 16),
+///     assign_days(&tasks, 16.0),
 ///     [
-///         (14, vec!["Foundation", "Framing", "Plumbing"]),
-///         (15, vec!["Electrical", "Insulation", "Drywall", "Floors"]),
-///         (6, vec!["Countertops", "Bathrooms"]),
+///         (14.0, vec!["Foundation", "Framing", "Plumbing"]),
+///         (15.0, vec!["Electrical", "Insulation", "Drywall", "Floors"]),
+///         (6.0, vec!["Countertops", "Bathrooms"]),
 ///     ]
 /// );
 /// ```
@@ -247,13 +252,13 @@ impl WrapAlgorithm for FirstFit {
 /// knows how long each step takes :-)
 pub fn wrap_first_fit<'a, 'b, T: Fragment>(
     fragments: &'a [T],
-    line_widths: &'b [usize],
+    line_widths: &'b [f64],
 ) -> Vec<&'a [T]> {
     // The final line width is used for all remaining lines.
-    let default_line_width = line_widths.last().copied().unwrap_or(0);
+    let default_line_width = line_widths.last().copied().unwrap_or(0.0);
     let mut lines = Vec::new();
     let mut start = 0;
-    let mut width = 0;
+    let mut width = 0.0;
 
     for (idx, fragment) in fragments.iter().enumerate() {
         let line_width = line_widths
@@ -263,10 +268,52 @@ pub fn wrap_first_fit<'a, 'b, T: Fragment>(
         if width + fragment.width() + fragment.penalty_width() > line_width && idx > start {
             lines.push(&fragments[start..idx]);
             start = idx;
-            width = 0;
+            width = 0.0;
         }
         width += fragment.width() + fragment.whitespace_width();
     }
     lines.push(&fragments[start..]);
     lines
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[derive(Debug, PartialEq)]
+    struct Word(f64);
+
+    #[rustfmt::skip]
+    impl Fragment for Word {
+        fn width(&self) -> f64 { self.0 }
+        fn whitespace_width(&self) -> f64 { 1.0 }
+        fn penalty_width(&self) -> f64 { 0.0 }
+    }
+
+    #[test]
+    fn wrap_string_longer_than_f64() {
+        let words = vec![
+            Word(1e307),
+            Word(2e307),
+            Word(3e307),
+            Word(4e307),
+            Word(5e307),
+            Word(6e307),
+        ];
+        // Wrap at just under f64::MAX (~19e307). The tiny
+        // whitespace_widths disappear because of loss of precision.
+        assert_eq!(
+            wrap_first_fit(&words, &[15e307]),
+            &[
+                vec![
+                    Word(1e307),
+                    Word(2e307),
+                    Word(3e307),
+                    Word(4e307),
+                    Word(5e307)
+                ],
+                vec![Word(6e307)]
+            ]
+        );
+    }
 }
