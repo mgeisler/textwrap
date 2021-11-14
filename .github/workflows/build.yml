@@ -134,11 +134,17 @@ jobs:
       - name: Build fuzz targets
         run: cargo fuzz build
 
-      - name: Fuzz test
+      - name: Fuzz test fill_first_fit
         run: cargo fuzz run fill_first_fit -- -max_total_time=30
 
-      - name: Minimize fuzz corpus
+      - name: Fuzz test fill_optimal_fit
+        run: cargo fuzz run fill_optimal_fit -- -max_total_time=30
+
+      - name: Minimize fill_first_fit corpus
         run: cargo fuzz cmin fill_first_fit
+
+      - name: Minimize fill_optimal_fit corpus
+        run: cargo fuzz cmin fill_optimal_fit
 
   binary-sizes:
     name: Compute binary sizes

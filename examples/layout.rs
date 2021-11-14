@@ -7,7 +7,8 @@ fn main() {
                    Zero-cost abstractions.";
     let mut prev_lines = vec![];
 
-    let mut options = Options::new(0).word_splitter(Box::new(HyphenSplitter) as Box<dyn WordSplitter>);
+    let mut options =
+        Options::new(0).word_splitter(Box::new(HyphenSplitter) as Box<dyn WordSplitter>);
     #[cfg(feature = "hyphenation")]
     {
         use hyphenation::Load;
@@ -21,9 +22,9 @@ fn main() {
         let lines = wrap(example, &options);
         if lines != prev_lines {
             let title = format!(" Width: {} ", width);
-            println!(".{:-^1$}.", title, width + 2);
+            println!(".{:-^1$}.", title, width as usize + 2);
             for line in &lines {
-                println!("| {:1$} |", line, width);
+                println!("| {:1$} |", line, width as usize);
             }
             prev_lines = lines;
         }

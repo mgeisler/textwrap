@@ -6,11 +6,11 @@ use textwrap::wrap_algorithms::{wrap_optimal_fit, OptimalFit};
 
 #[derive(Arbitrary, Debug)]
 struct Penalties {
-    nline_penalty: i32,
-    overflow_penalty: i32,
-    short_last_line_fraction: usize,
-    short_last_line_penalty: i32,
-    hyphen_penalty: i32,
+    nline_penalty: u32,
+    overflow_penalty: u32,
+    short_last_line_fraction: u32,
+    short_last_line_penalty: u32,
+    hyphen_penalty: u32,
 }
 
 impl Into<OptimalFit> for Penalties {
@@ -27,19 +27,19 @@ impl Into<OptimalFit> for Penalties {
 
 #[derive(Arbitrary, Debug, Eq, PartialEq)]
 struct Word {
-    width: usize,
-    whitespace_width: usize,
-    penalty_width: usize,
+    width: u32,
+    whitespace_width: u32,
+    penalty_width: u32,
 }
 
 #[rustfmt::skip]
 impl core::Fragment for Word {
-    fn width(&self) -> usize { self.width }
-    fn whitespace_width(&self) -> usize { self.whitespace_width }
-    fn penalty_width(&self) -> usize { self.penalty_width }
+    fn width(&self) -> u32 { self.width }
+    fn whitespace_width(&self) -> u32 { self.whitespace_width }
+    fn penalty_width(&self) -> u32 { self.penalty_width }
 }
 
-fuzz_target!(|input: (usize, Vec<Word>, Penalties)| {
+fuzz_target!(|input: (u32, Vec<Word>, Penalties)| {
     let width = input.0;
     let words = input.1;
     let penalties = input.2.into();

@@ -6,19 +6,19 @@ use textwrap::wrap_algorithms::wrap_first_fit;
 
 #[derive(Arbitrary, Debug, Eq, PartialEq)]
 struct Word {
-    width: usize,
-    whitespace_width: usize,
-    penalty_width: usize,
+    width: u32,
+    whitespace_width: u32,
+    penalty_width: u32,
 }
 
 #[rustfmt::skip]
 impl core::Fragment for Word {
-    fn width(&self) -> usize { self.width }
-    fn whitespace_width(&self) -> usize { self.whitespace_width }
-    fn penalty_width(&self) -> usize { self.penalty_width }
+    fn width(&self) -> u32 { self.width }
+    fn whitespace_width(&self) -> u32 { self.whitespace_width }
+    fn penalty_width(&self) -> u32 { self.penalty_width }
 }
 
-fuzz_target!(|input: (usize, Vec<Word>)| {
+fuzz_target!(|input: (u32, Vec<Word>)| {
     let width = input.0;
     let words = input.1;
     let _ = wrap_first_fit(&words, &[width]);
