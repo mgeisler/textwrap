@@ -37,7 +37,7 @@ pub trait WrapAlgorithm: WrapAlgorithmClone + std::fmt::Debug {
     /// can be used to implement hanging indentation.
     ///
     /// Please see the implementors of the trait for examples.
-    fn wrap<'a, 'b>(&self, words: &'b [Word<'a>], line_widths: &'b [u16]) -> Vec<&'b [Word<'a>]>;
+    fn wrap<'a, 'b>(&self, words: &'b [Word<'a>], line_widths: &'b [u32]) -> Vec<&'b [Word<'a>]>;
 }
 
 // The internal `WrapAlgorithmClone` trait is allows us to implement
@@ -63,7 +63,7 @@ impl Clone for Box<dyn WrapAlgorithm> {
 }
 
 impl WrapAlgorithm for Box<dyn WrapAlgorithm> {
-    fn wrap<'a, 'b>(&self, words: &'b [Word<'a>], line_widths: &'b [u16]) -> Vec<&'b [Word<'a>]> {
+    fn wrap<'a, 'b>(&self, words: &'b [Word<'a>], line_widths: &'b [u32]) -> Vec<&'b [Word<'a>]> {
         use std::ops::Deref;
         self.deref().wrap(words, line_widths)
     }
@@ -92,7 +92,7 @@ impl Default for FirstFit {
 
 impl WrapAlgorithm for FirstFit {
     #[inline]
-    fn wrap<'a, 'b>(&self, words: &'b [Word<'a>], line_widths: &'b [u16]) -> Vec<&'b [Word<'a>]> {
+    fn wrap<'a, 'b>(&self, words: &'b [Word<'a>], line_widths: &'b [u32]) -> Vec<&'b [Word<'a>]> {
         wrap_first_fit(words, line_widths)
     }
 }
@@ -178,15 +178,15 @@ impl WrapAlgorithm for FirstFit {
 /// #[derive(Debug)]
 /// struct Task<'a> {
 ///     name: &'a str,
-///     hours: u16,   // Time needed to complete task.
-///     sweep: u16,   // Time needed for a quick sweep after task during the day.
-///     cleanup: u16, // Time needed for full cleanup if day ends with this task.
+///     hours: u32,   // Time needed to complete task.
+///     sweep: u32,   // Time needed for a quick sweep after task during the day.
+///     cleanup: u32, // Time needed for full cleanup if day ends with this task.
 /// }
 ///
 /// impl Fragment for Task<'_> {
-///     fn width(&self) -> u16 { self.hours }
-///     fn whitespace_width(&self) -> u16 { self.sweep }
-///     fn penalty_width(&self) -> u16 { self.cleanup }
+///     fn width(&self) -> u32 { self.hours }
+///     fn whitespace_width(&self) -> u32 { self.sweep }
+///     fn penalty_width(&self) -> u32 { self.cleanup }
 /// }
 ///
 /// // The morning tasks
@@ -205,14 +205,14 @@ impl WrapAlgorithm for FirstFit {
 /// // Fill tasks into days, taking `day_length` into account. The
 /// // output shows the hours worked per day along with the names of
 /// // the tasks for that day.
-/// fn assign_days<'a>(tasks: &[Task<'a>], day_length: u16) -> Vec<(u16, Vec<&'a str>)> {
+/// fn assign_days<'a>(tasks: &[Task<'a>], day_length: u32) -> Vec<(u32, Vec<&'a str>)> {
 ///     let mut days = Vec::new();
 ///     // Assign tasks to days. The assignment is a vector of slices,
 ///     // with a slice per day.
 ///     let assigned_days: Vec<&[Task<'a>]> = wrap_first_fit(&tasks, &[day_length]);
 ///     for day in assigned_days.iter() {
 ///         let last = day.last().unwrap();
-///         let work_hours: u16 = day.iter().map(|t| t.hours + t.sweep).sum();
+///         let work_hours: u32 = day.iter().map(|t| t.hours + t.sweep).sum();
 ///         let names = day.iter().map(|t| t.name).collect::<Vec<_>>();
 ///         days.push((work_hours - last.sweep + last.cleanup, names));
 ///     }
@@ -247,7 +247,7 @@ impl WrapAlgorithm for FirstFit {
 /// knows how long each step takes :-)
 pub fn wrap_first_fit<'a, 'b, T: Fragment>(
     fragments: &'a [T],
-    line_widths: &'b [u16],
+    line_widths: &'b [u32],
 ) -> Vec<&'a [T]> {
     // The final line width is used for all remaining lines.
     let default_line_width = line_widths.last().copied().unwrap_or(0);
@@ -279,17 +279,17 @@ mod tests {
     use super::*;
 
     #[derive(Debug, Eq, PartialEq)]
-    struct Word(u16);
+    struct Word(u32);
 
     #[rustfmt::skip]
     impl Fragment for Word {
-        fn width(&self) -> u16 { self.0 }
-        fn whitespace_width(&self) -> u16 { 1 }
-        fn penalty_width(&self) -> u16 { 0 }
+        fn width(&self) -> u32 { self.0 }
+        fn whitespace_width(&self) -> u32 { 1 }
+        fn penalty_width(&self) -> u32 { 0 }
     }
 
     #[test]
-    fn wrap_string_longer_than_u16() {
+    fn wrap_string_longer_than_u32() {
         let words = vec![
             Word(10_000),
             Word(20_000),

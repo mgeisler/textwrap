@@ -40,7 +40,7 @@ pub struct OptimalFit {
     ///
     /// let short = "foo ";
     /// let long = "x".repeat(50);
-    /// let length = (short.len() + long.len()) as u16;
+    /// let length = (short.len() + long.len()) as u32;
     /// let fragments = vec![Word::from(short), Word::from(&long)];
     /// let penalties = OptimalFit::new();
     ///
@@ -161,7 +161,7 @@ impl Default for OptimalFit {
 
 impl WrapAlgorithm for OptimalFit {
     #[inline]
-    fn wrap<'a, 'b>(&self, words: &'b [Word<'a>], line_widths: &'b [u16]) -> Vec<&'b [Word<'a>]> {
+    fn wrap<'a, 'b>(&self, words: &'b [Word<'a>], line_widths: &'b [u32]) -> Vec<&'b [Word<'a>]> {
         wrap_optimal_fit(words, line_widths, self)
     }
 }
@@ -269,16 +269,16 @@ impl LineNumbers {
 /// enabled.
 pub fn wrap_optimal_fit<'a, 'b, T: Fragment>(
     fragments: &'a [T],
-    line_widths: &'b [u16],
+    line_widths: &'b [u32],
     penalties: &'b OptimalFit,
 ) -> Vec<&'a [T]> {
     // The final line width is used for all remaining lines.
     let default_line_width = line_widths.last().copied().unwrap_or(0);
     let mut widths = Vec::with_capacity(fragments.len() + 1);
-    let mut width: u64 = 0;
+    let mut width: u128 = 0;
     widths.push(width);
     for fragment in fragments {
-        width += fragment.width() as u64 + fragment.whitespace_width() as u64;
+        width += fragment.width() as u128 + fragment.whitespace_width() as u128;
         widths.push(width);
     }
 
@@ -291,45 +291,45 @@ pub fn wrap_optimal_fit<'a, 'b, T: Fragment>(
             .get(line_number)
             .copied()
             .unwrap_or(default_line_width);
-        let target_width = std::cmp::max(1, line_width as u64);
+        let target_width = std::cmp::max(1, line_width as u128);
 
         // Compute the width of a line spanning fragments[i..j] in
         // constant time. We need to adjust widths[j] by subtracting
         // the whitespace of fragment[j-1] and then add the penalty.
-        let line_width = widths[j] - widths[i] - fragments[j - 1].whitespace_width() as u64
-            + fragments[j - 1].penalty_width() as u64;
+        let line_width = widths[j] - widths[i] - fragments[j - 1].whitespace_width() as u128
+            + fragments[j - 1].penalty_width() as u128;
 
         // We compute cost of the line containing fragments[i..j]. We
         // start with values[i].1, which is the optimal cost for
         // breaking before fragments[i].
         //
         // First, every extra line cost NLINE_PENALTY.
-        let mut cost = minima[i].1 + penalties.nline_penalty as u64;
+        let mut cost = minima[i].1 + penalties.nline_penalty as u128;
 
         // Next, we add a penalty depending on the line length.
         if line_width > target_width {
             // Lines that overflow get a hefty penalty.
             let overflow = line_width - target_width;
-            cost += overflow * penalties.overflow_penalty as u64;
+            cost += overflow * penalties.overflow_penalty as u128;
         } else if j < fragments.len() {
             // Other lines (except for the last line) get a milder
             // penalty which depend on the size of the gap.
             let gap = target_width - line_width;
             cost += gap * gap;
         } else if i + 1 == j
-            && line_width < target_width / penalties.short_last_line_fraction as u64
+            && line_width < target_width / penalties.short_last_line_fraction as u128
         {
             // The last line can have any size gap, but we do add a
             // penalty if the line is very short (typically because it
             // contains just a single word).
-            cost += penalties.short_last_line_penalty as u64;
+            cost += penalties.short_last_line_penalty as u128;
         }
 
         // Finally, we discourage hyphens.
         if fragments[j - 1].penalty_width() > 0 {
             // TODO: this should use a penalty value from the fragment
             // instead.
-            cost += penalties.hyphen_penalty as u64;
+            cost += penalties.hyphen_penalty as u128;
         }
 
         cost
@@ -355,17 +355,17 @@ mod tests {
     use super::*;
 
     #[derive(Debug, Eq, PartialEq)]
-    struct Word(u16);
+    struct Word(u32);
 
     #[rustfmt::skip]
     impl Fragment for Word {
-        fn width(&self) -> u16 { self.0 }
-        fn whitespace_width(&self) -> u16 { 1 }
-        fn penalty_width(&self) -> u16 { 0 }
+        fn width(&self) -> u32 { self.0 }
+        fn whitespace_width(&self) -> u32 { 1 }
+        fn penalty_width(&self) -> u32 { 0 }
     }
 
     #[test]
-    fn wrap_string_longer_than_u16() {
+    fn wrap_string_longer_than_u32() {
         let words = vec![
             Word(10_000),
             Word(20_000),

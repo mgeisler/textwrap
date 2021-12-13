@@ -262,7 +262,7 @@ pub struct Options<
     WordSplit = Box<dyn word_splitters::WordSplitter>,
 > {
     /// The width in columns at which the text will be wrapped.
-    pub width: u16,
+    pub width: u32,
     /// Indentation used for the first line of output. See the
     /// [`Options::initial_indent`] method.
     pub initial_indent: &'a str,
@@ -307,7 +307,7 @@ where
     }
 }
 
-impl<'a> From<u16>
+impl<'a> From<u32>
     for Options<
         'a,
         DefaultWrapAlgorithm!(),
@@ -315,7 +315,7 @@ impl<'a> From<u16>
         word_splitters::HyphenSplitter,
     >
 {
-    fn from(width: u16) -> Self {
+    fn from(width: u32) -> Self {
         Options::new(width)
     }
 }
@@ -356,7 +356,7 @@ impl<'a>
     /// Note that the default word separator and wrap algorithms
     /// changes based on the available Cargo features. The best
     /// available algorithms are used by default.
-    pub const fn new(width: u16) -> Self {
+    pub const fn new(width: u32) -> Self {
         Options::with_word_splitter(width, word_splitters::HyphenSplitter)
     }
 
@@ -391,7 +391,7 @@ impl<'a, WordSplit> Options<'a, DefaultWrapAlgorithm!(), DefaultWordSeparator!()
     /// # use textwrap::Options;
     /// # use textwrap::word_splitters::{NoHyphenation, HyphenSplitter};
     /// # const word_splitter: NoHyphenation = NoHyphenation;
-    /// # const width: u16 = 80;
+    /// # const width: u32 = 80;
     /// # let actual = Options::with_word_splitter(width, word_splitter);
     /// # let expected =
     /// Options::new(width).word_splitter(word_splitter)
@@ -410,7 +410,7 @@ impl<'a, WordSplit> Options<'a, DefaultWrapAlgorithm!(), DefaultWordSeparator!()
     /// ```
     /// use textwrap::Options;
     /// use textwrap::word_splitters::{HyphenSplitter, NoHyphenation, WordSplitter};
-    /// # const width: u16 = 80;
+    /// # const width: u32 = 80;
     ///
     /// // The type annotation is important, otherwise it will be not a trait object
     /// let mut options: Options<_, _, Box<dyn WordSplitter>>
@@ -434,7 +434,7 @@ impl<'a, WordSplit> Options<'a, DefaultWrapAlgorithm!(), DefaultWordSeparator!()
     /// use textwrap::word_splitters::HyphenSplitter;
     /// use textwrap::word_separators::AsciiSpace;
     /// use textwrap::wrap_algorithms::FirstFit;
-    /// # const width: u16 = 80;
+    /// # const width: u32 = 80;
     ///
     /// # #[cfg(all(not(feature = "smawk"), not(feature = "unicode-linebreak")))] {
     /// const FOO: Options<FirstFit, AsciiSpace, HyphenSplitter> =
@@ -442,7 +442,7 @@ impl<'a, WordSplit> Options<'a, DefaultWrapAlgorithm!(), DefaultWordSeparator!()
     /// static BAR: Options<FirstFit, AsciiSpace, HyphenSplitter> = FOO;
     /// # }
     /// ```
-    pub const fn with_word_splitter(width: u16, word_splitter: WordSplit) -> Self {
+    pub const fn with_word_splitter(width: u32, word_splitter: WordSplit) -> Self {
         Options {
             width,
             initial_indent: "",
@@ -645,8 +645,8 @@ impl<'a, WrapAlgo, WordSep, WordSplit> Options<'a, WrapAlgo, WordSep, WordSplit>
 /// **Note:** Only available when the `terminal_size` Cargo feature is
 /// enabled.
 #[cfg(feature = "terminal_size")]
-pub fn termwidth() -> u16 {
-    terminal_size::terminal_size().map_or(80, |(terminal_size::Width(w), _)| w)
+pub fn termwidth() -> u32 {
+    terminal_size::terminal_size().map_or(80, |(terminal_size::Width(w), _)| u32::from(w))
 }
 
 /// Fill a line of text at a given width.
@@ -1200,7 +1200,7 @@ where
     Opt: Into<Options<'a, WrapAlgo, WordSep, WordSplit>>,
 {
     assert!(columns > 0);
-    assert!(columns < u16::max_value().into());
+    assert!(columns < u32::max_value() as usize);
 
     let mut options = total_width_or_options.into();
 
@@ -1208,10 +1208,10 @@ where
         .width
         .saturating_sub(core::display_width(left_gap))
         .saturating_sub(core::display_width(right_gap))
-        .saturating_sub(core::display_width(middle_gap) * (columns as u16 - 1));
+        .saturating_sub(core::display_width(middle_gap) * (columns as u32 - 1));
 
     let column_width = std::cmp::max(inner_width as usize / columns, 1);
-    options.width = column_width as u16;
+    options.width = column_width as u32;
     let last_column_padding = " ".repeat(inner_width as usize % column_width);
     let wrapped_lines = wrap(text, options);
     let lines_per_column =
@@ -1298,7 +1298,7 @@ where
 /// Please see the [`linear`
 /// benchmark](https://github.com/mgeisler/textwrap/blob/master/benches/linear.rs)
 /// for details.
-pub fn fill_inplace(text: &mut String, width: u16) {
+pub fn fill_inplace(text: &mut String, width: u32) {
     use word_separators::WordSeparator;
     let mut indices = Vec::new();
 
@@ -1345,7 +1345,7 @@ mod tests {
 
     #[test]
     fn options_agree_with_usize() {
-        let opt_usize = Options::from(42_u16);
+        let opt_usize = Options::from(42_u32);
         let opt_options = Options::new(42);
 
         assert_eq!(opt_usize.width, opt_options.width);
@@ -1396,9 +1396,9 @@ mod tests {
 
     #[test]
     fn max_width() {
-        assert_eq!(wrap("foo bar", u16::max_value()), vec!["foo bar"]);
+        assert_eq!(wrap("foo bar", u32::max_value()), vec!["foo bar"]);
         let long_text = "foobar baz foobar baz foobar baz foobar baz foobar baz";
-        assert_eq!(wrap(&long_text, u16::max_value()), vec![long_text]);
+        assert_eq!(wrap(&long_text, u32::max_value()), vec![long_text]);
     }
 
     #[test]

@@ -145,22 +145,22 @@ impl<'a> CanvasWord<'a> {
     }
 }
 
-const PRECISION: u16 = 10;
+const PRECISION: u32 = 10;
 
 impl textwrap::core::Fragment for CanvasWord<'_> {
     #[inline]
-    fn width(&self) -> u16 {
-        (self.width * PRECISION as f64) as u16
+    fn width(&self) -> u32 {
+        (self.width * PRECISION as f64) as u32
     }
 
     #[inline]
-    fn whitespace_width(&self) -> u16 {
-        (self.whitespace_width * PRECISION as f64) as u16
+    fn whitespace_width(&self) -> u32 {
+        (self.whitespace_width * PRECISION as f64) as u32
     }
 
     #[inline]
-    fn penalty_width(&self) -> u16 {
-        (self.penalty_width * PRECISION as f64) as u16
+    fn penalty_width(&self) -> u32 {
+        (self.penalty_width * PRECISION as f64) as u32
     }
 }
 
@@ -292,7 +292,7 @@ impl Into<OptimalFit> for WasmOptimalFit {
 #[wasm_bindgen]
 #[derive(Copy, Clone, Debug)]
 pub struct WasmOptions {
-    pub width: u16,
+    pub width: u32,
     pub break_words: bool,
     pub word_separator: WasmWordSeparator,
     pub word_splitter: WasmWordSplitter,
@@ -304,7 +304,7 @@ pub struct WasmOptions {
 impl WasmOptions {
     #[wasm_bindgen(constructor)]
     pub fn new(
-        width: u16,
+        width: u32,
         break_words: bool,
         word_separator: WasmWordSeparator,
         word_splitter: WasmWordSplitter,

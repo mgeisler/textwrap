@@ -22,9 +22,9 @@ fn main() {
         let lines = wrap(example, &options);
         if lines != prev_lines {
             let title = format!(" Width: {} ", width);
-            println!(".{:-^1$}.", title, (width + 2).into());
+            println!(".{:-^1$}.", title, width as usize + 2);
             for line in &lines {
-                println!("| {:1$} |", line, width.into());
+                println!("| {:1$} |", line, width as usize);
             }
             prev_lines = lines;
         }
