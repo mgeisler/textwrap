@@ -261,14 +261,14 @@ pub fn wrap_first_fit<'a, 'b, T: Fragment>(
             .copied()
             .unwrap_or(default_line_width)
             .into();
-        if width + fragment.width() as u64 + fragment.penalty_width() as u64 > line_width
+        if width + u64::from(fragment.width()) + u64::from(fragment.penalty_width()) > line_width
             && idx > start
         {
             lines.push(&fragments[start..idx]);
             start = idx;
             width = 0;
         }
-        width += fragment.width() as u64 + fragment.whitespace_width() as u64;
+        width += u64::from(fragment.width()) + u64::from(fragment.whitespace_width());
     }
     lines.push(&fragments[start..]);
     lines
