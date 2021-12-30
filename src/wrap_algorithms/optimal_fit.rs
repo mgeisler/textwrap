@@ -275,10 +275,12 @@ pub fn wrap_optimal_fit<'a, 'b, T: Fragment>(
     // The final line width is used for all remaining lines.
     let default_line_width = line_widths.last().copied().unwrap_or(0);
     let mut widths = Vec::with_capacity(fragments.len() + 1);
-    let mut width: u128 = 0;
+    // Accumulated fragment widths as a u64. With each fragment using
+    // u32, we can add up about 2**32 fragments before overflowing.
+    let mut width: u64 = 0;
     widths.push(width);
     for fragment in fragments {
-        width += fragment.width() as u128 + fragment.whitespace_width() as u128;
+        width += fragment.width() as u64 + fragment.whitespace_width() as u64;
         widths.push(width);
     }
 
@@ -291,13 +293,13 @@ pub fn wrap_optimal_fit<'a, 'b, T: Fragment>(
             .get(line_number)
             .copied()
             .unwrap_or(default_line_width);
-        let target_width = std::cmp::max(1, line_width as u128);
+        let target_width = std::cmp::max(1, line_width as u64);
 
         // Compute the width of a line spanning fragments[i..j] in
         // constant time. We need to adjust widths[j] by subtracting
         // the whitespace of fragment[j-1] and then add the penalty.
-        let line_width = widths[j] - widths[i] - fragments[j - 1].whitespace_width() as u128
-            + fragments[j - 1].penalty_width() as u128;
+        let line_width = widths[j] - widths[i] - fragments[j - 1].whitespace_width() as u64
+            + fragments[j - 1].penalty_width() as u64;
 
         // We compute cost of the line containing fragments[i..j]. We
         // start with values[i].1, which is the optimal cost for
@@ -310,14 +312,14 @@ pub fn wrap_optimal_fit<'a, 'b, T: Fragment>(
         if line_width > target_width {
             // Lines that overflow get a hefty penalty.
             let overflow = line_width - target_width;
-            cost += overflow * penalties.overflow_penalty as u128;
+            cost += overflow as u128 * penalties.overflow_penalty as u128;
         } else if j < fragments.len() {
             // Other lines (except for the last line) get a milder
             // penalty which depend on the size of the gap.
-            let gap = target_width - line_width;
+            let gap = u128::from(target_width - line_width);
             cost += gap * gap;
         } else if i + 1 == j
-            && line_width < target_width / penalties.short_last_line_fraction as u128
+            && line_width < target_width / penalties.short_last_line_fraction as u64
         {
             // The last line can have any size gap, but we do add a
             // penalty if the line is very short (typically because it
