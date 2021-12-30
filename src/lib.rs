@@ -1684,6 +1684,7 @@ mod tests {
         let dictionary = Standard::from_embedded(Language::EnglishUS).unwrap();
         let options = Options::new(10).word_splitter(dictionary);
         let lines = wrap("Internationalization", &options);
+        assert_eq!(lines, vec!["Interna-", "tionaliza-", "tion"]);
         if let Borrowed(s) = lines[0] {
             assert!(false, "should not have been borrowed: {:?}", s);
         }
