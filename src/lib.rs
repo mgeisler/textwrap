@@ -1392,7 +1392,18 @@ mod tests {
     }
 
     #[test]
+    #[cfg(not(feature = "smawk"))]
     fn max_width() {
+        // No overflow for the first-fit wrap algorithm.
+        assert_eq!(wrap("foo bar", usize::max_value()), vec!["foo bar"]);
+    }
+
+    #[test]
+    #[cfg(feature = "smawk")]
+    #[should_panic(expected = "attempt to multiply with overflow")]
+    fn max_width() {
+        // The optimal-fit algorithm overflows for extreme line
+        // widths. See #247 and #416 for details..
         assert_eq!(wrap("foo bar", usize::max_value()), vec!["foo bar"]);
     }
 

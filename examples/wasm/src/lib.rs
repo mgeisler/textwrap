@@ -250,22 +250,22 @@ pub enum WasmWrapAlgorithm {
 #[wasm_bindgen]
 #[derive(Copy, Clone, Debug, Default)]
 pub struct WasmOptimalFit {
-    pub nline_penalty: i32,
-    pub overflow_penalty: i32,
+    pub nline_penalty: usize,
+    pub overflow_penalty: usize,
     pub short_last_line_fraction: usize,
-    pub short_last_line_penalty: i32,
-    pub hyphen_penalty: i32,
+    pub short_last_line_penalty: usize,
+    pub hyphen_penalty: usize,
 }
 
 #[wasm_bindgen]
 impl WasmOptimalFit {
     #[wasm_bindgen(constructor)]
     pub fn new(
-        nline_penalty: i32,
-        overflow_penalty: i32,
+        nline_penalty: usize,
+        overflow_penalty: usize,
         short_last_line_fraction: usize,
-        short_last_line_penalty: i32,
-        hyphen_penalty: i32,
+        short_last_line_penalty: usize,
+        hyphen_penalty: usize,
     ) -> WasmOptimalFit {
         WasmOptimalFit {
             nline_penalty,

@@ -6,11 +6,11 @@ use textwrap::wrap_algorithms::{wrap_optimal_fit, OptimalFit};
 
 #[derive(Arbitrary, Debug)]
 struct Penalties {
-    nline_penalty: i32,
-    overflow_penalty: i32,
+    nline_penalty: usize,
+    overflow_penalty: usize,
     short_last_line_fraction: usize,
-    short_last_line_penalty: i32,
-    hyphen_penalty: i32,
+    short_last_line_penalty: usize,
+    hyphen_penalty: usize,
 }
 
 impl Into<OptimalFit> for Penalties {
