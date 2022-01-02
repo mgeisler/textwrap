@@ -62,8 +62,12 @@ pub(crate) fn skip_ansi_escape_sequence<I: Iterator<Item = char>>(ch: char, char
 
 #[cfg(feature = "unicode-width")]
 #[inline]
-fn ch_width(ch: char) -> usize {
-    unicode_width::UnicodeWidthChar::width(ch).unwrap_or(0)
+fn ch_width(ch: char, tab_width: u8) -> usize {
+    if ch == '\t' {
+        tab_width as usize
+    } else {
+        unicode_width::UnicodeWidthChar::width(ch).unwrap_or(0)
+    }
 }
 
 /// First character which [`ch_width`] will classify as double-width.
@@ -73,8 +77,10 @@ const DOUBLE_WIDTH_CUTOFF: char = '\u{1100}';
 
 #[cfg(not(feature = "unicode-width"))]
 #[inline]
-fn ch_width(ch: char) -> usize {
-    if ch < DOUBLE_WIDTH_CUTOFF {
+fn ch_width(ch: char, tab_width: u8) -> usize {
+    if ch == '\t' {
+        tab_width as usize
+    } else if ch < DOUBLE_WIDTH_CUTOFF {
         1
     } else {
         2
@@ -174,13 +180,28 @@ fn ch_width(ch: char) -> usize {
 /// [CJK characters]: https://en.wikipedia.org/wiki/CJK_characters
 /// [emoji modifier sequences]: https://unicode.org/emoji/charts/full-emoji-modifiers.html
 pub fn display_width(text: &str) -> usize {
+    display_width_with_tab(text, 0)
+}
+
+/// Compute the display width of `text` in the same was as
+/// `display_width`, while allowing you to customize how wide
+/// a tab character will be considered to be.
+///
+/// # Examples
+///
+/// ```
+/// use textwrap::core::display_width_with_tab;
+///
+/// assert_eq!(display_width_with_tab("Café \t Plain", 4), 15);
+/// ```
+pub fn display_width_with_tab(text: &str, tab_width: u8) -> usize {
     let mut chars = text.chars();
     let mut width = 0;
     while let Some(ch) = chars.next() {
         if skip_ansi_escape_sequence(ch, &mut chars) {
             continue;
         }
-        width += ch_width(ch);
+        width += ch_width(ch, tab_width);
     }
     width
 }
@@ -220,8 +241,10 @@ pub struct Word<'a> {
     pub whitespace: &'a str,
     /// Penalty string to insert if the word falls at the end of a line.
     pub penalty: &'a str,
-    // Cached width in columns.
+    /// Cached width in columns.
     pub(crate) width: usize,
+    /// Width of a tab character within this word
+    pub(crate) tab_width: u8
 }
 
 impl std::ops::Deref for Word<'_> {
@@ -235,15 +258,25 @@ impl std::ops::Deref for Word<'_> {
 impl<'a> Word<'a> {
     /// Construct a `Word` from a string.
     ///
-    /// A trailing stretch of `' '` is automatically taken to be the
+    /// All trailing whitespace is automatically removed to be the
     /// whitespace part of the word.
     pub fn from(word: &str) -> Word<'_> {
-        let trimmed = word.trim_end_matches(' ');
+        Self::with_tab_width(word, 0)
+    }
+
+    /// Construct a `Word` from a string, with a customizable tab width
+    /// to calculate the total width with.
+    ///
+    /// All trailing whitespace is automatically removed to be the
+    /// whitespace part of the word.
+    pub fn with_tab_width(word: &str, tab_width: u8) -> Word<'_> {
+        let trimmed = word.trim();
         Word {
             word: trimmed,
-            width: display_width(trimmed),
+            width: display_width_with_tab(trimmed, tab_width),
             whitespace: &word[trimmed.len()..],
             penalty: "",
+            tab_width
         }
     }
 
@@ -271,27 +304,27 @@ impl<'a> Word<'a> {
                     continue;
                 }
 
-                if width > 0 && width + ch_width(ch) > line_width {
+                if width > 0 && width + ch_width(ch, self.tab_width) > line_width {
                     let word = Word {
                         word: &self.word[offset..idx],
-                        width: width,
                         whitespace: "",
                         penalty: "",
+                        tab_width: self.tab_width,
+                        width,
                     };
                     offset = idx;
-                    width = ch_width(ch);
+                    width = ch_width(ch, self.tab_width);
                     return Some(word);
                 }
 
-                width += ch_width(ch);
+                width += ch_width(ch, self.tab_width);
             }
 
             if offset < self.word.len() {
                 let word = Word {
                     word: &self.word[offset..],
-                    width: width,
-                    whitespace: self.whitespace,
-                    penalty: self.penalty,
+                    width,
+                    ..*self
                 };
                 offset = self.word.len();
                 return Some(word);

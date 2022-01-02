@@ -7,7 +7,7 @@
 
 use std::ops::Deref;
 
-use crate::core::{display_width, Word};
+use crate::core::{display_width_with_tab, Word};
 
 /// The `WordSplitter` trait describes where words can be split.
 ///
@@ -198,9 +198,10 @@ where
                 let need_hyphen = !word[..idx].ends_with('-');
                 let w = Word {
                     word: &word.word[prev..idx],
-                    width: display_width(&word[prev..idx]),
+                    width: display_width_with_tab(&word[prev..idx], word.tab_width),
                     whitespace: "",
                     penalty: if need_hyphen { "-" } else { "" },
+                    tab_width: word.tab_width
                 };
                 prev = idx;
                 return Some(w);
@@ -209,9 +210,8 @@ where
             if prev < word.word.len() || prev == 0 {
                 let w = Word {
                     word: &word.word[prev..],
-                    width: display_width(&word[prev..]),
-                    whitespace: word.whitespace,
-                    penalty: word.penalty,
+                    width: display_width_with_tab(&word[prev..], word.tab_width),
+                    ..word
                 };
                 prev = word.word.len() + 1;
                 return Some(w);
@@ -279,13 +279,15 @@ mod tests {
                     word: "foo",
                     width: 3,
                     whitespace: "",
-                    penalty: "-"
+                    penalty: "-",
+                    tab_width: 0
                 },
                 Word {
                     word: "bar",
                     width: 3,
                     whitespace: "",
-                    penalty: ""
+                    penalty: "",
+                    tab_width: 0
                 }
             ]
         );
@@ -297,13 +299,15 @@ mod tests {
                     word: "fo-",
                     width: 3,
                     whitespace: "",
-                    penalty: ""
+                    penalty: "",
+                    tab_width: 0
                 },
                 Word {
                     word: "bar",
                     width: 3,
                     whitespace: "",
-                    penalty: ""
+                    penalty: "",
+                    tab_width: 0
                 }
             ]
         );

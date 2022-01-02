@@ -263,6 +263,8 @@ pub struct Options<
 > {
     /// The width in columns at which the text will be wrapped.
     pub width: usize,
+    /// How wide this crate should consider a tab character to be
+    pub tab_width: u8,
     /// Indentation used for the first line of output. See the
     /// [`Options::initial_indent`] method.
     pub initial_indent: &'a str,
@@ -297,6 +299,7 @@ where
     fn from(options: &'a Options<'a, WrapAlgo, WordSep, WordSplit>) -> Self {
         Self {
             width: options.width,
+            tab_width: options.tab_width,
             initial_indent: options.initial_indent,
             subsequent_indent: options.subsequent_indent,
             break_words: options.break_words,
@@ -333,6 +336,7 @@ impl<'a>
     /// # let expected =
     /// Options {
     ///     width: width,
+    ///     tab_width: 0,
     ///     initial_indent: "",
     ///     subsequent_indent: "",
     ///     break_words: true,
@@ -445,17 +449,42 @@ impl<'a, WordSplit> Options<'a, DefaultWrapAlgorithm!(), DefaultWordSeparator!()
     pub const fn with_word_splitter(width: usize, word_splitter: WordSplit) -> Self {
         Options {
             width,
+            tab_width: 0,
             initial_indent: "",
             subsequent_indent: "",
             break_words: true,
             word_separator: DefaultWordSeparator!(),
             wrap_algorithm: <DefaultWrapAlgorithm!()>::new(),
-            word_splitter: word_splitter,
+            word_splitter,
         }
     }
 }
 
 impl<'a, WrapAlgo, WordSep, WordSplit> Options<'a, WrapAlgo, WordSep, WordSplit> {
+    /// Change [`self.tab_width`]. The tab width is how wide
+    /// this crate should consider a tab character to be. By
+    /// default, this crate will consider a tab character to
+    /// be of width 0.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use textwrap::{Options, wrap};
+    ///
+    /// let options = Options::new(16).tab_width(4);
+    /// assert_eq!(wrap("This\tis\tan\texample.", options),
+    ///            vec!["This\tis\tan",
+    ///                 "example."]);
+    /// ```
+    ///
+    /// [`self.tab_width`]: #structfield.tab_width
+    pub fn tab_width(self, tab_width: u8) -> Self {
+        Options {
+            tab_width,
+            ..self
+        }
+    }
+
     /// Change [`self.initial_indent`]. The initial indentation is
     /// used on the very first line of output.
     ///
@@ -555,10 +584,11 @@ impl<'a, WrapAlgo, WordSep, WordSplit> Options<'a, WrapAlgo, WordSep, WordSplit>
     ) -> Options<'a, WrapAlgo, NewWordSep, WordSplit> {
         Options {
             width: self.width,
+            tab_width: self.tab_width,
             initial_indent: self.initial_indent,
             subsequent_indent: self.subsequent_indent,
             break_words: self.break_words,
-            word_separator: word_separator,
+            word_separator,
             wrap_algorithm: self.wrap_algorithm,
             word_splitter: self.word_splitter,
         }
@@ -576,11 +606,12 @@ impl<'a, WrapAlgo, WordSep, WordSplit> Options<'a, WrapAlgo, WordSep, WordSplit>
     ) -> Options<'a, NewWrapAlgo, WordSep, WordSplit> {
         Options {
             width: self.width,
+            tab_width: self.tab_width,
             initial_indent: self.initial_indent,
             subsequent_indent: self.subsequent_indent,
             break_words: self.break_words,
             word_separator: self.word_separator,
-            wrap_algorithm: wrap_algorithm,
+            wrap_algorithm,
             word_splitter: self.word_splitter,
         }
     }
@@ -610,6 +641,7 @@ impl<'a, WrapAlgo, WordSep, WordSplit> Options<'a, WrapAlgo, WordSep, WordSplit>
     ) -> Options<'a, WrapAlgo, WordSep, NewWordSplit> {
         Options {
             width: self.width,
+            tab_width: self.tab_width,
             initial_indent: self.initial_indent,
             subsequent_indent: self.subsequent_indent,
             break_words: self.break_words,
@@ -759,7 +791,7 @@ pub fn unfill(
 
     let mut options = Options::new(0);
     for (idx, line) in trimmed.split('\n').enumerate() {
-        options.width = std::cmp::max(options.width, core::display_width(line));
+        options.width = std::cmp::max(options.width, core::display_width_with_tab(line, options.tab_width));
         let without_prefix = line.trim_start_matches(prefix_chars);
         let prefix = &line[..line.len() - without_prefix.len()];
 
@@ -1051,14 +1083,22 @@ where
 
     let initial_width = options
         .width
-        .saturating_sub(core::display_width(options.initial_indent));
+        .saturating_sub(core::display_width_with_tab(options.initial_indent, options.tab_width));
     let subsequent_width = options
         .width
-        .saturating_sub(core::display_width(options.subsequent_indent));
+        .saturating_sub(core::display_width_with_tab(options.subsequent_indent, options.tab_width));
 
     let mut lines = Vec::new();
+
     for line in text.split('\n') {
-        let words = options.word_separator.find_words(line);
+
+        // We have to set the tab width for each of the words. So as to not
+        // change the public API (fn find_words), we do it here.
+        let words = options.word_separator.find_words(line).map(|mut w| {
+            w.tab_width = options.tab_width;
+            w
+        });
+
         let split_words = word_splitters::split_words(words, &options.word_splitter);
         let broken_words = if options.break_words {
             let mut broken_words = core::break_words(split_words, subsequent_width);
@@ -1068,7 +1108,7 @@ where
                 // on the _second_ line width, it can be wrong to
                 // unconditionally put the first word onto the first
                 // line. An empty zero-width word fixed this.
-                broken_words.insert(0, core::Word::from(""));
+                broken_words.insert(0, core::Word::with_tab_width("", options.tab_width));
             }
             broken_words
         } else {
@@ -1202,12 +1242,13 @@ where
     assert!(columns > 0);
 
     let mut options = total_width_or_options.into();
+    let t_width = options.tab_width;
 
     let inner_width = options
         .width
-        .saturating_sub(core::display_width(left_gap))
-        .saturating_sub(core::display_width(right_gap))
-        .saturating_sub(core::display_width(middle_gap) * (columns - 1));
+        .saturating_sub(core::display_width_with_tab(left_gap, t_width))
+        .saturating_sub(core::display_width_with_tab(right_gap, t_width))
+        .saturating_sub(core::display_width_with_tab(middle_gap, t_width) * (columns - 1));
 
     let column_width = std::cmp::max(inner_width / columns, 1);
     options.width = column_width;
@@ -1222,7 +1263,7 @@ where
             match wrapped_lines.get(line_no + column_no * lines_per_column) {
                 Some(column_line) => {
                     line.push_str(column_line);
-                    line.push_str(&" ".repeat(column_width - core::display_width(column_line)));
+                    line.push_str(&" ".repeat(column_width - core::display_width_with_tab(column_line, t_width)));
                 }
                 None => {
                     line.push_str(&" ".repeat(column_width));
@@ -1261,6 +1302,7 @@ where
 /// # let width = 80;
 /// Options {
 ///     width: width,
+///     tab_width: 0,
 ///     initial_indent: "",
 ///     subsequent_indent: "",
 ///     break_words: false,
