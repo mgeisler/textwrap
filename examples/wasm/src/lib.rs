@@ -369,7 +369,7 @@ pub fn draw_wrapped_text(
             WasmWrapAlgorithm::FirstFit => wrap_first_fit(&canvas_words, &line_lengths),
             WasmWrapAlgorithm::OptimalFit => {
                 let penalties = options.optimal_fit.into();
-                wrap_optimal_fit(&canvas_words, &line_lengths, &penalties)
+                wrap_optimal_fit(&canvas_words, &line_lengths, &penalties).unwrap()
             }
             _ => Err("WasmOptions has an invalid wrap_algorithm field")?,
         };

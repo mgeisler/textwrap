@@ -18,7 +18,7 @@
 #[cfg(feature = "smawk")]
 mod optimal_fit;
 #[cfg(feature = "smawk")]
-pub use optimal_fit::{wrap_optimal_fit, OptimalFit};
+pub use optimal_fit::{wrap_optimal_fit, OptimalFit, OverflowError};
 
 use crate::core::{Fragment, Word};
 
@@ -148,7 +148,7 @@ impl WrapAlgorithm for FirstFit {
 /// #[cfg(feature = "smawk")]
 /// use textwrap::wrap_algorithms::{wrap_optimal_fit, OptimalFit};
 /// #[cfg(feature = "smawk")]
-/// assert_eq!(lines_to_strings(wrap_optimal_fit(&words, &[15.0], &OptimalFit::new())),
+/// assert_eq!(lines_to_strings(wrap_optimal_fit(&words, &[15.0], &OptimalFit::new()).unwrap()),
 ///            vec!["These few",
 ///                 "words will",
 ///                 "unfortunately",
