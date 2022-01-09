@@ -111,6 +111,15 @@ jobs:
   fuzz:
     name: Fuzz test
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        fuzz-target:
+          - fill_first_fit
+          - fill_optimal_fit
+          - wrap_first_fit
+          - wrap_optimal_fit
+          - wrap_optimal_fit_usize
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -126,25 +135,16 @@ jobs:
       - name: Cache fuzz corpus
         uses: actions/cache@v2
         with:
-          path: fuzz/corpus
-          key: fuzz-corpus-${{ github.run_id }}
+          path: fuzz/corpus/${{ matrix.fuzz-target }}
+          key: fuzz-corpus-${{ matrix.fuzz-target }}-${{ github.run_id }}
           restore-keys: |
-            fuzz-corpus-
+            fuzz-corpus-${{ matrix.fuzz-target }}
 
-      - name: Build fuzz targets
-        run: cargo fuzz build
+      - name: Run fuzz test
+        run: cargo fuzz run ${{ matrix.fuzz-target }} -- -max_total_time=30
 
-      - name: Fuzz test wrap_first_fit
-        run: cargo fuzz run wrap_first_fit -- -max_total_time=30
-
-      - name: Fuzz test wrap_optimal_fit
-        run: cargo fuzz run wrap_optimal_fit -- -max_total_time=30
-
-      - name: Minimize wrap_first_fit corpus
-        run: cargo fuzz cmin wrap_first_fit
-
-      - name: Minimize wrap_optimal_fit corpus
-        run: cargo fuzz cmin wrap_optimal_fit
+      - name: Minimize fuzz corpus
+        run: cargo fuzz cmin ${{ matrix.fuzz-target }}
 
   binary-sizes:
     name: Compute binary sizes
