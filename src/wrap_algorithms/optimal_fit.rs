@@ -24,7 +24,7 @@ use crate::wrap_algorithms::WrapAlgorithm;
 pub struct OptimalFit {
     /// Per-line penalty. This is added for every line, which makes it
     /// expensive to output more lines than the minimum required.
-    pub nline_penalty: i32,
+    pub nline_penalty: usize,
 
     /// Per-character cost for lines that overflow the target line width.
     ///
@@ -67,7 +67,7 @@ pub struct OptimalFit {
     /// character. If it overflows by more than one character, the
     /// overflow penalty will quickly outgrow the cost of the gap, as
     /// seen above.
-    pub overflow_penalty: i32,
+    pub overflow_penalty: usize,
 
     /// When should the a single word on the last line be considered
     /// "too short"?
@@ -128,10 +128,10 @@ pub struct OptimalFit {
     /// Penalty for a last line with a single short word.
     ///
     /// Set this to zero if you do not want to penalize short last lines.
-    pub short_last_line_penalty: i32,
+    pub short_last_line_penalty: usize,
 
     /// Penalty for lines ending with a hyphen.
-    pub hyphen_penalty: i32,
+    pub hyphen_penalty: usize,
 }
 
 impl OptimalFit {
@@ -308,12 +308,12 @@ pub fn wrap_optimal_fit<'a, 'b, T: Fragment>(
         // Next, we add a penalty depending on the line length.
         if line_width > target_width {
             // Lines that overflow get a hefty penalty.
-            let overflow = (line_width - target_width) as i32;
+            let overflow = line_width - target_width;
             cost += overflow * penalties.overflow_penalty;
         } else if j < fragments.len() {
             // Other lines (except for the last line) get a milder
             // penalty which depend on the size of the gap.
-            let gap = (target_width - line_width) as i32;
+            let gap = target_width - line_width;
             cost += gap * gap;
         } else if i + 1 == j && line_width < target_width / penalties.short_last_line_fraction {
             // The last line can have any size gap, but we do add a
