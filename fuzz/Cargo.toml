@@ -41,3 +41,9 @@ name = "wrap_optimal_fit"
 path = "fuzz_targets/wrap_optimal_fit.rs"
 test = false
 doc = false
+
+[[bin]]
+name = "wrap_optimal_fit_usize"
+path = "fuzz_targets/wrap_optimal_fit_usize.rs"
+test = false
+doc = false

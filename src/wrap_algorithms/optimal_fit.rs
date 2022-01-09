@@ -40,24 +40,25 @@ pub struct OptimalFit {
     ///
     /// let short = "foo ";
     /// let long = "x".repeat(50);
+    /// let length = (short.len() + long.len()) as f64;
     /// let fragments = vec![Word::from(short), Word::from(&long)];
     /// let penalties = OptimalFit::new();
     ///
     /// // Perfect fit, both words are on a single line with no overflow.
-    /// let wrapped = wrap_optimal_fit(&fragments, &[short.len() + long.len()], &penalties);
+    /// let wrapped = wrap_optimal_fit(&fragments, &[length], &penalties).unwrap();
     /// assert_eq!(wrapped, vec![&[Word::from(short), Word::from(&long)]]);
     ///
     /// // The words no longer fit, yet we get a single line back. While
     /// // the cost of overflow (`1 * 2500`) is the same as the cost of the
     /// // gap (`50 * 50 = 2500`), the tie is broken by `nline_penalty`
     /// // which makes it cheaper to overflow than to use two lines.
-    /// let wrapped = wrap_optimal_fit(&fragments, &[short.len() + long.len() - 1], &penalties);
+    /// let wrapped = wrap_optimal_fit(&fragments, &[length - 1.0], &penalties).unwrap();
     /// assert_eq!(wrapped, vec![&[Word::from(short), Word::from(&long)]]);
     ///
     /// // The cost of overflow would be 2 * 2500, whereas the cost of
     /// // the gap is only `49 * 49 + nline_penalty = 2401 + 1000 =
     /// // 3401`. We therefore get two lines.
-    /// let wrapped = wrap_optimal_fit(&fragments, &[short.len() + long.len() - 2], &penalties);
+    /// let wrapped = wrap_optimal_fit(&fragments, &[length - 2.0], &penalties).unwrap();
     /// assert_eq!(wrapped, vec![&[Word::from(short)],
     ///                          &[Word::from(&long)]]);
     /// ```
@@ -161,7 +162,14 @@ impl Default for OptimalFit {
 impl WrapAlgorithm for OptimalFit {
     #[inline]
     fn wrap<'a, 'b>(&self, words: &'b [Word<'a>], line_widths: &'b [usize]) -> Vec<&'b [Word<'a>]> {
-        wrap_optimal_fit(words, line_widths, self)
+        // Every integer up to 2u64.pow(f64::MANTISSA_DIGITS) = 2**53
+        // = 9_007_199_254_740_992 can be represented without loss by
+        // a f64. Larger line widths will be rounded to the nearest
+        // representable number.
+        let f64_line_widths = line_widths.iter().map(|w| *w as f64).collect::<Vec<_>>();
+        // The computation cannnot overflow when the line widths are
+        // restricted to usize.
+        wrap_optimal_fit(words, &f64_line_widths, self).unwrap()
     }
 }
 
@@ -190,6 +198,18 @@ impl LineNumbers {
         self.line_numbers.borrow()[i]
     }
 }
+
+/// Overflow error during the [`wrap_optimal_fit`] computation.
+#[derive(Debug, PartialEq, Eq)]
+pub struct OverflowError;
+
+impl std::fmt::Display for OverflowError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "wrap_optimal_fit cost computation overflowed")
+    }
+}
+
+impl std::error::Error for OverflowError {}
 
 /// Wrap abstract fragments into lines with an optimal-fit algorithm.
 ///
@@ -264,17 +284,48 @@ impl LineNumbers {
 /// code by David
 /// Eppstein](https://github.com/jfinkels/PADS/blob/master/pads/wrap.py).
 ///
+/// # Errors
+///
+/// In case of an overflow during the cost computation, an `Err` is
+/// returned. Overflows happens when fragments or lines have infinite
+/// widths (`f64::INFINITY`) or if the widths are so large that the
+/// gaps at the end of lines have sizes larger than `f64::MAX.sqrt()`
+/// (approximately 1e154):
+///
+/// ```
+/// use textwrap::core::Fragment;
+/// use textwrap::wrap_algorithms::{wrap_optimal_fit, OptimalFit, OverflowError};
+///
+/// #[derive(Debug, PartialEq)]
+/// struct Word(f64);
+///
+/// impl Fragment for Word {
+///     fn width(&self) -> f64 { self.0 }
+///     fn whitespace_width(&self) -> f64 { 1.0 }
+///     fn penalty_width(&self) -> f64 { 0.0 }
+/// }
+///
+/// // Wrapping overflows because 1e155 * 1e155 = 1e310, which is
+/// // larger than f64::MAX:
+/// assert_eq!(wrap_optimal_fit(&[Word(0.0), Word(0.0)], &[1e155], &OptimalFit::default()),
+///            Err(OverflowError));
+/// ```
+///
+/// When using fragment widths and line widths which fit inside an
+/// `u64`, overflows cannot happen. This means that fragments derived
+/// from a `&str` cannot cause overflows.
+///
 /// **Note:** Only available when the `smawk` Cargo feature is
 /// enabled.
 pub fn wrap_optimal_fit<'a, 'b, T: Fragment>(
     fragments: &'a [T],
-    line_widths: &'b [usize],
+    line_widths: &'b [f64],
     penalties: &'b OptimalFit,
-) -> Vec<&'a [T]> {
+) -> Result<Vec<&'a [T]>, OverflowError> {
     // The final line width is used for all remaining lines.
-    let default_line_width = line_widths.last().copied().unwrap_or(0);
+    let default_line_width = line_widths.last().copied().unwrap_or(0.0);
     let mut widths = Vec::with_capacity(fragments.len() + 1);
-    let mut width = 0;
+    let mut width = 0.0;
     widths.push(width);
     for fragment in fragments {
         width += fragment.width() + fragment.whitespace_width();
@@ -283,18 +334,18 @@ pub fn wrap_optimal_fit<'a, 'b, T: Fragment>(
 
     let line_numbers = LineNumbers::new(fragments.len());
 
-    let minima = smawk::online_column_minima(0, widths.len(), |minima, i, j| {
+    let minima = smawk::online_column_minima(0.0, widths.len(), |minima, i, j| {
         // Line number for fragment `i`.
         let line_number = line_numbers.get(i, minima);
         let line_width = line_widths
             .get(line_number)
             .copied()
             .unwrap_or(default_line_width);
-        let target_width = std::cmp::max(1, line_width);
+        let target_width = line_width.max(1.0);
 
         // Compute the width of a line spanning fragments[i..j] in
         // constant time. We need to adjust widths[j] by subtracting
-        // the whitespace of fragment[j-i] and then add the penalty.
+        // the whitespace of fragment[j-1] and then add the penalty.
         let line_width = widths[j] - widths[i] - fragments[j - 1].whitespace_width()
             + fragments[j - 1].penalty_width();
 
@@ -303,34 +354,42 @@ pub fn wrap_optimal_fit<'a, 'b, T: Fragment>(
         // breaking before fragments[i].
         //
         // First, every extra line cost NLINE_PENALTY.
-        let mut cost = minima[i].1 + penalties.nline_penalty;
+        let mut cost = minima[i].1 + penalties.nline_penalty as f64;
 
         // Next, we add a penalty depending on the line length.
         if line_width > target_width {
             // Lines that overflow get a hefty penalty.
             let overflow = line_width - target_width;
-            cost += overflow * penalties.overflow_penalty;
+            cost += overflow * penalties.overflow_penalty as f64;
         } else if j < fragments.len() {
             // Other lines (except for the last line) get a milder
             // penalty which depend on the size of the gap.
             let gap = target_width - line_width;
             cost += gap * gap;
-        } else if i + 1 == j && line_width < target_width / penalties.short_last_line_fraction {
+        } else if i + 1 == j
+            && line_width < target_width / penalties.short_last_line_fraction as f64
+        {
             // The last line can have any size gap, but we do add a
             // penalty if the line is very short (typically because it
             // contains just a single word).
-            cost += penalties.short_last_line_penalty;
+            cost += penalties.short_last_line_penalty as f64;
         }
 
         // Finally, we discourage hyphens.
-        if fragments[j - 1].penalty_width() > 0 {
+        if fragments[j - 1].penalty_width() > 0.0 {
             // TODO: this should use a penalty value from the fragment
             // instead.
-            cost += penalties.hyphen_penalty;
+            cost += penalties.hyphen_penalty as f64;
         }
 
         cost
     });
+
+    for (_, cost) in &minima {
+        if cost.is_infinite() {
+            return Err(OverflowError);
+        }
+    }
 
     let mut lines = Vec::with_capacity(line_numbers.get(fragments.len(), &minima));
     let mut pos = fragments.len();
@@ -344,5 +403,49 @@ pub fn wrap_optimal_fit<'a, 'b, T: Fragment>(
     }
 
     lines.reverse();
-    lines
+    Ok(lines)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[derive(Debug, PartialEq)]
+    struct Word(f64);
+
+    #[rustfmt::skip]
+    impl Fragment for Word {
+        fn width(&self) -> f64 { self.0 }
+        fn whitespace_width(&self) -> f64 { 1.0 }
+        fn penalty_width(&self) -> f64 { 0.0 }
+    }
+
+    #[test]
+    fn wrap_fragments_with_infinite_widths() {
+        let words = vec![Word(f64::INFINITY)];
+        assert_eq!(
+            wrap_optimal_fit(&words, &[0.0], &OptimalFit::default()),
+            Err(OverflowError)
+        );
+    }
+
+    #[test]
+    fn wrap_fragments_with_huge_widths() {
+        let words = vec![Word(1e200), Word(1e250), Word(1e300)];
+        assert_eq!(
+            wrap_optimal_fit(&words, &[1e300], &OptimalFit::default()),
+            Err(OverflowError)
+        );
+    }
+
+    #[test]
+    fn wrap_fragments_with_large_widths() {
+        // The gaps will be of the sizes between 1e25 and 1e75. This
+        // makes the `gap * gap` cost fit comfortably in a f64.
+        let words = vec![Word(1e25), Word(1e50), Word(1e75)];
+        assert_eq!(
+            wrap_optimal_fit(&words, &[1e100], &OptimalFit::default()),
+            Ok(vec![&vec![Word(1e25), Word(1e50), Word(1e75)][..]])
+        );
+    }
 }

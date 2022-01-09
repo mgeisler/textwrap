@@ -1304,7 +1304,7 @@ pub fn fill_inplace(text: &mut String, width: usize) {
         let words = word_separators::AsciiSpace
             .find_words(line)
             .collect::<Vec<_>>();
-        let wrapped_words = wrap_algorithms::wrap_first_fit(&words, &[width]);
+        let wrapped_words = wrap_algorithms::wrap_first_fit(&words, &[width as f64]);
 
         let mut line_offset = offset;
         for words in &wrapped_words[..wrapped_words.len() - 1] {
@@ -1392,19 +1392,12 @@ mod tests {
     }
 
     #[test]
-    #[cfg(not(feature = "smawk"))]
     fn max_width() {
-        // No overflow for the first-fit wrap algorithm.
-        assert_eq!(wrap("foo bar", usize::max_value()), vec!["foo bar"]);
-    }
+        assert_eq!(wrap("foo bar", usize::MAX), vec!["foo bar"]);
 
-    #[test]
-    #[cfg(feature = "smawk")]
-    #[should_panic(expected = "attempt to multiply with overflow")]
-    fn max_width() {
-        // The optimal-fit algorithm overflows for extreme line
-        // widths. See #247 and #416 for details..
-        assert_eq!(wrap("foo bar", usize::max_value()), vec!["foo bar"]);
+        let text = "Hello there! This is some English text. \
+                    It should not be wrapped given the extents below.";
+        assert_eq!(wrap(text, usize::MAX), vec![text]);
     }
 
     #[test]
