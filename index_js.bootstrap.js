@@ -285,7 +285,7 @@ class WasmOptimalFit {
     */
     get nline_penalty() {
         var ret = _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_get_wasmoptimalfit_nline_penalty(this.ptr);
-        return ret;
+        return ret >>> 0;
     }
     /**
     * @param {number} arg0
@@ -297,7 +297,7 @@ class WasmOptimalFit {
     */
     get overflow_penalty() {
         var ret = _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_get_wasmoptimalfit_overflow_penalty(this.ptr);
-        return ret;
+        return ret >>> 0;
     }
     /**
     * @param {number} arg0
@@ -321,7 +321,7 @@ class WasmOptimalFit {
     */
     get short_last_line_penalty() {
         var ret = _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_get_wasmoptimalfit_short_last_line_penalty(this.ptr);
-        return ret;
+        return ret >>> 0;
     }
     /**
     * @param {number} arg0
@@ -333,7 +333,7 @@ class WasmOptimalFit {
     */
     get hyphen_penalty() {
         var ret = _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_get_wasmoptimalfit_hyphen_penalty(this.ptr);
-        return ret;
+        return ret >>> 0;
     }
     /**
     * @param {number} arg0
