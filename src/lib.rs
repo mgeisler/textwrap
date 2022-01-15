@@ -1441,7 +1441,6 @@ mod tests {
     }
 
     #[test]
-    #[cfg(feature = "unicode-width")]
     fn wide_character_handling() {
         assert_eq!(wrap("Hello, World!", 15), vec!["Hello, World!"]);
         assert_eq!(
@@ -1481,7 +1480,6 @@ mod tests {
     }
 
     #[test]
-    #[cfg(feature = "unicode-width")]
     fn indent_first_emoji() {
         let options = Options::new(10).initial_indent("👉👉");
         assert_eq!(
