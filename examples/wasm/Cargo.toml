@@ -5,7 +5,7 @@ authors = ["Martin Geisler <martin@geisler.net>"]
 description = "Textwrap WebAssembly demo"
 repository = "https://github.com/mgeisler/textwrap"
 license-file = "../../LICENSE"
-edition = "2018"
+edition = "2021"
 publish = false  # This project should not be uploaded to crates.io
 
 [lib]
