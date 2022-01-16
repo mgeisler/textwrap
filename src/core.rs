@@ -341,11 +341,11 @@ impl Fragment for Word<'_> {
         self.width
     }
 
-    // We assume the whitespace consist of ' ' only. This allows us to
-    // compute the display width in constant time.
+    // Whitespace no longer consists of only spaces, so we have to
+    // calculate its width like anything else
     #[inline]
     fn whitespace_width(&self) -> usize {
-        self.whitespace.len()
+        display_width_with_tab(self.whitespace, self.tab_width)
     }
 
     // We assume the penalty is `""` or `"-"`. This allows us to

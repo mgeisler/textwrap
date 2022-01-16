@@ -1337,7 +1337,16 @@ where
 /// Please see the [`linear`
 /// benchmark](https://github.com/mgeisler/textwrap/blob/master/benches/linear.rs)
 /// for details.
-pub fn fill_inplace(text: &mut String, width: usize) {
+///
+pub fn fill_inplace<'a, WrapAlgo, WordSep, WordSplit, Opt>(text: &mut String, width_or_options: Opt)
+where
+    WrapAlgo: wrap_algorithms::WrapAlgorithm,
+    WordSep: word_separators::WordSeparator,
+    WordSplit: word_splitters::WordSplitter,
+    Opt: Into<Options<'a, WrapAlgo, WordSep, WordSplit>>,
+{
+    let options = width_or_options.into();
+
     use word_separators::WordSeparator;
     let mut indices = Vec::new();
 
@@ -1345,8 +1354,12 @@ pub fn fill_inplace(text: &mut String, width: usize) {
     for line in text.split('\n') {
         let words = word_separators::AsciiSpace
             .find_words(line)
+            .map(|w| core::Word {
+                tab_width: options.tab_width,
+                ..w
+            })
             .collect::<Vec<_>>();
-        let wrapped_words = wrap_algorithms::wrap_first_fit(&words, &[width]);
+        let wrapped_words = wrap_algorithms::wrap_first_fit(&words, &[options.width]);
 
         let mut line_offset = offset;
         for words in &wrapped_words[..wrapped_words.len() - 1] {
@@ -1727,13 +1740,13 @@ mod tests {
         let options = Options::new(10).word_splitter(dictionary);
         let lines = wrap("Internationalization", &options);
         if let Borrowed(s) = lines[0] {
-            assert!(false, "should not have been borrowed: {:?}", s);
+            panic!("should not have been borrowed: {:?}", s);
         }
         if let Borrowed(s) = lines[1] {
-            assert!(false, "should not have been borrowed: {:?}", s);
+            panic!("should not have been borrowed: {:?}", s);
         }
         if let Owned(ref s) = lines[2] {
-            assert!(false, "should not have been owned: {:?}", s);
+            panic!("should not have been owned: {:?}", s);
         }
     }
 
@@ -1845,8 +1858,8 @@ mod tests {
         let green_hello = "\u{1b}[0m\u{1b}[32mHello\u{1b}[0m";
         let blue_world = "\u{1b}[0m\u{1b}[34mWorld!\u{1b}[0m";
         assert_eq!(
-            fill(&(String::from(green_hello) + " " + &blue_world), 6),
-            String::from(green_hello) + "\n" + &blue_world
+            fill(&(String::from(green_hello) + " " + blue_world), 6),
+            String::from(green_hello) + "\n" + blue_world
         );
     }
 
@@ -1943,6 +1956,26 @@ mod tests {
     }
 
     #[test]
+    fn fill_inplace_only_tabs() {
+        let mut text = String::from("Hello\tWorld");
+        fill_inplace(&mut text, 8);
+
+        // fill_inplace shouldn't change the text, since it uses
+        // the ASCII space as the word separator.
+        assert_eq!(text, "Hello\tWorld");
+    }
+
+    #[test]
+    fn fill_inplace_tabs() {
+        let options = Options::new(10).tab_width(4);
+        let mut text = String::from("Hello\t there\t friends");
+
+        fill_inplace(&mut text, options);
+
+        assert_eq!(text, "Hello\t\nthere\t\nfriends");
+    }
+
+    #[test]
     fn unfill_simple() {
         let (text, options) = unfill("foo\nbar");
         assert_eq!(text, "foo bar");
@@ -2008,13 +2041,7 @@ mod tests {
     #[test]
     fn trait_object_vec() {
         // Create a vector of Options containing trait-objects.
-        let mut vector: Vec<
-            Options<
-                _,
-                Box<dyn word_separators::WordSeparator>,
-                Box<dyn word_splitters::WordSplitter>,
-            >,
-        > = Vec::new();
+        let mut vector = Vec::new();
         // Expected result from each options
         let mut results = Vec::new();
 
@@ -2131,5 +2158,22 @@ mod tests {
     #[should_panic]
     fn wrap_columns_panic_with_zero_columns() {
         wrap_columns("", 0, 10, "", "", "");
+    }
+
+    #[test]
+    fn wrap_columns_with_tabs() {
+        // TODO: is the logic in this test correct? Do we want
+        // actual whitespace chars to be ignored when adding trailing
+        // padding to a word when fitting it into a column (see how the
+        // `hello` in the result doesn't have a tab after it, but rather
+        // is just padded with spaces)?
+        let options = Options::new(23).tab_width(4);
+        assert_eq!(
+            wrap_columns("hello\tthis\tis\tlong\tyeah", 2, options, ".", ".", "."),
+            vec![
+                ".hello     .is\tlong.",
+                ".this      .yeah      ."
+            ]
+        )
     }
 }
