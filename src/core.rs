@@ -218,15 +218,15 @@ pub fn display_width_with_tab(text: &str, tab_width: u8) -> usize {
 /// the displayed width of each part, which this trait provides.
 pub trait Fragment: std::fmt::Debug {
     /// Displayed width of word represented by this fragment.
-    fn width(&self) -> usize;
+    fn width(&self) -> f64;
 
     /// Displayed width of the whitespace that must follow the word
     /// when the word is not at the end of a line.
-    fn whitespace_width(&self) -> usize;
+    fn whitespace_width(&self) -> f64;
 
     /// Displayed width of the penalty that must be inserted if the
     /// word falls at the end of a line.
-    fn penalty_width(&self) -> usize;
+    fn penalty_width(&self) -> f64;
 }
 
 /// A piece of wrappable text, including any trailing whitespace.
@@ -337,22 +337,22 @@ impl<'a> Word<'a> {
 
 impl Fragment for Word<'_> {
     #[inline]
-    fn width(&self) -> usize {
-        self.width
+    fn width(&self) -> f64 {
+        self.width as f64
     }
 
     // Whitespace no longer consists of only spaces, so we have to
     // calculate its width like anything else
     #[inline]
-    fn whitespace_width(&self) -> usize {
-        display_width_with_tab(self.whitespace, self.tab_width)
+    fn whitespace_width(&self) -> f64 {
+        display_width_with_tab(self.whitespace, self.tab_width) as f64
     }
 
     // We assume the penalty is `""` or `"-"`. This allows us to
     // compute the display width in constant time.
     #[inline]
-    fn penalty_width(&self) -> usize {
-        self.penalty.len()
+    fn penalty_width(&self) -> f64 {
+        self.penalty.len() as f64
     }
 }
 
@@ -367,7 +367,7 @@ where
 {
     let mut shortened_words = Vec::new();
     for word in words {
-        if word.width() > line_width {
+        if word.width() > line_width as f64 {
             shortened_words.extend(word.break_apart(line_width));
         } else {
             shortened_words.push(word);

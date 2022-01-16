@@ -1359,7 +1359,7 @@ where
                 ..w
             })
             .collect::<Vec<_>>();
-        let wrapped_words = wrap_algorithms::wrap_first_fit(&words, &[options.width]);
+        let wrapped_words = wrap_algorithms::wrap_first_fit(&words, &[options.width as f64]);
 
         let mut line_offset = offset;
         for words in &wrapped_words[..wrapped_words.len() - 1] {
@@ -1448,7 +1448,11 @@ mod tests {
 
     #[test]
     fn max_width() {
-        assert_eq!(wrap("foo bar", usize::max_value()), vec!["foo bar"]);
+        assert_eq!(wrap("foo bar", usize::MAX), vec!["foo bar"]);
+
+        let text = "Hello there! This is some English text. \
+                    It should not be wrapped given the extents below.";
+        assert_eq!(wrap(text, usize::MAX), vec![text]);
     }
 
     #[test]
@@ -1492,7 +1496,6 @@ mod tests {
     }
 
     #[test]
-    #[cfg(feature = "unicode-width")]
     fn wide_character_handling() {
         assert_eq!(wrap("Hello, World!", 15), vec!["Hello, World!"]);
         assert_eq!(
@@ -1532,7 +1535,6 @@ mod tests {
     }
 
     #[test]
-    #[cfg(feature = "unicode-width")]
     fn indent_first_emoji() {
         let options = Options::new(10).initial_indent("👉👉");
         assert_eq!(
@@ -1739,6 +1741,7 @@ mod tests {
         let dictionary = Standard::from_embedded(Language::EnglishUS).unwrap();
         let options = Options::new(10).word_splitter(dictionary);
         let lines = wrap("Internationalization", &options);
+        assert_eq!(lines, vec!["Interna-", "tionaliza-", "tion"]);
         if let Borrowed(s) = lines[0] {
             panic!("should not have been borrowed: {:?}", s);
         }

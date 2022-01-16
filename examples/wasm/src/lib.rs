@@ -145,22 +145,20 @@ impl<'a> CanvasWord<'a> {
     }
 }
 
-const PRECISION: usize = 10;
-
 impl textwrap::core::Fragment for CanvasWord<'_> {
     #[inline]
-    fn width(&self) -> usize {
-        (self.width * PRECISION as f64) as usize
+    fn width(&self) -> f64 {
+        self.width
     }
 
     #[inline]
-    fn whitespace_width(&self) -> usize {
-        (self.whitespace_width * PRECISION as f64) as usize
+    fn whitespace_width(&self) -> f64 {
+        self.whitespace_width
     }
 
     #[inline]
-    fn penalty_width(&self) -> usize {
-        (self.penalty_width * PRECISION as f64) as usize
+    fn penalty_width(&self) -> f64 {
+        self.penalty_width
     }
 }
 
@@ -250,22 +248,22 @@ pub enum WasmWrapAlgorithm {
 #[wasm_bindgen]
 #[derive(Copy, Clone, Debug, Default)]
 pub struct WasmOptimalFit {
-    pub nline_penalty: i32,
-    pub overflow_penalty: i32,
+    pub nline_penalty: usize,
+    pub overflow_penalty: usize,
     pub short_last_line_fraction: usize,
-    pub short_last_line_penalty: i32,
-    pub hyphen_penalty: i32,
+    pub short_last_line_penalty: usize,
+    pub hyphen_penalty: usize,
 }
 
 #[wasm_bindgen]
 impl WasmOptimalFit {
     #[wasm_bindgen(constructor)]
     pub fn new(
-        nline_penalty: i32,
-        overflow_penalty: i32,
+        nline_penalty: usize,
+        overflow_penalty: usize,
         short_last_line_fraction: usize,
-        short_last_line_penalty: i32,
-        hyphen_penalty: i32,
+        short_last_line_penalty: usize,
+        hyphen_penalty: usize,
     ) -> WasmOptimalFit {
         WasmOptimalFit {
             nline_penalty,
@@ -292,7 +290,7 @@ impl Into<OptimalFit> for WasmOptimalFit {
 #[wasm_bindgen]
 #[derive(Copy, Clone, Debug)]
 pub struct WasmOptions {
-    pub width: usize,
+    pub width: f64,
     pub break_words: bool,
     pub word_separator: WasmWordSeparator,
     pub word_splitter: WasmWordSplitter,
@@ -304,7 +302,7 @@ pub struct WasmOptions {
 impl WasmOptions {
     #[wasm_bindgen(constructor)]
     pub fn new(
-        width: usize,
+        width: f64,
         break_words: bool,
         word_separator: WasmWordSeparator,
         word_splitter: WasmWordSplitter,
@@ -359,19 +357,19 @@ pub fn draw_wrapped_text(
             .flat_map(|word| {
                 let canvas_word = CanvasWord::from(ctx, word);
                 if options.break_words {
-                    canvas_word.break_apart(ctx, options.width as f64)
+                    canvas_word.break_apart(ctx, options.width)
                 } else {
                     vec![canvas_word]
                 }
             })
             .collect::<Vec<_>>();
 
-        let line_lengths = [options.width * PRECISION];
+        let line_lengths = [options.width];
         let wrapped_words = match options.wrap_algorithm {
             WasmWrapAlgorithm::FirstFit => wrap_first_fit(&canvas_words, &line_lengths),
             WasmWrapAlgorithm::OptimalFit => {
                 let penalties = options.optimal_fit.into();
-                wrap_optimal_fit(&canvas_words, &line_lengths, &penalties)
+                wrap_optimal_fit(&canvas_words, &line_lengths, &penalties).unwrap()
             }
             _ => Err("WasmOptions has an invalid wrap_algorithm field")?,
         };
