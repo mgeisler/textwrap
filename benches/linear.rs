@@ -23,8 +23,8 @@ fn lorem_ipsum(length: usize) -> String {
 
 pub fn benchmark(c: &mut Criterion) {
     let mut group = c.benchmark_group("String lengths");
-    for length in [200, 300, 400, 600, 800, 1200, 1600, 2400, 3200, 4800, 6400].iter() {
-        let text = lorem_ipsum(*length);
+    for length in [200, 300, 400, 600, 800, 1200, 1600, 2400, 3200, 4800, 6400] {
+        let text = lorem_ipsum(length);
 
         #[cfg(feature = "smawk")]
         {
