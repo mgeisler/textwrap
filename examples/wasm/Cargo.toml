@@ -14,14 +14,14 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 textwrap = { path = "../../" }
 
-console_error_panic_hook = "0.1"
-js-sys = "0.3"
-wasm-bindgen = "0.2"
-web-sys = { version = "0.3", features = ["CanvasRenderingContext2d", "TextMetrics"] }
-unicode-segmentation = "1.7"
+console_error_panic_hook = "0.1.7"
+js-sys = "0.3.56"
+wasm-bindgen = "0.2.79"
+web-sys = { version = "0.3.56", features = ["CanvasRenderingContext2d", "TextMetrics"] }
+unicode-segmentation = "1.8.0"
 
 [dev-dependencies]
-wasm-bindgen-test = "0.3"
+wasm-bindgen-test = "0.3.29"
 
 [profile.release]
 opt-level = "s"  # Optimize for small code size
