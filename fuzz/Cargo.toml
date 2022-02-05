@@ -10,8 +10,8 @@ edition = "2018"
 cargo-fuzz = true
 
 [dependencies]
-arbitrary = { version = "1", features = ["derive"] }
-libfuzzer-sys = "0.4"
+arbitrary = { version = "1.0.3", features = ["derive"] }
+libfuzzer-sys = "0.4.2"
 textwrap = { path = ".." }
 
 # Prevent this from interfering with workspaces
