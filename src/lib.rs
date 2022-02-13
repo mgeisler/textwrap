@@ -346,7 +346,15 @@ impl<'a>
     /// changes based on the available Cargo features. The best
     /// available algorithms are used by default.
     pub const fn new(width: usize) -> Self {
-        Options::with_word_splitter(width, word_splitters::HyphenSplitter)
+        Options {
+            width,
+            initial_indent: "",
+            subsequent_indent: "",
+            break_words: true,
+            word_separator: DefaultWordSeparator!(),
+            wrap_algorithm: <DefaultWrapAlgorithm!()>::new(),
+            word_splitter: word_splitters::HyphenSplitter,
+        }
     }
 
     /// Creates a new [`Options`] with `width` set to the current
@@ -369,78 +377,6 @@ impl<'a>
     #[cfg(feature = "terminal_size")]
     pub fn with_termwidth() -> Self {
         Self::new(termwidth())
-    }
-}
-
-impl<'a, WordSplit> Options<'a, DefaultWrapAlgorithm!(), DefaultWordSeparator!(), WordSplit> {
-    /// Creates a new [`Options`] with the specified width and
-    /// word splitter. Equivalent to
-    ///
-    /// ```
-    /// # use textwrap::Options;
-    /// # use textwrap::word_splitters::{NoHyphenation, HyphenSplitter};
-    /// # const word_splitter: NoHyphenation = NoHyphenation;
-    /// # const width: usize = 80;
-    /// # let actual = Options::with_word_splitter(width, word_splitter);
-    /// # let expected =
-    /// Options::new(width).word_splitter(word_splitter)
-    /// # ;
-    /// # assert_eq!(actual.width, expected.width);
-    /// # assert_eq!(actual.initial_indent, expected.initial_indent);
-    /// # assert_eq!(actual.subsequent_indent, expected.subsequent_indent);
-    /// # assert_eq!(actual.break_words, expected.break_words);
-    /// ```
-    ///
-    /// However, this function is a `const fn`.
-    ///
-    /// The given word splitter may be in a [`Box`], which then can be
-    /// coerced into a trait object for dynamic dispatch:
-    ///
-    /// ```
-    /// use textwrap::Options;
-    /// use textwrap::word_splitters::{HyphenSplitter, NoHyphenation, WordSplitter};
-    /// # const width: usize = 80;
-    ///
-    /// // The type annotation is important, otherwise it will be not a trait object
-    /// let mut options: Options<_, _, Box<dyn WordSplitter>>
-    ///     = Options::with_word_splitter(width, Box::new(NoHyphenation));
-    ///
-    /// // It can be overridden with a different word splitter.
-    /// options = Options::with_word_splitter(width, Box::new(HyphenSplitter));
-    /// // Now, containing a `HyphenSplitter` instead.
-    /// ```
-    ///
-    /// Since the word splitter is given by value, which determines
-    /// the generic type parameter, it can be used to produce
-    /// `Options` with both static and dynamic dispatch. While dynamic
-    /// dispatch allows to change the type of the inner word splitter
-    /// at runtime as seen above, static dispatch especially can store
-    /// the word splitter directly, without the need for a box. This
-    /// in turn allows it to be used in constant and static context:
-    ///
-    /// ```
-    /// use textwrap::Options;
-    /// use textwrap::word_splitters::HyphenSplitter;
-    /// use textwrap::word_separators::AsciiSpace;
-    /// use textwrap::wrap_algorithms::FirstFit;
-    /// # const width: usize = 80;
-    ///
-    /// # #[cfg(all(not(feature = "smawk"), not(feature = "unicode-linebreak")))] {
-    /// const FOO: Options<FirstFit, AsciiSpace, HyphenSplitter> =
-    ///     Options::with_word_splitter(width, HyphenSplitter);
-    /// static BAR: Options<FirstFit, AsciiSpace, HyphenSplitter> = FOO;
-    /// # }
-    /// ```
-    pub const fn with_word_splitter(width: usize, word_splitter: WordSplit) -> Self {
-        Options {
-            width,
-            initial_indent: "",
-            subsequent_indent: "",
-            break_words: true,
-            word_separator: DefaultWordSeparator!(),
-            wrap_algorithm: <DefaultWrapAlgorithm!()>::new(),
-            word_splitter: word_splitter,
-        }
     }
 }
 
@@ -1814,7 +1750,7 @@ mod tests {
             wrap_algorithms::FirstFit,
             word_separators::AsciiSpace,
             word_splitters::HyphenSplitter,
-        > = Options::with_word_splitter(80, word_splitters::HyphenSplitter);
+        > = Options::new(80).word_splitter(word_splitters::HyphenSplitter);
         #[allow(clippy::clone_on_copy)]
         let opt = OPT.clone();
         assert_eq!(opt.width, 80);
