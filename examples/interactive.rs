@@ -19,8 +19,8 @@ mod unix_only {
     use termion::raw::{IntoRawMode, RawTerminal};
     use termion::screen::AlternateScreen;
     use termion::{color, cursor, style};
-    use textwrap::{word_separators, word_splitters, wrap_algorithms};
-    use textwrap::{wrap, Options};
+    use textwrap::{word_separators, wrap_algorithms};
+    use textwrap::{wrap, Options, WordSplitter};
 
     #[cfg(feature = "hyphenation")]
     use hyphenation::{Language, Load, Standard};
@@ -59,7 +59,6 @@ mod unix_only {
             'a,
             Box<dyn wrap_algorithms::WrapAlgorithm>,
             Box<dyn word_separators::WordSeparator>,
-            Box<dyn word_splitters::WordSplitter>,
         >,
         word_splitter_label: &str,
         stdout: &mut RawTerminal<io::Stdout>,
@@ -245,10 +244,8 @@ mod unix_only {
         wrap_algorithms.push(Box::new(wrap_algorithms::OptimalFit::new()));
         wrap_algorithms.push(Box::new(wrap_algorithms::FirstFit::new()));
 
-        let mut word_splitters: Vec<Box<dyn word_splitters::WordSplitter>> = vec![
-            Box::new(word_splitters::HyphenSplitter),
-            Box::new(word_splitters::NoHyphenation),
-        ];
+        let mut word_splitters: Vec<WordSplitter> =
+            vec![WordSplitter::HyphenSplitter, WordSplitter::NoHyphenation];
         let mut word_splitter_labels: Vec<String> =
             word_splitters.iter().map(|s| format!("{:?}", s)).collect();
 
@@ -266,7 +263,7 @@ mod unix_only {
             });
 
             if let Ok(dict) = dictionary {
-                word_splitters.insert(0, Box::new(dict));
+                word_splitters.insert(0, WordSplitter::Hyphenation(dict));
                 word_splitter_labels.insert(0, format!("{} hyphenation", lang.code()));
             }
         }

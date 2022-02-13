@@ -1,4 +1,4 @@
-use textwrap::{fill, Options};
+use textwrap::{fill, Options, WordSplitter};
 
 fn main() {
     let example = "Memory safety without garbage collection. \
@@ -14,9 +14,9 @@ fn main() {
     #[cfg(feature = "hyphenation")]
     let (msg, options) = (
         "with hyphenation",
-        Options::with_termwidth().word_splitter(
+        Options::with_termwidth().word_splitter(WordSplitter::Hyphenation(
             hyphenation::Standard::from_embedded(hyphenation::Language::EnglishUS).unwrap(),
-        ),
+        )),
     );
 
     println!("Formatted {} in {} columns:", msg, options.width);

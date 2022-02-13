@@ -3,8 +3,9 @@ use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 
 use textwrap::word_separators::{AsciiSpace, UnicodeBreakProperties, WordSeparator};
-use textwrap::word_splitters::{split_words, HyphenSplitter, NoHyphenation, WordSplitter};
+use textwrap::word_splitters::split_words;
 use textwrap::wrap_algorithms::{wrap_first_fit, wrap_optimal_fit, OptimalFit};
+use textwrap::WordSplitter;
 
 #[wasm_bindgen]
 extern "C" {
@@ -342,9 +343,9 @@ pub fn draw_wrapped_text(
         _ => Err("WasmOptions has an invalid word_separator field")?,
     };
 
-    let word_splitter: Box<dyn WordSplitter> = match options.word_splitter {
-        WasmWordSplitter::NoHyphenation => Box::new(NoHyphenation),
-        WasmWordSplitter::HyphenSplitter => Box::new(HyphenSplitter),
+    let word_splitter = match options.word_splitter {
+        WasmWordSplitter::NoHyphenation => WordSplitter::NoHyphenation,
+        WasmWordSplitter::HyphenSplitter => WordSplitter::HyphenSplitter,
         _ => Err("WasmOptions has an invalid word_splitter field")?,
     };
 

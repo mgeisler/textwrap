@@ -25,9 +25,9 @@ use crate::core::Word;
 /// without emojis. A more complex approach is to use the Unicode line
 /// breaking algorithm, which finds break points in non-ASCII text.
 ///
-/// The line breaks occur between words, please see the
-/// [`WordSplitter`](crate::word_splitters::WordSplitter) trait for
-/// options of how to handle hyphenation of individual words.
+/// The line breaks occur between words, please see
+/// [`WordSplitter`](crate::WordSplitter) for options of how to handle
+/// hyphenation of individual words.
 ///
 /// # Examples
 ///
@@ -138,9 +138,9 @@ pub struct UnicodeBreakProperties;
 /// #14](https://www.unicode.org/reports/tr14/) to find legal places
 /// to break lines. There is a small difference in that the U+002D
 /// (Hyphen-Minus) and U+00AD (Soft Hyphen) don’t create a line break:
-/// to allow a line break at a hyphen, use the
-/// [`HyphenSplitter`](crate::word_splitters::HyphenSplitter). Soft
-/// hyphens are not currently supported.
+/// to allow a line break at a hyphen, use
+/// [`WordSplitter::HyphenSplitter`](crate::WordSplitter::HyphenSplitter).
+/// Soft hyphens are not currently supported.
 ///
 /// # Examples
 ///

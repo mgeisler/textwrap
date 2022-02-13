@@ -1,5 +1,4 @@
-use textwrap::word_splitters::{HyphenSplitter, WordSplitter};
-use textwrap::{wrap, Options};
+use textwrap::{wrap, Options, WordSplitter};
 
 fn main() {
     let example = "Memory safety without garbage collection. \
@@ -7,13 +6,13 @@ fn main() {
                    Zero-cost abstractions.";
     let mut prev_lines = vec![];
 
-    let mut options = Options::new(0).word_splitter(Box::new(HyphenSplitter) as Box<dyn WordSplitter>);
+    let mut options = Options::new(0).word_splitter(WordSplitter::HyphenSplitter);
     #[cfg(feature = "hyphenation")]
     {
         use hyphenation::Load;
         let language = hyphenation::Language::EnglishUS;
         let dictionary = hyphenation::Standard::from_embedded(language).unwrap();
-        options.word_splitter = Box::new(dictionary);
+        options.word_splitter = WordSplitter::Hyphenation(dictionary);
     }
 
     for width in 15..60 {

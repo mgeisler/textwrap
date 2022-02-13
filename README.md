@@ -92,9 +92,10 @@ Your program must load the hyphenation pattern and configure
 ```rust
 #[cfg(feature = "hyphenation")] {
 use hyphenation::{Language, Load, Standard};
+use textwrap::{fill, Options, WordSplitter};
 
-let hyphenator = Standard::from_embedded(Language::EnglishUS).unwrap();
-let options = textwrap::Options::new(28).word_splitter(hyphenator);
+let dictionary = Standard::from_embedded(Language::EnglishUS).unwrap();
+let options = textwrap::Options::new(28).word_splitter(WordSplitter::Hyphenation(dictionary));
 let text = "textwrap: an efficient and powerful library for wrapping text.";
 
 assert_eq!(

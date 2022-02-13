@@ -13,10 +13,9 @@
 //!    how to do this for text.
 //!
 //! 2. Potentially split your fragments into smaller pieces. This
-//!    allows you to implement things like hyphenation. If you are
-//!    wrapping text represented as a sequence of [`Word`]s, then you
-//!    can use [`split_words`](crate::word_splitters::split_words) can
-//!    help you do this.
+//!    allows you to implement things like hyphenation. If you use the
+//!    `Word` type, you can use [`WordSplitter`](crate::WordSplitter)
+//!    enum for this.
 //!
 //! 3. Potentially break apart fragments that are still too large to
 //!    fit on a single line. This is implemented in [`break_words`].

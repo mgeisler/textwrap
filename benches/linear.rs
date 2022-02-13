@@ -87,7 +87,7 @@ pub fn benchmark(c: &mut Criterion) {
             let options = textwrap::Options::new(LINE_LENGTH)
                 .wrap_algorithm(textwrap::wrap_algorithms::OptimalFit::new())
                 .word_separator(textwrap::word_separators::AsciiSpace)
-                .word_splitter(dictionary);
+                .word_splitter(textwrap::WordSplitter::Hyphenation(dictionary));
             group.bench_with_input(
                 BenchmarkId::new("fill_optimal_fit_ascii_hyphenation", length),
                 &text,
