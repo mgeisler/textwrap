@@ -90,7 +90,7 @@ jobs:
 
       - name: Build documentation and check intra-doc links
         env:
-          RUSTDOCFLAGS: --deny broken_intra_doc_links
+          RUSTDOCFLAGS: --deny rustdoc::broken_intra_doc_links
         run: cargo doc --all-features --no-deps
 
   clippy:
