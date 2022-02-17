@@ -48,7 +48,6 @@ criterion = "0.3.5"
 lipsum = "0.8.0"
 unic-emoji-char = "0.9.0"
 version-sync = "0.9.4"
-doc-comment = "0.3.3"
 
 [target.'cfg(unix)'.dev-dependencies]
 termion = "1.5.6"

@@ -195,8 +195,10 @@
 #![deny(missing_debug_implementations)]
 #![allow(clippy::redundant_field_names)]
 
-#[cfg(all(doctest, feature = "hyphenation"))]
-doc_comment::doctest!("../README.md", readme_doctest);
+// Make `cargo test` execute the README doctests.
+#[cfg(doctest)]
+#[doc = include_str!("../README.md")]
+mod readme_doctest {}
 
 use std::borrow::Cow;
 

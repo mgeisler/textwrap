@@ -36,21 +36,20 @@ your binary.
 
 ## Getting Started
 
-Word wrapping is easy using the `fill` function:
+Word wrapping is easy using the `wrap` and `fill` functions:
 
 ```rust
-fn main() {
-    let text = "textwrap: an efficient and powerful library for wrapping text.";
-    println!("{}", textwrap::fill(text, 28));
+#[cfg(feature = "smawk")] {
+let text = "textwrap: an efficient and powerful library for wrapping text.";
+assert_eq!(
+    textwrap::wrap(text, 28),
+    vec![
+        "textwrap: an efficient",
+        "and powerful library for",
+        "wrapping text.",
+    ]
+);
 }
-```
-
-The output is wrapped within 28 columns:
-
-```text
-textwrap: an efficient
-and powerful library for
-wrapping text.
 ```
 
 Sharp-eyed readers will notice that the first line is 22 columns wide.
@@ -60,14 +59,24 @@ for it in the first line?
 The explanation is that textwrap does not just wrap text one line at a
 time. Instead, it uses an optimal-fit algorithm which looks ahead and
 chooses line breaks which minimize the gaps left at ends of lines.
+This is controlled with the `smawk` Cargo feature, which is why the
+example is wrapped in the `cfg`-block.
 
 Without look-ahead, the first line would be longer and the text would
 look like this:
 
-```text
-textwrap: an efficient and
-powerful library for
-wrapping text.
+```rust
+#[cfg(not(feature = "smawk"))] {
+let text = "textwrap: an efficient and powerful library for wrapping text.";
+assert_eq!(
+    textwrap::wrap(text, 28),
+    vec![
+        "textwrap: an efficient and",
+        "powerful library for",
+        "wrapping text.",
+    ]
+);
+}
 ```
 
 The second line is now shorter and the text is more ragged. The kind
@@ -81,23 +90,22 @@ Your program must load the hyphenation pattern and configure
 `Options::word_splitter` to use it:
 
 ```rust
+#[cfg(feature = "hyphenation")] {
 use hyphenation::{Language, Load, Standard};
-use textwrap::{fill, Options};
 
-fn main() {
-    let hyphenator = Standard::from_embedded(Language::EnglishUS).unwrap();
-    let options = Options::new(28).word_splitter(hyphenator);
-    let text = "textwrap: an efficient and powerful library for wrapping text.";
-    println!("{}", fill(text, &options));
+let hyphenator = Standard::from_embedded(Language::EnglishUS).unwrap();
+let options = textwrap::Options::new(28).word_splitter(hyphenator);
+let text = "textwrap: an efficient and powerful library for wrapping text.";
+
+assert_eq!(
+    textwrap::wrap(text, &options),
+    vec![
+        "textwrap: an efficient and",
+        "powerful library for wrap-",
+        "ping text."
+    ]
+);
 }
-```
-
-The output now looks like this:
-
-```text
-textwrap: an efficient and
-powerful library for wrap-
-ping text.
 ```
 
 The US-English hyphenation patterns are embedded when you enable the
