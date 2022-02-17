@@ -239,8 +239,8 @@ impl Default for WrapAlgorithm {
 /// on your estimates. You can model this with a program like this:
 ///
 /// ```
-/// use textwrap::wrap_algorithms::wrap_first_fit;
 /// use textwrap::core::{Fragment, Word};
+/// use textwrap::wrap_algorithms::wrap_first_fit;
 ///
 /// #[derive(Debug)]
 /// struct Task<'a> {

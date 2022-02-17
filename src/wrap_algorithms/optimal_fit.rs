@@ -34,8 +34,8 @@ pub struct Penalties {
     /// character in extreme cases:
     ///
     /// ```
-    /// use textwrap::wrap_algorithms::{wrap_optimal_fit, Penalties};
     /// use textwrap::core::Word;
+    /// use textwrap::wrap_algorithms::{wrap_optimal_fit, Penalties};
     ///
     /// let short = "foo ";
     /// let long = "x".repeat(50);
@@ -276,7 +276,7 @@ impl std::error::Error for OverflowError {}
 ///
 /// ```
 /// use textwrap::core::Fragment;
-/// use textwrap::wrap_algorithms::{wrap_optimal_fit, Penalties, OverflowError};
+/// use textwrap::wrap_algorithms::{wrap_optimal_fit, OverflowError, Penalties};
 ///
 /// #[derive(Debug, PartialEq)]
 /// struct Word(f64);

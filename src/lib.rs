@@ -203,8 +203,7 @@ mod readme_doctest {}
 use std::borrow::Cow;
 
 mod indentation;
-pub use crate::indentation::dedent;
-pub use crate::indentation::indent;
+pub use crate::indentation::{dedent, indent};
 
 mod word_separators;
 pub use word_separators::WordSeparator;
@@ -358,7 +357,7 @@ impl<'a> Options<'a> {
     /// initial indentation and wrapping each paragraph by itself:
     ///
     /// ```
-    /// use textwrap::{Options, wrap};
+    /// use textwrap::{wrap, Options};
     ///
     /// let options = Options::new(16).initial_indent("    ");
     /// assert_eq!(wrap("This is a little example.", options),
@@ -383,7 +382,7 @@ impl<'a> Options<'a> {
     /// single paragraph as a bullet list:
     ///
     /// ```
-    /// use textwrap::{Options, wrap};
+    /// use textwrap::{wrap, Options};
     ///
     /// let options = Options::new(12)
     ///     .initial_indent("* ")

@@ -1,5 +1,4 @@
-use criterion::Criterion;
-use criterion::{criterion_group, criterion_main};
+use criterion::{criterion_group, criterion_main, Criterion};
 
 pub fn benchmark(c: &mut Criterion) {
     // Generate a piece of text with some empty lines.
