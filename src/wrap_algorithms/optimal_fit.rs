@@ -150,9 +150,7 @@ impl Penalties {
 }
 
 impl Default for Penalties {
-    fn default() -> Self {
-        Self::new()
-    }
+    fn default() -> Self { Self::new() }
 }
 
 /// Cache for line numbers. This is necessary to avoid a O(n**2)
@@ -395,7 +393,6 @@ mod tests {
     #[derive(Debug, PartialEq)]
     struct Word(f64);
 
-    #[rustfmt::skip]
     impl Fragment for Word {
         fn width(&self) -> f64 { self.0 }
         fn whitespace_width(&self) -> f64 { 1.0 }
