@@ -2,10 +2,9 @@ use unicode_segmentation::UnicodeSegmentation;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 
-use textwrap::word_separators::{AsciiSpace, UnicodeBreakProperties, WordSeparator};
 use textwrap::word_splitters::split_words;
 use textwrap::wrap_algorithms::{wrap_first_fit, wrap_optimal_fit, OptimalFit};
-use textwrap::WordSplitter;
+use textwrap::{WordSeparator, WordSplitter};
 
 #[wasm_bindgen]
 extern "C" {
@@ -337,9 +336,9 @@ pub fn draw_wrapped_text(
     let line_height = metrics.actual_bounding_box_ascent() + metrics.actual_bounding_box_descent();
     let baseline_distance = 1.5 * line_height;
 
-    let word_separator: Box<dyn WordSeparator> = match options.word_separator {
-        WasmWordSeparator::AsciiSpace => Box::new(AsciiSpace),
-        WasmWordSeparator::UnicodeBreakProperties => Box::new(UnicodeBreakProperties),
+    let word_separator = match options.word_separator {
+        WasmWordSeparator::AsciiSpace => WordSeparator::AsciiSpace,
+        WasmWordSeparator::UnicodeBreakProperties => WordSeparator::UnicodeBreakProperties,
         _ => Err("WasmOptions has an invalid word_separator field")?,
     };
 

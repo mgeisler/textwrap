@@ -126,7 +126,7 @@ impl WrapAlgorithm for FirstFit {
 /// ```
 /// use textwrap::core::Word;
 /// use textwrap::wrap_algorithms::wrap_first_fit;
-/// use textwrap::word_separators::{AsciiSpace, WordSeparator};
+/// use textwrap::WordSeparator;
 ///
 /// // Helper to convert wrapped lines to a Vec<String>.
 /// fn lines_to_strings(lines: Vec<&[Word<'_>]>) -> Vec<String> {
@@ -136,7 +136,7 @@ impl WrapAlgorithm for FirstFit {
 /// }
 ///
 /// let text = "These few words will unfortunately not wrap nicely.";
-/// let words = AsciiSpace.find_words(text).collect::<Vec<_>>();
+/// let words = WordSeparator::AsciiSpace.find_words(text).collect::<Vec<_>>();
 /// assert_eq!(lines_to_strings(wrap_first_fit(&words, &[15.0])),
 ///            vec!["These few words",
 ///                 "will",  // <-- short line

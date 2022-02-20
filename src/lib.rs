@@ -126,8 +126,7 @@
 //!   This feature can be disabled if you are happy to find words
 //!   separated by ASCII space characters only. People wrapping text
 //!   with emojis or East-Asian characters will want most likely want
-//!   to enable this feature. See the
-//!   [`word_separators::WordSeparator`] trait for details.
+//!   to enable this feature. See [`WordSeparator`] for details.
 //!
 //! * `unicode-width`: enables correct width computation of non-ASCII
 //!   characters via the [unicode-width] crate. Without this feature,
@@ -207,10 +206,12 @@ mod indentation;
 pub use crate::indentation::dedent;
 pub use crate::indentation::indent;
 
-pub mod word_separators;
+mod word_separators;
+pub use word_separators::WordSeparator;
 
 pub mod word_splitters;
 pub use word_splitters::WordSplitter;
+
 pub mod wrap_algorithms;
 
 pub mod core;
@@ -234,24 +235,20 @@ macro_rules! DefaultWrapAlgorithm {
 #[cfg(feature = "unicode-linebreak")]
 macro_rules! DefaultWordSeparator {
     () => {
-        word_separators::UnicodeBreakProperties
+        WordSeparator::UnicodeBreakProperties
     };
 }
 
 #[cfg(not(feature = "unicode-linebreak"))]
 macro_rules! DefaultWordSeparator {
     () => {
-        word_separators::AsciiSpace
+        WordSeparator::AsciiSpace
     };
 }
 
 /// Holds configuration options for wrapping and filling text.
 #[derive(Debug, Clone)]
-pub struct Options<
-    'a,
-    WrapAlgo = Box<dyn wrap_algorithms::WrapAlgorithm>,
-    WordSep = Box<dyn word_separators::WordSeparator>,
-> {
+pub struct Options<'a, WrapAlgo = Box<dyn wrap_algorithms::WrapAlgorithm>> {
     /// The width in columns at which the text will be wrapped.
     pub width: usize,
     /// Indentation used for the first line of output. See the
@@ -270,43 +267,41 @@ pub struct Options<
     /// The line breaking algorithm to use, see
     /// [`word_separators::WordSeparator`] trait for an overview and
     /// possible implementations.
-    pub word_separator: WordSep,
+    pub word_separator: WordSeparator,
     /// The method for splitting words. This can be used to prohibit
     /// splitting words on hyphens, or it can be used to implement
     /// language-aware machine hyphenation.
     pub word_splitter: WordSplitter,
 }
 
-impl<'a, WrapAlgo, WordSep> From<&'a Options<'a, WrapAlgo, WordSep>>
-    for Options<'a, WrapAlgo, WordSep>
+impl<'a, WrapAlgo> From<&'a Options<'a, WrapAlgo>> for Options<'a, WrapAlgo>
 where
     WrapAlgo: Clone,
-    WordSep: Clone,
 {
-    fn from(options: &'a Options<'a, WrapAlgo, WordSep>) -> Self {
+    fn from(options: &'a Options<'a, WrapAlgo>) -> Self {
         Self {
             width: options.width,
             initial_indent: options.initial_indent,
             subsequent_indent: options.subsequent_indent,
             break_words: options.break_words,
-            word_separator: options.word_separator.clone(),
+            word_separator: options.word_separator,
             wrap_algorithm: options.wrap_algorithm.clone(),
             word_splitter: options.word_splitter.clone(),
         }
     }
 }
 
-impl<'a> From<usize> for Options<'a, DefaultWrapAlgorithm!(), DefaultWordSeparator!()> {
+impl<'a> From<usize> for Options<'a, DefaultWrapAlgorithm!()> {
     fn from(width: usize) -> Self {
         Options::new(width)
     }
 }
 
-impl<'a> Options<'a, DefaultWrapAlgorithm!(), DefaultWordSeparator!()> {
+impl<'a> Options<'a, DefaultWrapAlgorithm!()> {
     /// Creates a new [`Options`] with the specified width. Equivalent to
     ///
     /// ```
-    /// # use textwrap::{Options, WordSplitter};
+    /// # use textwrap::{Options, WordSplitter, WordSeparator};
     /// # let width = 80;
     /// # let actual = Options::new(width);
     /// # let expected =
@@ -316,9 +311,9 @@ impl<'a> Options<'a, DefaultWrapAlgorithm!(), DefaultWordSeparator!()> {
     ///     subsequent_indent: "",
     ///     break_words: true,
     ///     #[cfg(feature = "unicode-linebreak")]
-    ///     word_separator: textwrap::word_separators::UnicodeBreakProperties,
+    ///     word_separator: WordSeparator::UnicodeBreakProperties,
     ///     #[cfg(not(feature = "unicode-linebreak"))]
-    ///     word_separator: textwrap::word_separators::AsciiSpace,
+    ///     word_separator: WordSeparator::AsciiSpace,
     ///     #[cfg(feature = "smawk")]
     ///     wrap_algorithm: textwrap::wrap_algorithms::OptimalFit::new(),
     ///     #[cfg(not(feature = "smawk"))]
@@ -371,7 +366,7 @@ impl<'a> Options<'a, DefaultWrapAlgorithm!(), DefaultWordSeparator!()> {
     }
 }
 
-impl<'a, WrapAlgo, WordSep> Options<'a, WrapAlgo, WordSep> {
+impl<'a, WrapAlgo> Options<'a, WrapAlgo> {
     /// Change [`self.initial_indent`]. The initial indentation is
     /// used on the very first line of output.
     ///
@@ -465,10 +460,7 @@ impl<'a, WrapAlgo, WordSep> Options<'a, WrapAlgo, WordSep> {
     /// See [`word_separators::WordSeparator`] for details on the choices.
     ///
     /// [`self.word_separator`]: #structfield.word_separator
-    pub fn word_separator<NewWordSep>(
-        self,
-        word_separator: NewWordSep,
-    ) -> Options<'a, WrapAlgo, NewWordSep> {
+    pub fn word_separator(self, word_separator: WordSeparator) -> Options<'a, WrapAlgo> {
         Options {
             width: self.width,
             initial_indent: self.initial_indent,
@@ -489,7 +481,7 @@ impl<'a, WrapAlgo, WordSep> Options<'a, WrapAlgo, WordSep> {
     pub fn wrap_algorithm<NewWrapAlgo>(
         self,
         wrap_algorithm: NewWrapAlgo,
-    ) -> Options<'a, NewWrapAlgo, WordSep> {
+    ) -> Options<'a, NewWrapAlgo> {
         Options {
             width: self.width,
             initial_indent: self.initial_indent,
@@ -509,14 +501,14 @@ impl<'a, WrapAlgo, WordSep> Options<'a, WrapAlgo, WordSep> {
     ///
     /// ```
     /// use textwrap::{Options, WordSplitter};
-    /// let opt: Options<_, _> = Options::new(80);
+    /// let opt = Options::new(80);
     /// assert_eq!(opt.word_splitter, WordSplitter::HyphenSplitter);
-    /// let opt: Options<_, _> = opt.word_splitter(WordSplitter::NoHyphenation);
+    /// let opt = opt.word_splitter(WordSplitter::NoHyphenation);
     /// assert_eq!(opt.word_splitter, WordSplitter::NoHyphenation);
     /// ```
     ///
     /// [`self.word_splitter`]: #structfield.word_splitter
-    pub fn word_splitter(self, word_splitter: WordSplitter) -> Options<'a, WrapAlgo, WordSep> {
+    pub fn word_splitter(self, word_splitter: WordSplitter) -> Options<'a, WrapAlgo> {
         Options {
             width: self.width,
             initial_indent: self.initial_indent,
@@ -588,11 +580,10 @@ pub fn termwidth() -> usize {
 ///     "- Memory safety\n  without\n  garbage\n  collection."
 /// );
 /// ```
-pub fn fill<'a, WrapAlgo, WordSep, Opt>(text: &str, width_or_options: Opt) -> String
+pub fn fill<'a, WrapAlgo, Opt>(text: &str, width_or_options: Opt) -> String
 where
     WrapAlgo: wrap_algorithms::WrapAlgorithm,
-    WordSep: word_separators::WordSeparator,
-    Opt: Into<Options<'a, WrapAlgo, WordSep>>,
+    Opt: Into<Options<'a, WrapAlgo>>,
 {
     // This will avoid reallocation in simple cases (no
     // indentation, no hyphenation).
@@ -654,12 +645,7 @@ where
 /// assert_eq!(options.initial_indent, "* ");
 /// assert_eq!(options.subsequent_indent, "  ");
 /// ```
-pub fn unfill(
-    text: &str,
-) -> (
-    String,
-    Options<'_, DefaultWrapAlgorithm!(), DefaultWordSeparator!()>,
-) {
+pub fn unfill(text: &str) -> (String, Options<'_, DefaultWrapAlgorithm!()>) {
     let trimmed = text.trim_end_matches('\n');
     let prefix_chars: &[_] = &[' ', '-', '+', '*', '>', '#', '/'];
 
@@ -754,11 +740,10 @@ pub fn unfill(
 ///   item.
 /// ");
 /// ```
-pub fn refill<'a, WrapAlgo, WordSep, Opt>(filled_text: &str, new_width_or_options: Opt) -> String
+pub fn refill<'a, WrapAlgo, Opt>(filled_text: &str, new_width_or_options: Opt) -> String
 where
     WrapAlgo: wrap_algorithms::WrapAlgorithm,
-    WordSep: word_separators::WordSeparator,
-    Opt: Into<Options<'a, WrapAlgo, WordSep>>,
+    Opt: Into<Options<'a, WrapAlgo>>,
 {
     let trimmed = filled_text.trim_end_matches('\n');
     let (text, options) = unfill(trimmed);
@@ -939,11 +924,10 @@ where
 /// assert_eq!(wrap("  foo bar", 8), vec!["  foo", "bar"]);
 /// assert_eq!(wrap("  foo bar", 4), vec!["", "foo", "bar"]);
 /// ```
-pub fn wrap<'a, WrapAlgo, WordSep, Opt>(text: &str, width_or_options: Opt) -> Vec<Cow<'_, str>>
+pub fn wrap<'a, WrapAlgo, Opt>(text: &str, width_or_options: Opt) -> Vec<Cow<'_, str>>
 where
     WrapAlgo: wrap_algorithms::WrapAlgorithm,
-    WordSep: word_separators::WordSeparator,
-    Opt: Into<Options<'a, WrapAlgo, WordSep>>,
+    Opt: Into<Options<'a, WrapAlgo>>,
 {
     let options = width_or_options.into();
 
@@ -1083,7 +1067,7 @@ where
 ///                 "| example text, | columns.      | shorter than   |",
 ///                 "| which is      | Notice how    | the others.    |",
 ///                 "| wrapped into  | the final     |                |"]);
-pub fn wrap_columns<'a, WrapAlgo, WordSep, Opt>(
+pub fn wrap_columns<'a, WrapAlgo, Opt>(
     text: &str,
     columns: usize,
     total_width_or_options: Opt,
@@ -1093,8 +1077,7 @@ pub fn wrap_columns<'a, WrapAlgo, WordSep, Opt>(
 ) -> Vec<String>
 where
     WrapAlgo: wrap_algorithms::WrapAlgorithm,
-    WordSep: word_separators::WordSeparator,
-    Opt: Into<Options<'a, WrapAlgo, WordSep>>,
+    Opt: Into<Options<'a, WrapAlgo>>,
 {
     assert!(columns > 0);
 
@@ -1153,15 +1136,15 @@ where
 /// [`fill`] with these options:
 ///
 /// ```
-/// # use textwrap::{core, Options, WordSplitter};
-/// # use textwrap::{word_separators, wrap_algorithms};
+/// # use textwrap::{core, Options, WordSplitter, WordSeparator};
+/// # use textwrap::wrap_algorithms;
 /// # let width = 80;
 /// Options {
 ///     width: width,
 ///     initial_indent: "",
 ///     subsequent_indent: "",
 ///     break_words: false,
-///     word_separator: word_separators::AsciiSpace,
+///     word_separator: WordSeparator::AsciiSpace,
 ///     wrap_algorithm: wrap_algorithms::FirstFit,
 ///     word_splitter: WordSplitter::NoHyphenation,
 /// };
@@ -1193,12 +1176,11 @@ where
 /// benchmark](https://github.com/mgeisler/textwrap/blob/master/benches/linear.rs)
 /// for details.
 pub fn fill_inplace(text: &mut String, width: usize) {
-    use word_separators::WordSeparator;
     let mut indices = Vec::new();
 
     let mut offset = 0;
     for line in text.split('\n') {
-        let words = word_separators::AsciiSpace
+        let words = WordSeparator::AsciiSpace
             .find_words(line)
             .collect::<Vec<_>>();
         let wrapped_words = wrap_algorithms::wrap_first_fit(&words, &[width as f64]);
@@ -1332,7 +1314,7 @@ mod tests {
     fn issue_129() {
         // The dash is an em-dash which takes up four bytes. We used
         // to panic since we tried to index into the character.
-        let options = Options::new(1).word_separator(word_separators::AsciiSpace);
+        let options = Options::new(1).word_separator(WordSeparator::AsciiSpace);
         assert_eq!(wrap("x – x", options), vec!["x", "–", "x"]);
     }
 
@@ -1342,7 +1324,7 @@ mod tests {
         assert_eq!(
             wrap(
                 "Ｈｅｌｌｏ, Ｗｏｒｌｄ!",
-                Options::new(15).word_separator(word_separators::AsciiSpace)
+                Options::new(15).word_separator(WordSeparator::AsciiSpace)
             ),
             vec!["Ｈｅｌｌｏ,", "Ｗｏｒｌｄ!"]
         );
@@ -1353,7 +1335,7 @@ mod tests {
         assert_eq!(
             wrap(
                 "Ｈｅｌｌｏ, Ｗｏｒｌｄ!",
-                Options::new(15).word_separator(word_separators::UnicodeBreakProperties)
+                Options::new(15).word_separator(WordSeparator::UnicodeBreakProperties)
             ),
             vec!["Ｈｅｌｌｏ, Ｗ", "ｏｒｌｄ!"]
         );
@@ -1588,7 +1570,7 @@ mod tests {
     fn break_words_wide_characters() {
         // Even the poor man's version of `ch_width` counts these
         // characters as wide.
-        let options = Options::new(5).word_separator(word_separators::AsciiSpace);
+        let options = Options::new(5).word_separator(WordSeparator::AsciiSpace);
         assert_eq!(wrap("Ｈｅｌｌｏ", options), vec!["Ｈｅ", "ｌｌ", "ｏ"]);
     }
 
@@ -1819,25 +1801,20 @@ mod tests {
     #[test]
     fn trait_object_vec() {
         // Create a vector of Options containing trait-objects.
-        let mut vector: Vec<Options<_, Box<dyn word_separators::WordSeparator>>> = Vec::new();
+        let mut vector: Vec<Options<_>> = Vec::new();
         // Expected result from each options
         let mut results = Vec::new();
 
-        let opt_full_type: Options<_, Box<dyn word_separators::WordSeparator>> = Options::new(10)
+        let opt_full_type: Options<_> = Options::new(10)
             .word_splitter(WordSplitter::HyphenSplitter)
-            .word_separator(
-                Box::new(word_separators::AsciiSpace) as Box<dyn word_separators::WordSeparator>
-            );
+            .word_separator(WordSeparator::AsciiSpace);
         vector.push(opt_full_type);
         results.push(vec!["over-", "caffinated"]);
 
-        // Actually: Options<Box<AsciiSpace>, Box<dyn WordSplitter::WordSplitter>>
         let opt_abbreviated_type = Options::new(10)
             .break_words(false)
             .word_splitter(WordSplitter::NoHyphenation)
-            .word_separator(
-                Box::new(word_separators::AsciiSpace) as Box<dyn word_separators::WordSeparator>
-            );
+            .word_separator(WordSeparator::AsciiSpace);
         vector.push(opt_abbreviated_type);
         results.push(vec!["over-caffinated"]);
 
@@ -1846,8 +1823,7 @@ mod tests {
             let dictionary = Standard::from_embedded(Language::EnglishUS).unwrap();
             let opt_hyp = Options::new(8)
                 .word_splitter(WordSplitter::Hyphenation(dictionary))
-                .word_separator(Box::new(word_separators::AsciiSpace)
-                    as Box<dyn word_separators::WordSeparator>);
+                .word_separator(WordSeparator::AsciiSpace);
             vector.push(opt_hyp);
             results.push(vec!["over-", "caffi-", "nated"]);
         }
