@@ -19,8 +19,7 @@ mod unix_only {
     use termion::raw::{IntoRawMode, RawTerminal};
     use termion::screen::AlternateScreen;
     use termion::{color, cursor, style};
-    use textwrap::wrap_algorithms;
-    use textwrap::{wrap, Options, WordSeparator, WordSplitter};
+    use textwrap::{wrap, Options, WordSeparator, WordSplitter, WrapAlgorithm};
 
     #[cfg(feature = "hyphenation")]
     use hyphenation::{Language, Load, Standard};
@@ -55,7 +54,7 @@ mod unix_only {
 
     fn draw_text<'a>(
         text: &str,
-        options: &Options<'a, Box<dyn wrap_algorithms::WrapAlgorithm>>,
+        options: &Options<'a>,
         word_splitter_label: &str,
         stdout: &mut RawTerminal<io::Stdout>,
     ) -> Result<(), io::Error> {
@@ -235,10 +234,12 @@ mod unix_only {
     }
 
     pub fn main() -> Result<(), io::Error> {
-        let mut wrap_algorithms: Vec<Box<dyn wrap_algorithms::WrapAlgorithm>> = Vec::new();
+        let mut wrap_algorithms = Vec::new();
         #[cfg(feature = "smawk")]
-        wrap_algorithms.push(Box::new(wrap_algorithms::OptimalFit::new()));
-        wrap_algorithms.push(Box::new(wrap_algorithms::FirstFit::new()));
+        wrap_algorithms.push(WrapAlgorithm::OptimalFit(
+            textwrap::wrap_algorithms::OptimalFit::new(),
+        ));
+        wrap_algorithms.push(WrapAlgorithm::FirstFit);
 
         let mut word_splitters: Vec<WordSplitter> =
             vec![WordSplitter::HyphenSplitter, WordSplitter::NoHyphenation];

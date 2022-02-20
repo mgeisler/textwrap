@@ -29,7 +29,7 @@ pub fn benchmark(c: &mut Criterion) {
         #[cfg(all(feature = "smawk", feature = "unicode-linebreak"))]
         {
             let options = textwrap::Options::new(LINE_LENGTH)
-                .wrap_algorithm(textwrap::wrap_algorithms::OptimalFit::new())
+                .wrap_algorithm(textwrap::WrapAlgorithm::new_optimal_fit())
                 .word_separator(textwrap::WordSeparator::UnicodeBreakProperties);
             group.bench_with_input(
                 BenchmarkId::new("fill_optimal_fit_unicode", length),
@@ -43,7 +43,7 @@ pub fn benchmark(c: &mut Criterion) {
         #[cfg(feature = "smawk")]
         {
             let options = textwrap::Options::new(LINE_LENGTH)
-                .wrap_algorithm(textwrap::wrap_algorithms::OptimalFit::new())
+                .wrap_algorithm(textwrap::WrapAlgorithm::new_optimal_fit())
                 .word_separator(textwrap::WordSeparator::AsciiSpace);
             group.bench_with_input(
                 BenchmarkId::new("fill_optimal_fit_ascii", length),
@@ -56,7 +56,7 @@ pub fn benchmark(c: &mut Criterion) {
 
         {
             let options = textwrap::Options::new(LINE_LENGTH)
-                .wrap_algorithm(textwrap::wrap_algorithms::FirstFit)
+                .wrap_algorithm(textwrap::WrapAlgorithm::FirstFit)
                 .word_separator(textwrap::WordSeparator::AsciiSpace);
             group.bench_with_input(
                 BenchmarkId::new("fill_first_fit", length),
@@ -85,7 +85,7 @@ pub fn benchmark(c: &mut Criterion) {
                 .join("la.standard.bincode");
             let dictionary = Standard::from_path(Language::Latin, &path).unwrap();
             let options = textwrap::Options::new(LINE_LENGTH)
-                .wrap_algorithm(textwrap::wrap_algorithms::OptimalFit::new())
+                .wrap_algorithm(textwrap::WrapAlgorithm::new_optimal_fit())
                 .word_separator(textwrap::WordSeparator::AsciiSpace)
                 .word_splitter(textwrap::WordSplitter::Hyphenation(dictionary));
             group.bench_with_input(

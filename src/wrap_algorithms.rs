@@ -24,81 +24,148 @@ use crate::core::{Fragment, Word};
 
 /// Describes how to wrap words into lines.
 ///
-/// The simplest approach is to wrap words one word at a time. This is
-/// implemented by [`FirstFit`]. If the `smawk` Cargo feature is
-/// enabled, a more complex algorithm is available, implemented by
-/// [`OptimalFit`], which will look at an entire paragraph at a time
-/// in order to find optimal line breaks.
-pub trait WrapAlgorithm: WrapAlgorithmClone + std::fmt::Debug {
+/// The simplest approach is to wrap words one word at a time and
+/// accept the first way of wrapping which fit
+/// ([`WrapAlgorithm::FirstFit`]). If the `smawk` Cargo feature is
+/// enabled, a more complex algorithm is available which will look at
+/// an entire paragraph at a time in order to find optimal line breaks
+/// ([`WrapAlgorithm::OptimalFit`]).
+#[derive(Clone, Copy)]
+pub enum WrapAlgorithm {
+    /// Wrap words using a fast and simple algorithm.
+    ///
+    /// This algorithm uses no look-ahead when finding line breaks.
+    /// Implemented by [`wrap_first_fit`], please see that function for
+    /// details and examples.
+    FirstFit,
+
+    /// Wrap words using an advanced algorithm with look-ahead.
+    ///
+    /// This wrapping algorithm considers the entire paragraph to find
+    /// optimal line breaks. When wrapping text, "penalties" are assigned
+    /// to line breaks based on the gaps left at the end of lines. The
+    /// penalties are given by this struct, with [`OptimalFit::default`]
+    /// assigning penalties that work well for monospace text.
+    ///
+    /// If you are wrapping proportional text, you are advised to assign
+    /// your own penalties according to your font size. See the individual
+    /// penalties below for details.
+    ///
+    /// The underlying wrapping algorithm is implemented by
+    /// [`wrap_optimal_fit`], please see that function for examples.
+    ///
+    /// **Note:** Only available when the `smawk` Cargo feature is
+    /// enabled.
+    #[cfg(feature = "smawk")]
+    OptimalFit(OptimalFit),
+
+    /// Custom wrapping function.
+    ///
+    /// Use this if you want to implement your own wrapping algorithm.
+    /// The function can freely decide how to turn a slice of
+    /// [`Word`]s into lines.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use textwrap::core::Word;
+    /// use textwrap::{wrap, Options, WrapAlgorithm};
+    ///
+    /// fn stair<'a, 'b>(words: &'b [Word<'a>], _: &'b [usize]) -> Vec<&'b [Word<'a>]> {
+    ///     let mut lines = Vec::new();
+    ///     let mut step = 1;
+    ///     let mut start_idx = 0;
+    ///     while start_idx + step <= words.len() {
+    ///       lines.push(&words[start_idx .. start_idx+step]);
+    ///       start_idx += step;
+    ///       step += 1;
+    ///     }
+    ///     lines
+    /// }
+    ///
+    /// let options = Options::new(10).wrap_algorithm(WrapAlgorithm::Custom(stair));
+    /// assert_eq!(wrap("First, second, third, fourth, fifth, sixth", options),
+    ///            vec!["First,",
+    ///                 "second, third,",
+    ///                 "fourth, fifth, sixth"]);
+    /// ```
+    Custom(for<'a, 'b> fn(words: &'b [Word<'a>], line_widths: &'b [usize]) -> Vec<&'b [Word<'a>]>),
+}
+
+impl std::fmt::Debug for WrapAlgorithm {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            WrapAlgorithm::FirstFit => f.write_str("FirstFit"),
+            #[cfg(feature = "smawk")]
+            WrapAlgorithm::OptimalFit(penalties) => write!(f, "OptimalFit({:?})", penalties),
+            WrapAlgorithm::Custom(_) => f.write_str("Custom(...)"),
+        }
+    }
+}
+
+impl WrapAlgorithm {
+    /// Create new wrap algorithm.
+    ///
+    /// The best wrapping algorithm is used by default, i.e.,
+    /// [`WrapAlgorithm::OptimalFit`] if available, otherwise
+    /// [`WrapAlgorithm::FirstFit`].
+    pub const fn new() -> Self {
+        #[cfg(not(feature = "smawk"))]
+        {
+            WrapAlgorithm::FirstFit
+        }
+
+        #[cfg(feature = "smawk")]
+        {
+            WrapAlgorithm::new_optimal_fit()
+        }
+    }
+
+    /// New [`WrapAlgorithm::OptimalFit`] with default penalties. This
+    /// works well for monospace text.
+    ///
+    /// **Note:** Only available when the `smawk` Cargo feature is
+    /// enabled.
+    #[cfg(feature = "smawk")]
+    pub const fn new_optimal_fit() -> Self {
+        WrapAlgorithm::OptimalFit(OptimalFit::new())
+    }
+
     /// Wrap words according to line widths.
     ///
     /// The `line_widths` slice gives the target line width for each
     /// line (the last slice element is repeated as necessary). This
     /// can be used to implement hanging indentation.
-    ///
-    /// Please see the implementors of the trait for examples.
-    fn wrap<'a, 'b>(&self, words: &'b [Word<'a>], line_widths: &'b [usize]) -> Vec<&'b [Word<'a>]>;
-}
-
-// The internal `WrapAlgorithmClone` trait is allows us to implement
-// `Clone` for `Box<dyn WrapAlgorithm>`. This in used in the
-// `From<&Options<'_, WrapAlgo, WordSep, WordSplit>> for Options<'a,
-// WrapAlgo, WordSep, WordSplit>` implementation.
-#[doc(hidden)]
-pub trait WrapAlgorithmClone {
-    fn clone_box(&self) -> Box<dyn WrapAlgorithm>;
-}
-
-impl<T: WrapAlgorithm + Clone + 'static> WrapAlgorithmClone for T {
-    fn clone_box(&self) -> Box<dyn WrapAlgorithm> {
-        Box::new(self.clone())
-    }
-}
-
-impl Clone for Box<dyn WrapAlgorithm> {
-    fn clone(&self) -> Box<dyn WrapAlgorithm> {
-        use std::ops::Deref;
-        self.deref().clone_box()
-    }
-}
-
-impl WrapAlgorithm for Box<dyn WrapAlgorithm> {
-    fn wrap<'a, 'b>(&self, words: &'b [Word<'a>], line_widths: &'b [usize]) -> Vec<&'b [Word<'a>]> {
-        use std::ops::Deref;
-        self.deref().wrap(words, line_widths)
-    }
-}
-
-/// Wrap words using a fast and simple algorithm.
-///
-/// This algorithm uses no look-ahead when finding line breaks.
-/// Implemented by [`wrap_first_fit`], please see that function for
-/// details and examples.
-#[derive(Clone, Copy, Debug)]
-pub struct FirstFit;
-
-impl FirstFit {
-    /// Create a new empty struct.
-    pub const fn new() -> Self {
-        FirstFit
-    }
-}
-
-impl Default for FirstFit {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-impl WrapAlgorithm for FirstFit {
     #[inline]
-    fn wrap<'a, 'b>(&self, words: &'b [Word<'a>], line_widths: &'b [usize]) -> Vec<&'b [Word<'a>]> {
+    pub fn wrap<'a, 'b>(
+        &self,
+        words: &'b [Word<'a>],
+        line_widths: &'b [usize],
+    ) -> Vec<&'b [Word<'a>]> {
         // Every integer up to 2u64.pow(f64::MANTISSA_DIGITS) = 2**53
         // = 9_007_199_254_740_992 can be represented without loss by
         // a f64. Larger line widths will be rounded to the nearest
         // representable number.
         let f64_line_widths = line_widths.iter().map(|w| *w as f64).collect::<Vec<_>>();
-        wrap_first_fit(words, &f64_line_widths)
+
+        match self {
+            WrapAlgorithm::FirstFit => wrap_first_fit(words, &f64_line_widths),
+
+            #[cfg(feature = "smawk")]
+            WrapAlgorithm::OptimalFit(penalties) => {
+                // The computation cannnot overflow when the line
+                // widths are restricted to usize.
+                wrap_optimal_fit(words, &f64_line_widths, penalties).unwrap()
+            }
+
+            WrapAlgorithm::Custom(func) => func(words, line_widths),
+        }
+    }
+}
+
+impl Default for WrapAlgorithm {
+    fn default() -> Self {
+        WrapAlgorithm::new()
     }
 }
 

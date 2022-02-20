@@ -1,7 +1,6 @@
 use std::cell::RefCell;
 
-use crate::core::{Fragment, Word};
-use crate::wrap_algorithms::WrapAlgorithm;
+use crate::core::Fragment;
 
 /// Wrap words using an advanced algorithm with look-ahead.
 ///
@@ -86,40 +85,37 @@ pub struct OptimalFit {
     ///
     /// ## Examples
     ///
-    ///
-    ///
-    ///
     /// ```
-    /// use textwrap::{wrap, wrap_algorithms, Options};
+    /// use textwrap::{wrap, wrap_algorithms, Options, WrapAlgorithm};
     ///
     /// let text = "This is a demo of the short last line penalty.";
     ///
     /// // The first-fit algorithm leaves a single short word on the last line:
-    /// assert_eq!(wrap(text, Options::new(37).wrap_algorithm(wrap_algorithms::FirstFit::new())),
+    /// assert_eq!(wrap(text, Options::new(37).wrap_algorithm(WrapAlgorithm::FirstFit)),
     ///            vec!["This is a demo of the short last line",
     ///                 "penalty."]);
     ///
     /// #[cfg(feature = "smawk")] {
-    /// let mut wrap_algorithm = wrap_algorithms::OptimalFit::new();
+    /// let mut penalties = wrap_algorithms::OptimalFit::new();
     ///
     /// // Since "penalty." is shorter than 25% of the line width, the
     /// // optimal-fit algorithm adds a penalty of 25. This is enough
     /// // to move "line " down:
-    /// assert_eq!(wrap(text, Options::new(37).wrap_algorithm(wrap_algorithm)),
+    /// assert_eq!(wrap(text, Options::new(37).wrap_algorithm(WrapAlgorithm::OptimalFit(penalties))),
     ///            vec!["This is a demo of the short last",
     ///                 "line penalty."]);
     ///
     /// // We can change the meaning of "short" lines. Here, only words
     /// // shorter than 1/10th of the line width will be considered short:
-    /// wrap_algorithm.short_last_line_fraction = 10;
-    /// assert_eq!(wrap(text, Options::new(37).wrap_algorithm(wrap_algorithm)),
+    /// penalties.short_last_line_fraction = 10;
+    /// assert_eq!(wrap(text, Options::new(37).wrap_algorithm(WrapAlgorithm::OptimalFit(penalties))),
     ///            vec!["This is a demo of the short last line",
     ///                 "penalty."]);
     ///
     /// // If desired, the penalty can also be disabled:
-    /// wrap_algorithm.short_last_line_fraction = 4;
-    /// wrap_algorithm.short_last_line_penalty = 0;
-    /// assert_eq!(wrap(text, Options::new(37).wrap_algorithm(wrap_algorithm)),
+    /// penalties.short_last_line_fraction = 4;
+    /// penalties.short_last_line_penalty = 0;
+    /// assert_eq!(wrap(text, Options::new(37).wrap_algorithm(WrapAlgorithm::OptimalFit(penalties))),
     ///            vec!["This is a demo of the short last line",
     ///                 "penalty."]);
     /// }
@@ -156,20 +152,6 @@ impl OptimalFit {
 impl Default for OptimalFit {
     fn default() -> Self {
         Self::new()
-    }
-}
-
-impl WrapAlgorithm for OptimalFit {
-    #[inline]
-    fn wrap<'a, 'b>(&self, words: &'b [Word<'a>], line_widths: &'b [usize]) -> Vec<&'b [Word<'a>]> {
-        // Every integer up to 2u64.pow(f64::MANTISSA_DIGITS) = 2**53
-        // = 9_007_199_254_740_992 can be represented without loss by
-        // a f64. Larger line widths will be rounded to the nearest
-        // representable number.
-        let f64_line_widths = line_widths.iter().map(|w| *w as f64).collect::<Vec<_>>();
-        // The computation cannnot overflow when the line widths are
-        // restricted to usize.
-        wrap_optimal_fit(words, &f64_line_widths, self).unwrap()
     }
 }
 
