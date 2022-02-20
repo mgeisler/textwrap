@@ -1743,20 +1743,6 @@ mod tests {
     }
 
     #[test]
-    #[cfg(not(feature = "smawk"))]
-    #[cfg(not(feature = "unicode-linebreak"))]
-    fn cloning_works() {
-        static OPT: Options<
-            wrap_algorithms::FirstFit,
-            word_separators::AsciiSpace,
-            word_splitters::HyphenSplitter,
-        > = Options::new(80).word_splitter(word_splitters::HyphenSplitter);
-        #[allow(clippy::clone_on_copy)]
-        let opt = OPT.clone();
-        assert_eq!(opt.width, 80);
-    }
-
-    #[test]
     fn fill_inplace_empty() {
         let mut text = String::from("");
         fill_inplace(&mut text, 80);
