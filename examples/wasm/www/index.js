@@ -1,4 +1,4 @@
-import { draw_wrapped_text, WasmOptions, WasmOptimalFit } from "textwrap-wasm-demo";
+import { draw_wrapped_text, WasmOptions, WasmPenalties } from "textwrap-wasm-demo";
 
 fetch("build-info.json").then(response => response.json()).then(buildInfo => {
     if (buildInfo.date && buildInfo.commit) {
@@ -26,17 +26,17 @@ function redraw(event) {
     let wordSeparator = document.getElementById("word-separator").value;
     let wordSplitter = document.getElementById("word-splitter").value;
     let wrapAlgorithm = document.getElementById("wrap-algorithm").value;
-    let optimalFit = new WasmOptimalFit(document.getElementById("nline-penalty").valueAsNumber,
-                                        document.getElementById("overflow-penalty").valueAsNumber,
-                                        document.getElementById("short-line-fraction").valueAsNumber,
-                                        document.getElementById("short-last-line-penalty").valueAsNumber,
-                                        document.getElementById("hyphen-penalty").valueAsNumber);
-    let options = new WasmOptions(lineWidth, breakWords, wordSeparator, wordSplitter, wrapAlgorithm, optimalFit);
-    draw_wrapped_text(ctx, options, text, optimalFit);
+    let penalties = new WasmPenalties(document.getElementById("nline-penalty").valueAsNumber,
+                                      document.getElementById("overflow-penalty").valueAsNumber,
+                                      document.getElementById("short-line-fraction").valueAsNumber,
+                                      document.getElementById("short-last-line-penalty").valueAsNumber,
+                                      document.getElementById("hyphen-penalty").valueAsNumber);
+    let options = new WasmOptions(lineWidth, breakWords, wordSeparator, wordSplitter, wrapAlgorithm, penalties);
+    draw_wrapped_text(ctx, options, text, penalties);
 }
 
 document.getElementById("wrap-algorithm").addEventListener("input", (event) => {
-    let disableOptimalFitParams = (event.target.value == "FirstFit");
+    let disablePenaltiesParams = (event.target.value == "FirstFit");
     let rangeInputIds = ["nline-penalty",
                "overflow-penalty",
                "short-line-fraction",
@@ -45,8 +45,8 @@ document.getElementById("wrap-algorithm").addEventListener("input", (event) => {
     rangeInputIds.forEach((rangeInputId) => {
         let rangeInput = document.getElementById(rangeInputId);
         let textInput = document.getElementById(`${rangeInputId}-text`);
-        rangeInput.disabled = disableOptimalFitParams;
-        textInput.disabled = disableOptimalFitParams;
+        rangeInput.disabled = disablePenaltiesParams;
+        textInput.disabled = disablePenaltiesParams;
     });
 });
 

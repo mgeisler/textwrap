@@ -18,7 +18,7 @@
 #[cfg(feature = "smawk")]
 mod optimal_fit;
 #[cfg(feature = "smawk")]
-pub use optimal_fit::{wrap_optimal_fit, OptimalFit, OverflowError};
+pub use optimal_fit::{wrap_optimal_fit, OverflowError, Penalties};
 
 use crate::core::{Fragment, Word};
 
@@ -42,14 +42,9 @@ pub enum WrapAlgorithm {
     /// Wrap words using an advanced algorithm with look-ahead.
     ///
     /// This wrapping algorithm considers the entire paragraph to find
-    /// optimal line breaks. When wrapping text, "penalties" are assigned
-    /// to line breaks based on the gaps left at the end of lines. The
-    /// penalties are given by this struct, with [`OptimalFit::default`]
-    /// assigning penalties that work well for monospace text.
-    ///
-    /// If you are wrapping proportional text, you are advised to assign
-    /// your own penalties according to your font size. See the individual
-    /// penalties below for details.
+    /// optimal line breaks. When wrapping text, "penalties" are
+    /// assigned to line breaks based on the gaps left at the end of
+    /// lines. See [`Penalties`] for details.
     ///
     /// The underlying wrapping algorithm is implemented by
     /// [`wrap_optimal_fit`], please see that function for examples.
@@ -57,7 +52,7 @@ pub enum WrapAlgorithm {
     /// **Note:** Only available when the `smawk` Cargo feature is
     /// enabled.
     #[cfg(feature = "smawk")]
-    OptimalFit(OptimalFit),
+    OptimalFit(Penalties),
 
     /// Custom wrapping function.
     ///
@@ -128,7 +123,7 @@ impl WrapAlgorithm {
     /// enabled.
     #[cfg(feature = "smawk")]
     pub const fn new_optimal_fit() -> Self {
-        WrapAlgorithm::OptimalFit(OptimalFit::new())
+        WrapAlgorithm::OptimalFit(Penalties::new())
     }
 
     /// Wrap words according to line widths.
@@ -213,9 +208,9 @@ impl Default for WrapAlgorithm {
 ///
 /// // We can avoid the short line if we look ahead:
 /// #[cfg(feature = "smawk")]
-/// use textwrap::wrap_algorithms::{wrap_optimal_fit, OptimalFit};
+/// use textwrap::wrap_algorithms::{wrap_optimal_fit, Penalties};
 /// #[cfg(feature = "smawk")]
-/// assert_eq!(lines_to_strings(wrap_optimal_fit(&words, &[15.0], &OptimalFit::new()).unwrap()),
+/// assert_eq!(lines_to_strings(wrap_optimal_fit(&words, &[15.0], &Penalties::new()).unwrap()),
 ///            vec!["These few",
 ///                 "words will",
 ///                 "unfortunately",

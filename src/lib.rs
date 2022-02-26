@@ -811,11 +811,11 @@ where
 /// ```
 /// # #[cfg(feature = "smawk")] {
 /// # use textwrap::{Options, WrapAlgorithm, wrap};
-/// # use textwrap::wrap_algorithms::OptimalFit;
 /// #
-/// # let lines = wrap("To be, or not to be: that is the question",
-/// #                  Options::new(10).wrap_algorithm(
-/// #                      WrapAlgorithm::OptimalFit(OptimalFit::new())));
+/// # let lines = wrap(
+/// #     "To be, or not to be: that is the question",
+/// #     Options::new(10).wrap_algorithm(WrapAlgorithm::new_optimal_fit())
+/// # );
 /// # assert_eq!(lines.join("\n") + "\n", "\
 /// To be,
 /// or not to

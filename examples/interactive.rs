@@ -237,7 +237,7 @@ mod unix_only {
         let mut wrap_algorithms = Vec::new();
         #[cfg(feature = "smawk")]
         wrap_algorithms.push(WrapAlgorithm::OptimalFit(
-            textwrap::wrap_algorithms::OptimalFit::new(),
+            textwrap::wrap_algorithms::Penalties::new(),
         ));
         wrap_algorithms.push(WrapAlgorithm::FirstFit);
 

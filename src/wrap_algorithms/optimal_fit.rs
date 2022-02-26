@@ -2,25 +2,25 @@ use std::cell::RefCell;
 
 use crate::core::Fragment;
 
-/// Wrap words using an advanced algorithm with look-ahead.
+/// Penalties for
+/// [`WrapAlgorithm::OptimalFit`](crate::WrapAlgorithm::OptimalFit)
+/// and [`wrap_optimal_fit`].
 ///
-/// This wrapping algorithm considers the entire paragraph to find
-/// optimal line breaks. When wrapping text, "penalties" are assigned
-/// to line breaks based on the gaps left at the end of lines. The
-/// penalties are given by this struct, with [`OptimalFit::default`]
-/// assigning penalties that work well for monospace text.
+/// This wrapping algorithm in [`wrap_optimal_fit`] considers the
+/// entire paragraph to find optimal line breaks. When wrapping text,
+/// "penalties" are assigned to line breaks based on the gaps left at
+/// the end of lines. The penalties are given by this struct, with
+/// [`Penalties::default`] assigning penalties that work well for
+/// monospace text.
 ///
 /// If you are wrapping proportional text, you are advised to assign
 /// your own penalties according to your font size. See the individual
 /// penalties below for details.
 ///
-/// The underlying wrapping algorithm is implemented by
-/// [`wrap_optimal_fit`], please see that function for examples.
-///
 /// **Note:** Only available when the `smawk` Cargo feature is
 /// enabled.
 #[derive(Clone, Copy, Debug)]
-pub struct OptimalFit {
+pub struct Penalties {
     /// Per-line penalty. This is added for every line, which makes it
     /// expensive to output more lines than the minimum required.
     pub nline_penalty: usize,
@@ -34,14 +34,14 @@ pub struct OptimalFit {
     /// character in extreme cases:
     ///
     /// ```
-    /// use textwrap::wrap_algorithms::{wrap_optimal_fit, OptimalFit};
+    /// use textwrap::wrap_algorithms::{wrap_optimal_fit, Penalties};
     /// use textwrap::core::Word;
     ///
     /// let short = "foo ";
     /// let long = "x".repeat(50);
     /// let length = (short.len() + long.len()) as f64;
     /// let fragments = vec![Word::from(short), Word::from(&long)];
-    /// let penalties = OptimalFit::new();
+    /// let penalties = Penalties::new();
     ///
     /// // Perfect fit, both words are on a single line with no overflow.
     /// let wrapped = wrap_optimal_fit(&fragments, &[length], &penalties).unwrap();
@@ -96,7 +96,7 @@ pub struct OptimalFit {
     ///                 "penalty."]);
     ///
     /// #[cfg(feature = "smawk")] {
-    /// let mut penalties = wrap_algorithms::OptimalFit::new();
+    /// let mut penalties = wrap_algorithms::Penalties::new();
     ///
     /// // Since "penalty." is shorter than 25% of the line width, the
     /// // optimal-fit algorithm adds a penalty of 25. This is enough
@@ -131,7 +131,7 @@ pub struct OptimalFit {
     pub hyphen_penalty: usize,
 }
 
-impl OptimalFit {
+impl Penalties {
     /// Default penalties for monospace text.
     ///
     /// The penalties here work well for monospace text. This is
@@ -139,7 +139,7 @@ impl OptimalFit {
     /// in the range `0..100`. If the gaps are larger, the
     /// `overflow_penalty` and `hyphen_penalty` become insignificant.
     pub const fn new() -> Self {
-        OptimalFit {
+        Penalties {
             nline_penalty: 1000,
             overflow_penalty: 50 * 50,
             short_last_line_fraction: 4,
@@ -149,7 +149,7 @@ impl OptimalFit {
     }
 }
 
-impl Default for OptimalFit {
+impl Default for Penalties {
     fn default() -> Self {
         Self::new()
     }
@@ -276,7 +276,7 @@ impl std::error::Error for OverflowError {}
 ///
 /// ```
 /// use textwrap::core::Fragment;
-/// use textwrap::wrap_algorithms::{wrap_optimal_fit, OptimalFit, OverflowError};
+/// use textwrap::wrap_algorithms::{wrap_optimal_fit, Penalties, OverflowError};
 ///
 /// #[derive(Debug, PartialEq)]
 /// struct Word(f64);
@@ -289,7 +289,7 @@ impl std::error::Error for OverflowError {}
 ///
 /// // Wrapping overflows because 1e155 * 1e155 = 1e310, which is
 /// // larger than f64::MAX:
-/// assert_eq!(wrap_optimal_fit(&[Word(0.0), Word(0.0)], &[1e155], &OptimalFit::default()),
+/// assert_eq!(wrap_optimal_fit(&[Word(0.0), Word(0.0)], &[1e155], &Penalties::default()),
 ///            Err(OverflowError));
 /// ```
 ///
@@ -302,7 +302,7 @@ impl std::error::Error for OverflowError {}
 pub fn wrap_optimal_fit<'a, 'b, T: Fragment>(
     fragments: &'a [T],
     line_widths: &'b [f64],
-    penalties: &'b OptimalFit,
+    penalties: &'b Penalties,
 ) -> Result<Vec<&'a [T]>, OverflowError> {
     // The final line width is used for all remaining lines.
     let default_line_width = line_widths.last().copied().unwrap_or(0.0);
@@ -406,7 +406,7 @@ mod tests {
     fn wrap_fragments_with_infinite_widths() {
         let words = vec![Word(f64::INFINITY)];
         assert_eq!(
-            wrap_optimal_fit(&words, &[0.0], &OptimalFit::default()),
+            wrap_optimal_fit(&words, &[0.0], &Penalties::default()),
             Err(OverflowError)
         );
     }
@@ -415,7 +415,7 @@ mod tests {
     fn wrap_fragments_with_huge_widths() {
         let words = vec![Word(1e200), Word(1e250), Word(1e300)];
         assert_eq!(
-            wrap_optimal_fit(&words, &[1e300], &OptimalFit::default()),
+            wrap_optimal_fit(&words, &[1e300], &Penalties::default()),
             Err(OverflowError)
         );
     }
@@ -426,7 +426,7 @@ mod tests {
         // makes the `gap * gap` cost fit comfortably in a f64.
         let words = vec![Word(1e25), Word(1e50), Word(1e75)];
         assert_eq!(
-            wrap_optimal_fit(&words, &[1e100], &OptimalFit::default()),
+            wrap_optimal_fit(&words, &[1e100], &Penalties::default()),
             Ok(vec![&vec![Word(1e25), Word(1e50), Word(1e75)][..]])
         );
     }
