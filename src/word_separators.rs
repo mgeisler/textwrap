@@ -73,8 +73,8 @@ pub enum WordSeparator {
     ///
     /// ```
     /// #[cfg(feature = "unicode-linebreak")] {
-    /// use textwrap::WordSeparator::UnicodeBreakProperties;
     /// use textwrap::core::Word;
+    /// use textwrap::WordSeparator::UnicodeBreakProperties;
     ///
     /// assert_eq!(UnicodeBreakProperties.find_words("Emojis: 😂😍").collect::<Vec<_>>(),
     ///            vec![Word::from("Emojis: "),
@@ -93,8 +93,8 @@ pub enum WordSeparator {
     ///
     /// ```
     /// #[cfg(feature = "unicode-linebreak")] {
-    /// use textwrap::WordSeparator::UnicodeBreakProperties;
     /// use textwrap::core::Word;
+    /// use textwrap::WordSeparator::UnicodeBreakProperties;
     ///
     /// assert_eq!(UnicodeBreakProperties.find_words("Emojis: 😂\u{2060}😍").collect::<Vec<_>>(),
     ///            vec![Word::from("Emojis: "),
@@ -107,8 +107,8 @@ pub enum WordSeparator {
     ///
     /// ```
     /// #[cfg(feature = "unicode-linebreak")] {
-    /// use textwrap::WordSeparator::UnicodeBreakProperties;
     /// use textwrap::core::Word;
+    /// use textwrap::WordSeparator::UnicodeBreakProperties;
     ///
     /// assert_eq!(UnicodeBreakProperties.find_words("[ foo ] bar !").collect::<Vec<_>>(),
     ///            vec![Word::from("[ foo ] "),
