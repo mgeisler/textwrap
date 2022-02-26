@@ -19,8 +19,7 @@ mod unix_only {
     use termion::raw::{IntoRawMode, RawTerminal};
     use termion::screen::AlternateScreen;
     use termion::{color, cursor, style};
-    use textwrap::{word_separators, word_splitters, wrap_algorithms};
-    use textwrap::{wrap, Options};
+    use textwrap::{wrap, Options, WordSeparator, WordSplitter, WrapAlgorithm};
 
     #[cfg(feature = "hyphenation")]
     use hyphenation::{Language, Load, Standard};
@@ -55,12 +54,7 @@ mod unix_only {
 
     fn draw_text<'a>(
         text: &str,
-        options: &Options<
-            'a,
-            Box<dyn wrap_algorithms::WrapAlgorithm>,
-            Box<dyn word_separators::WordSeparator>,
-            Box<dyn word_splitters::WordSplitter>,
-        >,
+        options: &Options<'a>,
         word_splitter_label: &str,
         stdout: &mut RawTerminal<io::Stdout>,
     ) -> Result<(), io::Error> {
@@ -240,15 +234,15 @@ mod unix_only {
     }
 
     pub fn main() -> Result<(), io::Error> {
-        let mut wrap_algorithms: Vec<Box<dyn wrap_algorithms::WrapAlgorithm>> = Vec::new();
+        let mut wrap_algorithms = Vec::new();
         #[cfg(feature = "smawk")]
-        wrap_algorithms.push(Box::new(wrap_algorithms::OptimalFit::new()));
-        wrap_algorithms.push(Box::new(wrap_algorithms::FirstFit::new()));
+        wrap_algorithms.push(WrapAlgorithm::OptimalFit(
+            textwrap::wrap_algorithms::Penalties::new(),
+        ));
+        wrap_algorithms.push(WrapAlgorithm::FirstFit);
 
-        let mut word_splitters: Vec<Box<dyn word_splitters::WordSplitter>> = vec![
-            Box::new(word_splitters::HyphenSplitter),
-            Box::new(word_splitters::NoHyphenation),
-        ];
+        let mut word_splitters: Vec<WordSplitter> =
+            vec![WordSplitter::HyphenSplitter, WordSplitter::NoHyphenation];
         let mut word_splitter_labels: Vec<String> =
             word_splitters.iter().map(|s| format!("{:?}", s)).collect();
 
@@ -266,7 +260,7 @@ mod unix_only {
             });
 
             if let Ok(dict) = dictionary {
-                word_splitters.insert(0, Box::new(dict));
+                word_splitters.insert(0, WordSplitter::Hyphenation(dict));
                 word_splitter_labels.insert(0, format!("{} hyphenation", lang.code()));
             }
         }
@@ -275,9 +269,7 @@ mod unix_only {
             .break_words(false)
             .wrap_algorithm(wrap_algorithms.remove(0))
             .word_splitter(word_splitters.remove(0))
-            .word_separator(
-                Box::new(word_separators::AsciiSpace) as Box<dyn word_separators::WordSeparator>
-            );
+            .word_separator(WordSeparator::AsciiSpace);
         let mut word_splitter_label = word_splitter_labels.remove(0);
 
         let args = std::env::args().collect::<Vec<_>>();

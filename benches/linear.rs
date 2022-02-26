@@ -29,8 +29,8 @@ pub fn benchmark(c: &mut Criterion) {
         #[cfg(all(feature = "smawk", feature = "unicode-linebreak"))]
         {
             let options = textwrap::Options::new(LINE_LENGTH)
-                .wrap_algorithm(textwrap::wrap_algorithms::OptimalFit::new())
-                .word_separator(textwrap::word_separators::UnicodeBreakProperties);
+                .wrap_algorithm(textwrap::WrapAlgorithm::new_optimal_fit())
+                .word_separator(textwrap::WordSeparator::UnicodeBreakProperties);
             group.bench_with_input(
                 BenchmarkId::new("fill_optimal_fit_unicode", length),
                 &text,
@@ -43,8 +43,8 @@ pub fn benchmark(c: &mut Criterion) {
         #[cfg(feature = "smawk")]
         {
             let options = textwrap::Options::new(LINE_LENGTH)
-                .wrap_algorithm(textwrap::wrap_algorithms::OptimalFit::new())
-                .word_separator(textwrap::word_separators::AsciiSpace);
+                .wrap_algorithm(textwrap::WrapAlgorithm::new_optimal_fit())
+                .word_separator(textwrap::WordSeparator::AsciiSpace);
             group.bench_with_input(
                 BenchmarkId::new("fill_optimal_fit_ascii", length),
                 &text,
@@ -56,8 +56,8 @@ pub fn benchmark(c: &mut Criterion) {
 
         {
             let options = textwrap::Options::new(LINE_LENGTH)
-                .wrap_algorithm(textwrap::wrap_algorithms::FirstFit)
-                .word_separator(textwrap::word_separators::AsciiSpace);
+                .wrap_algorithm(textwrap::WrapAlgorithm::FirstFit)
+                .word_separator(textwrap::WordSeparator::AsciiSpace);
             group.bench_with_input(
                 BenchmarkId::new("fill_first_fit", length),
                 &text,
@@ -85,9 +85,9 @@ pub fn benchmark(c: &mut Criterion) {
                 .join("la.standard.bincode");
             let dictionary = Standard::from_path(Language::Latin, &path).unwrap();
             let options = textwrap::Options::new(LINE_LENGTH)
-                .wrap_algorithm(textwrap::wrap_algorithms::OptimalFit::new())
-                .word_separator(textwrap::word_separators::AsciiSpace)
-                .word_splitter(dictionary);
+                .wrap_algorithm(textwrap::WrapAlgorithm::new_optimal_fit())
+                .word_separator(textwrap::WordSeparator::AsciiSpace)
+                .word_splitter(textwrap::WordSplitter::Hyphenation(dictionary));
             group.bench_with_input(
                 BenchmarkId::new("fill_optimal_fit_ascii_hyphenation", length),
                 &text,

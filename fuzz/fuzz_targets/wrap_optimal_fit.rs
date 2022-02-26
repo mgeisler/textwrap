@@ -1,8 +1,8 @@
 #![no_main]
 use arbitrary::Arbitrary;
 use libfuzzer_sys::fuzz_target;
-use textwrap::core;
-use textwrap::wrap_algorithms::{wrap_optimal_fit, OptimalFit};
+use textwrap::wrap_algorithms::wrap_optimal_fit;
+use textwrap::{core, wrap_algorithms};
 
 #[derive(Arbitrary, Debug)]
 struct Penalties {
@@ -13,9 +13,9 @@ struct Penalties {
     hyphen_penalty: usize,
 }
 
-impl Into<OptimalFit> for Penalties {
-    fn into(self) -> OptimalFit {
-        OptimalFit {
+impl Into<wrap_algorithms::Penalties> for Penalties {
+    fn into(self) -> wrap_algorithms::Penalties {
+        wrap_algorithms::Penalties {
             nline_penalty: self.nline_penalty,
             overflow_penalty: self.overflow_penalty,
             short_last_line_fraction: std::cmp::max(1, self.short_last_line_fraction),
