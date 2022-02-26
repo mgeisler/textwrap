@@ -1773,42 +1773,6 @@ mod tests {
     }
 
     #[test]
-    fn trait_object_vec() {
-        // Create a vector of Options containing trait-objects.
-        let mut vector: Vec<Options> = Vec::new();
-        // Expected result from each options
-        let mut results = Vec::new();
-
-        let opt_full_type: Options = Options::new(10)
-            .word_splitter(WordSplitter::HyphenSplitter)
-            .word_separator(WordSeparator::AsciiSpace);
-        vector.push(opt_full_type);
-        results.push(vec!["over-", "caffinated"]);
-
-        let opt_abbreviated_type = Options::new(10)
-            .break_words(false)
-            .word_splitter(WordSplitter::NoHyphenation)
-            .word_separator(WordSeparator::AsciiSpace);
-        vector.push(opt_abbreviated_type);
-        results.push(vec!["over-caffinated"]);
-
-        #[cfg(feature = "hyphenation")]
-        {
-            let dictionary = Standard::from_embedded(Language::EnglishUS).unwrap();
-            let opt_hyp = Options::new(8)
-                .word_splitter(WordSplitter::Hyphenation(dictionary))
-                .word_separator(WordSeparator::AsciiSpace);
-            vector.push(opt_hyp);
-            results.push(vec!["over-", "caffi-", "nated"]);
-        }
-
-        // Test each entry
-        for (opt, expected) in vector.into_iter().zip(results) {
-            assert_eq!(wrap("over-caffinated", opt), expected);
-        }
-    }
-
-    #[test]
     fn wrap_columns_empty_text() {
         assert_eq!(wrap_columns("", 1, 10, "| ", "", " |"), vec!["|        |"]);
     }
