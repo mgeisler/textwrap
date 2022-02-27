@@ -122,7 +122,9 @@ impl WrapAlgorithm {
     /// **Note:** Only available when the `smawk` Cargo feature is
     /// enabled.
     #[cfg(feature = "smawk")]
-    pub const fn new_optimal_fit() -> Self { WrapAlgorithm::OptimalFit(Penalties::new()) }
+    pub const fn new_optimal_fit() -> Self {
+        WrapAlgorithm::OptimalFit(Penalties::new())
+    }
 
     /// Wrap words according to line widths.
     ///
@@ -157,7 +159,9 @@ impl WrapAlgorithm {
 }
 
 impl Default for WrapAlgorithm {
-    fn default() -> Self { WrapAlgorithm::new() }
+    fn default() -> Self {
+        WrapAlgorithm::new()
+    }
 }
 
 /// Wrap abstract fragments into lines with a first-fit algorithm.
@@ -341,6 +345,7 @@ mod tests {
     #[derive(Debug, PartialEq)]
     struct Word(f64);
 
+    #[rustfmt::skip]
     impl Fragment for Word {
         fn width(&self) -> f64 { self.0 }
         fn whitespace_width(&self) -> f64 { 1.0 }

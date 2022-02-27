@@ -61,7 +61,9 @@ pub(crate) fn skip_ansi_escape_sequence<I: Iterator<Item = char>>(ch: char, char
 
 #[cfg(feature = "unicode-width")]
 #[inline]
-fn ch_width(ch: char) -> usize { unicode_width::UnicodeWidthChar::width(ch).unwrap_or(0) }
+fn ch_width(ch: char) -> usize {
+    unicode_width::UnicodeWidthChar::width(ch).unwrap_or(0)
+}
 
 /// First character which [`ch_width`] will classify as double-width.
 /// Please see [`display_width`].
@@ -224,7 +226,9 @@ pub struct Word<'a> {
 impl std::ops::Deref for Word<'_> {
     type Target = str;
 
-    fn deref(&self) -> &Self::Target { self.word }
+    fn deref(&self) -> &Self::Target {
+        self.word
+    }
 }
 
 impl<'a> Word<'a> {
@@ -299,17 +303,23 @@ impl<'a> Word<'a> {
 
 impl Fragment for Word<'_> {
     #[inline]
-    fn width(&self) -> f64 { self.width as f64 }
+    fn width(&self) -> f64 {
+        self.width as f64
+    }
 
     // We assume the whitespace consist of ' ' only. This allows us to
     // compute the display width in constant time.
     #[inline]
-    fn whitespace_width(&self) -> f64 { self.whitespace.len() as f64 }
+    fn whitespace_width(&self) -> f64 {
+        self.whitespace.len() as f64
+    }
 
     // We assume the penalty is `""` or `"-"`. This allows us to
     // compute the display width in constant time.
     #[inline]
-    fn penalty_width(&self) -> f64 { self.penalty.len() as f64 }
+    fn penalty_width(&self) -> f64 {
+        self.penalty.len() as f64
+    }
 }
 
 /// Forcibly break words wider than `line_width` into smaller words.
