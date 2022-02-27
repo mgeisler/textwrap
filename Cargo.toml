@@ -14,10 +14,12 @@ exclude = [".github/", ".gitignore", "benches/", "examples/", "fuzz/", "images/"
 
 [[example]]
 name = "hyphenation"
+path = "examples/hyphenation.rs"
 required-features = ["hyphenation"]
 
 [[example]]
 name = "termwidth"
+path = "examples/termwidth.rs"
 required-features = ["terminal_size"]
 
 [package.metadata.docs.rs]
