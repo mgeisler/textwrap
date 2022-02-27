@@ -32,16 +32,15 @@ This is a major feature release with two main changes:
   > = Options::new(80);
   ```
 
-  is now simply
+  if types are fully written out, is now simply
 
   ```rust
   let options: Options<'_> = Options::new(80);
   ```
 
   The anonymous lifetime represent the lifetime of the
-  `initial_indent` and `subsequent_indent` strings.
-
-  The change is nearly performance neutral (a 1-2% regression).
+  `initial_indent` and `subsequent_indent` strings. The change is
+  nearly performance neutral (a 1-2% regression).
 
 Smaller improvements and changes:
 
