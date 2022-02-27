@@ -273,7 +273,9 @@ impl<'a> From<&'a Options<'a>> for Options<'a> {
 }
 
 impl<'a> From<usize> for Options<'a> {
-    fn from(width: usize) -> Self { Options::new(width) }
+    fn from(width: usize) -> Self {
+        Options::new(width)
+    }
 }
 
 impl<'a> Options<'a> {
@@ -340,7 +342,9 @@ impl<'a> Options<'a> {
     /// **Note:** Only available when the `terminal_size` feature is
     /// enabled.
     #[cfg(feature = "terminal_size")]
-    pub fn with_termwidth() -> Self { Self::new(termwidth()) }
+    pub fn with_termwidth() -> Self {
+        Self::new(termwidth())
+    }
 }
 
 impl<'a> Options<'a> {
@@ -1837,5 +1841,7 @@ mod tests {
 
     #[test]
     #[should_panic]
-    fn wrap_columns_panic_with_zero_columns() { wrap_columns("", 0, 10, "", "", ""); }
+    fn wrap_columns_panic_with_zero_columns() {
+        wrap_columns("", 0, 10, "", "", "");
+    }
 }
