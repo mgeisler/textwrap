@@ -1,1 +1,2 @@
+fn_single_line = true
 imports_granularity = "Module"

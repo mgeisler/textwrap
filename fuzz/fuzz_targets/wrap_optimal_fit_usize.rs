@@ -32,7 +32,6 @@ struct Word {
     penalty_width: usize,
 }
 
-#[rustfmt::skip]
 impl core::Fragment for Word {
     fn width(&self) -> f64 { self.width as f64 }
     fn whitespace_width(&self) -> f64 { self.whitespace_width as f64 }
