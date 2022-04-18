@@ -20,7 +20,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "__wbg_new_693216e109162396": () => (/* binding */ __wbg_new_693216e109162396),
 /* harmony export */   "__wbg_stack_0ddaca5d1abfb52f": () => (/* binding */ __wbg_stack_0ddaca5d1abfb52f),
 /* harmony export */   "__wbg_error_09919627ac0992f5": () => (/* binding */ __wbg_error_09919627ac0992f5),
-/* harmony export */   "__wbg_width_39518819e924dd3e": () => (/* binding */ __wbg_width_39518819e924dd3e),
 /* harmony export */   "__wbg_setstrokeStyle_4c9ff9ea0c0c4092": () => (/* binding */ __wbg_setstrokeStyle_4c9ff9ea0c0c4092),
 /* harmony export */   "__wbg_setfont_c663e63d7b867055": () => (/* binding */ __wbg_setfont_c663e63d7b867055),
 /* harmony export */   "__wbg_settextAlign_91332c1866343b35": () => (/* binding */ __wbg_settextAlign_91332c1866343b35),
@@ -33,6 +32,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "__wbg_save_930c4db44f1e2c73": () => (/* binding */ __wbg_save_930c4db44f1e2c73),
 /* harmony export */   "__wbg_fillText_baf70e9d9b7affdd": () => (/* binding */ __wbg_fillText_baf70e9d9b7affdd),
 /* harmony export */   "__wbg_measureText_c318f8e43e1d77ca": () => (/* binding */ __wbg_measureText_c318f8e43e1d77ca),
+/* harmony export */   "__wbg_width_39518819e924dd3e": () => (/* binding */ __wbg_width_39518819e924dd3e),
 /* harmony export */   "__wbindgen_debug_string": () => (/* binding */ __wbindgen_debug_string),
 /* harmony export */   "__wbindgen_throw": () => (/* binding */ __wbindgen_throw)
 /* harmony export */ });
@@ -522,11 +522,6 @@ function __wbg_error_09919627ac0992f5(arg0, arg1) {
     }
 };
 
-function __wbg_width_39518819e924dd3e(arg0) {
-    var ret = getObject(arg0).width;
-    return ret;
-};
-
 function __wbg_setstrokeStyle_4c9ff9ea0c0c4092(arg0, arg1) {
     getObject(arg0).strokeStyle = getObject(arg1);
 };
@@ -575,6 +570,11 @@ function __wbg_measureText_c318f8e43e1d77ca() { return handleError(function (arg
     var ret = getObject(arg0).measureText(getStringFromWasm0(arg1, arg2));
     return addHeapObject(ret);
 }, arguments) };
+
+function __wbg_width_39518819e924dd3e(arg0) {
+    var ret = getObject(arg0).width;
+    return ret;
+};
 
 function __wbindgen_debug_string(arg0, arg1) {
     var ret = debugString(getObject(arg1));
