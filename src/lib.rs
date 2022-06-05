@@ -721,7 +721,7 @@ where
 {
     let trimmed = filled_text.trim_end_matches('\n');
     let (text, options) = unfill(trimmed);
-    let mut new_options = new_width_or_options.into();
+    let mut new_options: Options = new_width_or_options.into();
     new_options.initial_indent = options.initial_indent;
     new_options.subsequent_indent = options.subsequent_indent;
     let mut refilled = fill(&text, new_options);
@@ -903,7 +903,7 @@ pub fn wrap<'a, Opt>(text: &str, width_or_options: Opt) -> Vec<Cow<'_, str>>
 where
     Opt: Into<Options<'a>>,
 {
-    let options = width_or_options.into();
+    let options: Options = width_or_options.into();
 
     let initial_width = options
         .width
@@ -1054,7 +1054,7 @@ where
 {
     assert!(columns > 0);
 
-    let mut options = total_width_or_options.into();
+    let mut options: Options = total_width_or_options.into();
 
     let inner_width = options
         .width
