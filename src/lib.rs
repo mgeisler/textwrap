@@ -345,9 +345,7 @@ impl<'a> Options<'a> {
     pub fn with_termwidth() -> Self {
         Self::new(termwidth())
     }
-}
 
-impl<'a> Options<'a> {
     /// Change [`self.initial_indent`]. The initial indentation is
     /// used on the very first line of output.
     ///
