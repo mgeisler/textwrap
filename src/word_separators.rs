@@ -134,6 +134,23 @@ impl std::fmt::Debug for WordSeparator {
 }
 
 impl WordSeparator {
+    /// Create a new word separator.
+    ///
+    /// The best available algorithm is used by default, i.e.,
+    /// [`WordSeparator::UnicodeBreakProperties`] if available,
+    /// otherwise [`WordSeparator::AsciiSpace`].
+    pub const fn new() -> Self {
+        #[cfg(feature = "unicode-linebreak")]
+        {
+            WordSeparator::UnicodeBreakProperties
+        }
+
+        #[cfg(not(feature = "unicode-linebreak"))]
+        {
+            WordSeparator::AsciiSpace
+        }
+    }
+
     // This function should really return impl Iterator<Item = Word>, but
     // this isn't possible until Rust supports higher-kinded types:
     // https://github.com/rust-lang/rfcs/blob/master/text/1522-conservative-impl-trait.md
@@ -424,5 +441,14 @@ mod tests {
             UnicodeBreakProperties.find_words(&text),
             vec![Word::from(text)]
         );
+    }
+
+    #[test]
+    fn word_separator_new() {
+        #[cfg(feature = "unicode-linebreak")]
+        assert!(matches!(WordSeparator::new(), UnicodeBreakProperties));
+
+        #[cfg(not(feature = "unicode-linebreak"))]
+        assert!(matches!(WordSeparator::new(), AsciiSpace));
     }
 }
