@@ -216,20 +216,6 @@ pub use wrap_algorithms::WrapAlgorithm;
 
 pub mod core;
 
-#[cfg(feature = "unicode-linebreak")]
-macro_rules! DefaultWordSeparator {
-    () => {
-        WordSeparator::UnicodeBreakProperties
-    };
-}
-
-#[cfg(not(feature = "unicode-linebreak"))]
-macro_rules! DefaultWordSeparator {
-    () => {
-        WordSeparator::AsciiSpace
-    };
-}
-
 /// Holds configuration options for wrapping and filling text.
 #[derive(Debug, Clone)]
 pub struct Options<'a> {
@@ -318,7 +304,7 @@ impl<'a> Options<'a> {
             initial_indent: "",
             subsequent_indent: "",
             break_words: true,
-            word_separator: DefaultWordSeparator!(),
+            word_separator: WordSeparator::new(),
             wrap_algorithm: WrapAlgorithm::new(),
             word_splitter: WordSplitter::HyphenSplitter,
         }
