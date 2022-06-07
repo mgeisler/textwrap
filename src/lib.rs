@@ -623,19 +623,18 @@ where
 /// * This is an
 ///   example of
 ///   a list item.
-/// ", LineEnding::LF);
+/// ");
 ///
 /// assert_eq!(text, "This is an example of a list item.\n");
 /// assert_eq!(options.initial_indent, "* ");
 /// assert_eq!(options.subsequent_indent, "  ");
 /// ```
-pub fn unfill(text: &str, line_ending: LineEnding) -> (String, Options<'_>) {
-    let line_ending_pat = line_ending.as_str();
-    let trimmed = text.trim_end_matches(line_ending_pat);
+pub fn unfill(text: &str) -> (String, Options<'_>) {
+    let trimmed = text.trim_end_matches(&['\r', '\n']);
     let prefix_chars: &[_] = &[' ', '-', '+', '*', '>', '#', '/'];
 
-    let mut options = Options::new(0).line_ending(line_ending);
-    for (idx, line) in trimmed.split(line_ending_pat).enumerate() {
+    let mut options = Options::new(0);
+    for (idx, line) in trimmed.split('\n').enumerate() {
         options.width = std::cmp::max(options.width, core::display_width(line));
         let without_prefix = line.trim_start_matches(prefix_chars);
         let prefix = &line[..line.len() - without_prefix.len()];
@@ -658,16 +657,24 @@ pub fn unfill(text: &str, line_ending: LineEnding) -> (String, Options<'_>) {
     }
 
     let mut unfilled = String::with_capacity(text.len());
-    for (idx, line) in trimmed.split(line_ending_pat).enumerate() {
-        if idx == 0 {
+    let mut detected_line_ending = None;
+
+    for (line, ending) in line_ending::NonEmptyLines(text) {
+        if unfilled.is_empty() {
             unfilled.push_str(&line[options.initial_indent.len()..]);
         } else {
             unfilled.push(' ');
             unfilled.push_str(&line[options.subsequent_indent.len()..]);
         }
+        match (detected_line_ending, ending) {
+            (None, Some(_)) => detected_line_ending = ending,
+            (Some(LineEnding::CRLF), Some(LineEnding::LF)) => detected_line_ending = ending,
+            _ => (),
+        }
     }
-
     unfilled.push_str(&text[trimmed.len()..]);
+
+    options.line_ending = detected_line_ending.unwrap_or(LineEnding::LF);
     (unfilled, options)
 }
 
@@ -731,7 +738,7 @@ where
 {
     let mut new_options = new_width_or_options.into();
     let trimmed = filled_text.trim_end_matches(new_options.line_ending.as_str());
-    let (text, options) = unfill(trimmed, new_options.line_ending);
+    let (text, options) = unfill(trimmed);
     new_options.initial_indent = options.initial_indent;
     new_options.subsequent_indent = options.subsequent_indent;
     let mut refilled = fill(&text, new_options);
@@ -1319,7 +1326,7 @@ mod tests {
         assert_eq!(
             wrap(
                 "Ｈｅｌｌｏ, Ｗｏｒｌｄ!",
-                Options::new(15).word_separator(WordSeparator::UnicodeBreakProperties)
+                Options::new(15).word_separator(WordSeparator::UnicodeBreakProperties),
             ),
             vec!["Ｈｅｌｌｏ, Ｗ", "ｏｒｌｄ!"]
         );
@@ -1721,21 +1728,65 @@ mod tests {
 
     #[test]
     fn unfill_simple() {
-        let (text, options) = unfill("foo\nbar", LineEnding::LF);
+        let (text, options) = unfill("foo\nbar");
         assert_eq!(text, "foo bar");
         assert_eq!(options.width, 3);
+        assert_eq!(options.line_ending, LineEnding::LF);
+    }
+
+    #[test]
+    fn unfill_no_new_line() {
+        let (text, options) = unfill("foo bar");
+        assert_eq!(text, "foo bar");
+        assert_eq!(options.width, 7);
+        assert_eq!(options.line_ending, LineEnding::LF);
+    }
+
+    #[test]
+    fn unfill_simple_crlf() {
+        let (text, options) = unfill("foo\r\nbar");
+        assert_eq!(text, "foo bar");
+        assert_eq!(options.width, 3);
+        assert_eq!(options.line_ending, LineEnding::CRLF);
+    }
+
+    /// If mixed new line sequence is encountered, we want to fallback to `\n`
+    /// 1. it is the default
+    /// 2. it still matches both `\n` and `\r\n` unlike `\r\n` which will not match `\n`
+    #[test]
+    fn unfill_mixed_new_lines() {
+        let (text, options) = unfill("foo\r\nbar\nbaz");
+        assert_eq!(text, "foo bar baz");
+        assert_eq!(options.width, 3);
+        assert_eq!(options.line_ending, LineEnding::LF);
     }
 
     #[test]
     fn unfill_trailing_newlines() {
-        let (text, options) = unfill("foo\nbar\n\n\n", LineEnding::LF);
+        let (text, options) = unfill("foo\nbar\n\n\n");
         assert_eq!(text, "foo bar\n\n\n");
         assert_eq!(options.width, 3);
     }
 
     #[test]
+    fn unfill_mixed_trailing_newlines() {
+        let (text, options) = unfill("foo\r\nbar\n\r\n\n");
+        assert_eq!(text, "foo bar\n\r\n\n");
+        assert_eq!(options.width, 3);
+        assert_eq!(options.line_ending, LineEnding::LF);
+    }
+
+    #[test]
+    fn unfill_trailing_crlf() {
+        let (text, options) = unfill("foo bar\r\n");
+        assert_eq!(text, "foo bar\r\n");
+        assert_eq!(options.width, 7);
+        assert_eq!(options.line_ending, LineEnding::CRLF);
+    }
+
+    #[test]
     fn unfill_initial_indent() {
-        let (text, options) = unfill("  foo\nbar\nbaz", LineEnding::LF);
+        let (text, options) = unfill("  foo\nbar\nbaz");
         assert_eq!(text, "foo bar baz");
         assert_eq!(options.width, 5);
         assert_eq!(options.initial_indent, "  ");
@@ -1743,7 +1794,7 @@ mod tests {
 
     #[test]
     fn unfill_differing_indents() {
-        let (text, options) = unfill("  foo\n    bar\n  baz", LineEnding::LF);
+        let (text, options) = unfill("  foo\n    bar\n  baz");
         assert_eq!(text, "foo   bar baz");
         assert_eq!(options.width, 7);
         assert_eq!(options.initial_indent, "  ");
@@ -1752,7 +1803,7 @@ mod tests {
 
     #[test]
     fn unfill_list_item() {
-        let (text, options) = unfill("* foo\n  bar\n  baz", LineEnding::LF);
+        let (text, options) = unfill("* foo\n  bar\n  baz");
         assert_eq!(text, "foo bar baz");
         assert_eq!(options.width, 5);
         assert_eq!(options.initial_indent, "* ");
@@ -1761,7 +1812,7 @@ mod tests {
 
     #[test]
     fn unfill_multiple_char_prefix() {
-        let (text, options) = unfill("    // foo bar\n    // baz\n    // quux", LineEnding::LF);
+        let (text, options) = unfill("    // foo bar\n    // baz\n    // quux");
         assert_eq!(text, "foo bar baz quux");
         assert_eq!(options.width, 14);
         assert_eq!(options.initial_indent, "    // ");
@@ -1770,7 +1821,7 @@ mod tests {
 
     #[test]
     fn unfill_block_quote() {
-        let (text, options) = unfill("> foo\n> bar\n> baz", LineEnding::LF);
+        let (text, options) = unfill("> foo\n> bar\n> baz");
         assert_eq!(text, "foo bar baz");
         assert_eq!(options.width, 5);
         assert_eq!(options.initial_indent, "> ");
@@ -1779,15 +1830,7 @@ mod tests {
 
     #[test]
     fn unfill_whitespace() {
-        assert_eq!(unfill("foo   bar", LineEnding::LF).0, "foo   bar");
-    }
-
-    #[test]
-    fn unfill_crlf() {
-        let (text, options) = unfill("foo\r\nbar", LineEnding::CRLF);
-        assert_eq!(text, "foo bar");
-        assert_eq!(options.width, 3);
-        assert_eq!(options.line_ending, LineEnding::CRLF);
+        assert_eq!(unfill("foo   bar").0, "foo   bar");
     }
 
     #[test]
