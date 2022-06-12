@@ -107,7 +107,7 @@ mod unix_only {
             // parameters. This removes the parameters, leaving only
             // the struct name behind.
             let wrap_algorithm_label = format!("{:?}", options.wrap_algorithm)
-                .split(' ')
+                .split('(')
                 .next()
                 .unwrap()
                 .to_string();
