@@ -38,7 +38,7 @@ impl FromStr for LineEnding {
 
 /// TODO
 #[derive(Debug, Clone, Copy)]
-pub struct NonEmptyLines<'a>(pub &'a str);
+pub(crate) struct NonEmptyLines<'a>(pub &'a str);
 
 impl<'a> Iterator for NonEmptyLines<'a> {
     type Item = (&'a str, Option<LineEnding>);

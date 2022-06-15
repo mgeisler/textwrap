@@ -922,7 +922,7 @@ where
 {
     let options: Options = width_or_options.into();
 
-    let line_ending_pat = options.line_ending.as_str();
+    let line_ending_str = options.line_ending.as_str();
 
     let initial_width = options
         .width
@@ -932,7 +932,7 @@ where
         .saturating_sub(core::display_width(options.subsequent_indent));
 
     let mut lines = Vec::new();
-    for line in text.split(line_ending_pat) {
+    for line in text.split(line_ending_str) {
         let words = options.word_separator.find_words(line);
         let split_words = word_splitters::split_words(words, &options.word_splitter);
         let broken_words = if options.break_words {
@@ -1831,6 +1831,14 @@ mod tests {
     #[test]
     fn unfill_whitespace() {
         assert_eq!(unfill("foo   bar").0, "foo   bar");
+    }
+
+    #[test]
+    fn refill_convert_crlf() {
+        assert_eq!(
+            refill("foo\nbar\n", Options::new(5).line_ending(LineEnding::CRLF)),
+            "foo\r\nbar\n",
+        );
     }
 
     #[test]
