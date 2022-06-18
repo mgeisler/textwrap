@@ -214,7 +214,7 @@ pub use word_splitters::WordSplitter;
 pub mod wrap_algorithms;
 pub use wrap_algorithms::WrapAlgorithm;
 
-pub mod line_ending;
+mod line_ending;
 pub use line_ending::LineEnding;
 
 pub mod core;
