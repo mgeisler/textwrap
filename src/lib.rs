@@ -601,10 +601,16 @@ where
 /// textwrap: a small library for wrapping text.
 /// ```
 ///
-/// In addition, it will recognize a common prefix among the lines.
+/// In addition, it will recognize a common prefix and a common line
+/// ending among the lines.
+///
 /// The prefix of the first line is returned in
 /// [`Options::initial_indent`] and the prefix (if any) of the the
 /// other lines is returned in [`Options::subsequent_indent`].
+///
+/// Line ending is returned in [`Options::line_ending`]. If line ending
+/// can not be confidently detected (mixed or no line endings in the
+/// input), [`LineEnding::LF`] will be returned.
 ///
 /// In addition to `' '`, the prefixes can consist of characters used
 /// for unordered lists (`'-'`, `'+'`, and `'*'`) and block quotes
