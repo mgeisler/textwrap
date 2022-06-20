@@ -650,7 +650,8 @@ where
 /// assert_eq!(options.subsequent_indent, "  ");
 /// ```
 pub fn unfill(text: &str) -> (String, Options<'_>) {
-    let trimmed = text.trim_end_matches(&['\r', '\n']);
+    let line_ending_pat: &[_] = &['\r', '\n'];
+    let trimmed = text.trim_end_matches(line_ending_pat);
     let prefix_chars: &[_] = &[' ', '-', '+', '*', '>', '#', '/'];
 
     let mut options = Options::new(0);
