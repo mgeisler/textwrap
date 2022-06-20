@@ -224,7 +224,7 @@ pub mod core;
 pub struct Options<'a> {
     /// The width in columns at which the text will be wrapped.
     pub width: usize,
-    /// TODO doc
+    /// Line ending used for breaking lines.
     pub line_ending: LineEnding,
     /// Indentation used for the first line of output. See the
     /// [`Options::initial_indent`] method.
@@ -341,7 +341,21 @@ impl<'a> Options<'a> {
         Self::new(termwidth())
     }
 
-    /// TODO
+    /// Change [`self.line_ending`]. This specifies which of the
+    /// supported line endings should be used to break the lines of the
+    /// input text.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use textwrap::{refill, LineEnding, Options};
+    ///
+    /// let options = Options::new(15).line_ending(LineEnding::CRLF);
+    /// assert_eq!(refill("This is a little example.", options),
+    ///            "This is a\r\nlittle example.");
+    /// ```
+    ///
+    /// [`self.line_ending`]: #structfield.line_ending
     pub fn line_ending(self, line_ending: LineEnding) -> Self {
         Options {
             line_ending,
