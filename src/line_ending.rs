@@ -1,6 +1,6 @@
 //! Line ending detection and conversion.
 
-use std::fmt::{Debug, Formatter};
+use std::fmt::Debug;
 
 /// Supported line endings. Like in the Rust standard library, two line
 /// endings are supported: `\r\n` and `\n`
@@ -14,19 +14,6 @@ pub enum LineEnding {
     ///  Corresponds to the ASCII control character `0x0A` or `\n`
     LF,
 }
-
-/// Returned when attempted creating [`LineEnding`] value from an
-/// unsupported `&str` value
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub struct UnsupportedLineEnding;
-
-impl std::fmt::Display for UnsupportedLineEnding {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "unsupported line ending sequence")
-    }
-}
-
-impl std::error::Error for UnsupportedLineEnding {}
 
 impl LineEnding {
     /// Turns this [`LineEnding`] value into its ASCII representation.

@@ -648,6 +648,7 @@ where
 /// assert_eq!(text, "This is an example of a list item.\n");
 /// assert_eq!(options.initial_indent, "* ");
 /// assert_eq!(options.subsequent_indent, "  ");
+/// assert_eq!(options.line_ending, LineEnding::LF);
 /// ```
 pub fn unfill(text: &str) -> (String, Options<'_>) {
     let line_ending_pat: &[_] = &['\r', '\n'];
