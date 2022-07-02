@@ -656,7 +656,7 @@ pub fn unfill(text: &str) -> (String, Options<'_>) {
     let prefix_chars: &[_] = &[' ', '-', '+', '*', '>', '#', '/'];
 
     let mut options = Options::new(0);
-    for (idx, line) in trimmed.split('\n').enumerate() {
+    for (idx, line) in trimmed.lines().enumerate() {
         options.width = std::cmp::max(options.width, core::display_width(line));
         let without_prefix = line.trim_start_matches(prefix_chars);
         let prefix = &line[..line.len() - without_prefix.len()];
