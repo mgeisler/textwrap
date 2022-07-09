@@ -35,6 +35,11 @@ name = "indent"
 harness = false
 path = "benches/indent.rs"
 
+[[bench]]
+name = "unfill"
+harness = false
+path = "benches/unfill.rs"
+
 [features]
 default = ["unicode-linebreak", "unicode-width", "smawk"]
 

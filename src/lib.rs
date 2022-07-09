@@ -214,6 +214,9 @@ pub use word_splitters::WordSplitter;
 pub mod wrap_algorithms;
 pub use wrap_algorithms::WrapAlgorithm;
 
+mod line_ending;
+pub use line_ending::LineEnding;
+
 pub mod core;
 
 /// Holds configuration options for wrapping and filling text.
@@ -221,6 +224,8 @@ pub mod core;
 pub struct Options<'a> {
     /// The width in columns at which the text will be wrapped.
     pub width: usize,
+    /// Line ending used for breaking lines.
+    pub line_ending: LineEnding,
     /// Indentation used for the first line of output. See the
     /// [`Options::initial_indent`] method.
     pub initial_indent: &'a str,
@@ -248,6 +253,7 @@ impl<'a> From<&'a Options<'a>> for Options<'a> {
     fn from(options: &'a Options<'a>) -> Self {
         Self {
             width: options.width,
+            line_ending: options.line_ending,
             initial_indent: options.initial_indent,
             subsequent_indent: options.subsequent_indent,
             break_words: options.break_words,
@@ -268,12 +274,13 @@ impl<'a> Options<'a> {
     /// Creates a new [`Options`] with the specified width. Equivalent to
     ///
     /// ```
-    /// # use textwrap::{Options, WordSplitter, WordSeparator, WrapAlgorithm};
+    /// # use textwrap::{LineEnding, Options, WordSplitter, WordSeparator, WrapAlgorithm};
     /// # let width = 80;
     /// # let actual = Options::new(width);
     /// # let expected =
     /// Options {
     ///     width: width,
+    ///     line_ending: LineEnding::LF,
     ///     initial_indent: "",
     ///     subsequent_indent: "",
     ///     break_words: true,
@@ -289,6 +296,7 @@ impl<'a> Options<'a> {
     /// }
     /// # ;
     /// # assert_eq!(actual.width, expected.width);
+    /// # assert_eq!(actual.line_ending, expected.line_ending);
     /// # assert_eq!(actual.initial_indent, expected.initial_indent);
     /// # assert_eq!(actual.subsequent_indent, expected.subsequent_indent);
     /// # assert_eq!(actual.break_words, expected.break_words);
@@ -301,6 +309,7 @@ impl<'a> Options<'a> {
     pub const fn new(width: usize) -> Self {
         Options {
             width,
+            line_ending: LineEnding::LF,
             initial_indent: "",
             subsequent_indent: "",
             break_words: true,
@@ -330,6 +339,28 @@ impl<'a> Options<'a> {
     #[cfg(feature = "terminal_size")]
     pub fn with_termwidth() -> Self {
         Self::new(termwidth())
+    }
+
+    /// Change [`self.line_ending`]. This specifies which of the
+    /// supported line endings should be used to break the lines of the
+    /// input text.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use textwrap::{refill, LineEnding, Options};
+    ///
+    /// let options = Options::new(15).line_ending(LineEnding::CRLF);
+    /// assert_eq!(refill("This is a little example.", options),
+    ///            "This is a\r\nlittle example.");
+    /// ```
+    ///
+    /// [`self.line_ending`]: #structfield.line_ending
+    pub fn line_ending(self, line_ending: LineEnding) -> Self {
+        Options {
+            line_ending,
+            ..self
+        }
     }
 
     /// Change [`self.initial_indent`]. The initial indentation is
@@ -428,6 +459,7 @@ impl<'a> Options<'a> {
     pub fn word_separator(self, word_separator: WordSeparator) -> Options<'a> {
         Options {
             width: self.width,
+            line_ending: self.line_ending,
             initial_indent: self.initial_indent,
             subsequent_indent: self.subsequent_indent,
             break_words: self.break_words,
@@ -446,6 +478,7 @@ impl<'a> Options<'a> {
     pub fn wrap_algorithm(self, wrap_algorithm: WrapAlgorithm) -> Options<'a> {
         Options {
             width: self.width,
+            line_ending: self.line_ending,
             initial_indent: self.initial_indent,
             subsequent_indent: self.subsequent_indent,
             break_words: self.break_words,
@@ -473,6 +506,7 @@ impl<'a> Options<'a> {
     pub fn word_splitter(self, word_splitter: WordSplitter) -> Options<'a> {
         Options {
             width: self.width,
+            line_ending: self.line_ending,
             initial_indent: self.initial_indent,
             subsequent_indent: self.subsequent_indent,
             break_words: self.break_words,
@@ -546,13 +580,16 @@ pub fn fill<'a, Opt>(text: &str, width_or_options: Opt) -> String
 where
     Opt: Into<Options<'a>>,
 {
+    let options = width_or_options.into();
+    let line_ending_str = options.line_ending.as_str();
+
     // This will avoid reallocation in simple cases (no
     // indentation, no hyphenation).
     let mut result = String::with_capacity(text.len());
 
-    for (i, line) in wrap(text, width_or_options).iter().enumerate() {
+    for (i, line) in wrap(text, options).iter().enumerate() {
         if i > 0 {
-            result.push('\n');
+            result.push_str(line_ending_str);
         }
         result.push_str(line);
     }
@@ -578,10 +615,16 @@ where
 /// textwrap: a small library for wrapping text.
 /// ```
 ///
-/// In addition, it will recognize a common prefix among the lines.
+/// In addition, it will recognize a common prefix and a common line
+/// ending among the lines.
+///
 /// The prefix of the first line is returned in
 /// [`Options::initial_indent`] and the prefix (if any) of the the
 /// other lines is returned in [`Options::subsequent_indent`].
+///
+/// Line ending is returned in [`Options::line_ending`]. If line ending
+/// can not be confidently detected (mixed or no line endings in the
+/// input), [`LineEnding::LF`] will be returned.
 ///
 /// In addition to `' '`, the prefixes can consist of characters used
 /// for unordered lists (`'-'`, `'+'`, and `'*'`) and block quotes
@@ -594,7 +637,7 @@ where
 /// # Examples
 ///
 /// ```
-/// use textwrap::unfill;
+/// use textwrap::{LineEnding, unfill};
 ///
 /// let (text, options) = unfill("\
 /// * This is an
@@ -605,13 +648,15 @@ where
 /// assert_eq!(text, "This is an example of a list item.\n");
 /// assert_eq!(options.initial_indent, "* ");
 /// assert_eq!(options.subsequent_indent, "  ");
+/// assert_eq!(options.line_ending, LineEnding::LF);
 /// ```
 pub fn unfill(text: &str) -> (String, Options<'_>) {
-    let trimmed = text.trim_end_matches('\n');
+    let line_ending_pat: &[_] = &['\r', '\n'];
+    let trimmed = text.trim_end_matches(line_ending_pat);
     let prefix_chars: &[_] = &[' ', '-', '+', '*', '>', '#', '/'];
 
     let mut options = Options::new(0);
-    for (idx, line) in trimmed.split('\n').enumerate() {
+    for (idx, line) in trimmed.lines().enumerate() {
         options.width = std::cmp::max(options.width, core::display_width(line));
         let without_prefix = line.trim_start_matches(prefix_chars);
         let prefix = &line[..line.len() - without_prefix.len()];
@@ -634,16 +679,24 @@ pub fn unfill(text: &str) -> (String, Options<'_>) {
     }
 
     let mut unfilled = String::with_capacity(text.len());
-    for (idx, line) in trimmed.split('\n').enumerate() {
-        if idx == 0 {
+    let mut detected_line_ending = None;
+
+    for (line, ending) in line_ending::NonEmptyLines(text) {
+        if unfilled.is_empty() {
             unfilled.push_str(&line[options.initial_indent.len()..]);
         } else {
             unfilled.push(' ');
             unfilled.push_str(&line[options.subsequent_indent.len()..]);
         }
+        match (detected_line_ending, ending) {
+            (None, Some(_)) => detected_line_ending = ending,
+            (Some(LineEnding::CRLF), Some(LineEnding::LF)) => detected_line_ending = ending,
+            _ => (),
+        }
     }
-
     unfilled.push_str(&text[trimmed.len()..]);
+
+    options.line_ending = detected_line_ending.unwrap_or(LineEnding::LF);
     (unfilled, options)
 }
 
@@ -705,9 +758,9 @@ pub fn refill<'a, Opt>(filled_text: &str, new_width_or_options: Opt) -> String
 where
     Opt: Into<Options<'a>>,
 {
-    let trimmed = filled_text.trim_end_matches('\n');
+    let mut new_options = new_width_or_options.into();
+    let trimmed = filled_text.trim_end_matches(new_options.line_ending.as_str());
     let (text, options) = unfill(trimmed);
-    let mut new_options: Options = new_width_or_options.into();
     new_options.initial_indent = options.initial_indent;
     new_options.subsequent_indent = options.subsequent_indent;
     let mut refilled = fill(&text, new_options);
@@ -891,6 +944,8 @@ where
 {
     let options: Options = width_or_options.into();
 
+    let line_ending_str = options.line_ending.as_str();
+
     let initial_width = options
         .width
         .saturating_sub(core::display_width(options.initial_indent));
@@ -899,7 +954,7 @@ where
         .saturating_sub(core::display_width(options.subsequent_indent));
 
     let mut lines = Vec::new();
-    for line in text.split('\n') {
+    for line in text.split(line_ending_str) {
         let words = options.word_separator.find_words(line);
         let split_words = word_splitters::split_words(words, &options.word_splitter);
         let broken_words = if options.break_words {
@@ -1095,10 +1150,11 @@ where
 /// [`fill`] with these options:
 ///
 /// ```
-/// # use textwrap::{core, Options, WordSplitter, WordSeparator, WrapAlgorithm};
+/// # use textwrap::{core, LineEnding, Options, WordSplitter, WordSeparator, WrapAlgorithm};
 /// # let width = 80;
 /// Options {
 ///     width: width,
+///     line_ending: LineEnding::LF,
 ///     initial_indent: "",
 ///     subsequent_indent: "",
 ///     break_words: false,
@@ -1292,7 +1348,7 @@ mod tests {
         assert_eq!(
             wrap(
                 "Ｈｅｌｌｏ, Ｗｏｒｌｄ!",
-                Options::new(15).word_separator(WordSeparator::UnicodeBreakProperties)
+                Options::new(15).word_separator(WordSeparator::UnicodeBreakProperties),
             ),
             vec!["Ｈｅｌｌｏ, Ｗ", "ｏｒｌｄ!"]
         );
@@ -1697,6 +1753,34 @@ mod tests {
         let (text, options) = unfill("foo\nbar");
         assert_eq!(text, "foo bar");
         assert_eq!(options.width, 3);
+        assert_eq!(options.line_ending, LineEnding::LF);
+    }
+
+    #[test]
+    fn unfill_no_new_line() {
+        let (text, options) = unfill("foo bar");
+        assert_eq!(text, "foo bar");
+        assert_eq!(options.width, 7);
+        assert_eq!(options.line_ending, LineEnding::LF);
+    }
+
+    #[test]
+    fn unfill_simple_crlf() {
+        let (text, options) = unfill("foo\r\nbar");
+        assert_eq!(text, "foo bar");
+        assert_eq!(options.width, 3);
+        assert_eq!(options.line_ending, LineEnding::CRLF);
+    }
+
+    /// If mixed new line sequence is encountered, we want to fallback to `\n`
+    /// 1. it is the default
+    /// 2. it still matches both `\n` and `\r\n` unlike `\r\n` which will not match `\n`
+    #[test]
+    fn unfill_mixed_new_lines() {
+        let (text, options) = unfill("foo\r\nbar\nbaz");
+        assert_eq!(text, "foo bar baz");
+        assert_eq!(options.width, 3);
+        assert_eq!(options.line_ending, LineEnding::LF);
     }
 
     #[test]
@@ -1704,6 +1788,22 @@ mod tests {
         let (text, options) = unfill("foo\nbar\n\n\n");
         assert_eq!(text, "foo bar\n\n\n");
         assert_eq!(options.width, 3);
+    }
+
+    #[test]
+    fn unfill_mixed_trailing_newlines() {
+        let (text, options) = unfill("foo\r\nbar\n\r\n\n");
+        assert_eq!(text, "foo bar\n\r\n\n");
+        assert_eq!(options.width, 3);
+        assert_eq!(options.line_ending, LineEnding::LF);
+    }
+
+    #[test]
+    fn unfill_trailing_crlf() {
+        let (text, options) = unfill("foo bar\r\n");
+        assert_eq!(text, "foo bar\r\n");
+        assert_eq!(options.width, 7);
+        assert_eq!(options.line_ending, LineEnding::CRLF);
     }
 
     #[test]
@@ -1753,6 +1853,14 @@ mod tests {
     #[test]
     fn unfill_whitespace() {
         assert_eq!(unfill("foo   bar").0, "foo   bar");
+    }
+
+    #[test]
+    fn refill_convert_crlf() {
+        assert_eq!(
+            refill("foo\nbar\n", Options::new(5).line_ending(LineEnding::CRLF)),
+            "foo\r\nbar\n",
+        );
     }
 
     #[test]
