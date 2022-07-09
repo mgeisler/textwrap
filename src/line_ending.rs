@@ -4,7 +4,7 @@ use std::fmt::Debug;
 
 /// Supported line endings. Like in the Rust standard library, two line
 /// endings are supported: `\r\n` and `\n`
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum LineEnding {
     /// _Carriage return and line feed_ – a line ending sequence
     /// historically used in Windows. Corresponds to the sequence
@@ -50,12 +50,11 @@ impl<'a> Iterator for NonEmptyLines<'a> {
             self.0 = &self.0[(lf + 1)..];
             return Some(trimmed);
         }
-        if self.0.len() > 0 {
-            let result = Some((self.0, None));
-            self.0 = "";
-            return result;
+        if self.0.is_empty() {
+            None
         } else {
-            return None;
+            let line = std::mem::take(&mut self.0);
+            Some((line, None))
         }
     }
 }
