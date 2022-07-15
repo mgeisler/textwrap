@@ -522,6 +522,11 @@ function __wbg_error_09919627ac0992f5(arg0, arg1) {
     }
 };
 
+function __wbg_width_1d637c56a808b6a2(arg0) {
+    const ret = getObject(arg0).width;
+    return ret;
+};
+
 function __wbg_setstrokeStyle_32540003cbfe210b(arg0, arg1) {
     getObject(arg0).strokeStyle = getObject(arg1);
 };
@@ -570,11 +575,6 @@ function __wbg_measureText_7137f00ee7bb9969() { return handleError(function (arg
     const ret = getObject(arg0).measureText(getStringFromWasm0(arg1, arg2));
     return addHeapObject(ret);
 }, arguments) };
-
-function __wbg_width_1d637c56a808b6a2(arg0) {
-    const ret = getObject(arg0).width;
-    return ret;
-};
 
 function __wbindgen_debug_string(arg0, arg1) {
     const ret = debugString(getObject(arg1));
