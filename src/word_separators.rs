@@ -171,13 +171,7 @@ fn find_words_ascii_space<'a>(line: &'a str) -> Box<dyn Iterator<Item = Word<'a>
     let mut char_indices = line.char_indices();
 
     Box::new(std::iter::from_fn(move || {
-        // for (idx, ch) in char_indices does not work, gives this
-        // error:
-        //
-        // > cannot move out of `char_indices`, a captured variable in
-        // > an `FnMut` closure
-        #[allow(clippy::while_let_on_iterator)]
-        while let Some((idx, ch)) = char_indices.next() {
+        for (idx, ch) in char_indices.by_ref() {
             if in_whitespace && ch != ' ' {
                 let word = Word::from(&line[start..idx]);
                 start = idx;
@@ -269,8 +263,7 @@ fn find_words_unicode_break_properties<'a>(
 
     let mut start = 0;
     Box::new(std::iter::from_fn(move || {
-        #[allow(clippy::while_let_on_iterator)]
-        while let Some((idx, _)) = opportunities.next() {
+        for (idx, _) in opportunities.by_ref() {
             if let Some((orig_idx, _)) = idx_map.find(|&(_, stripped_idx)| stripped_idx == idx) {
                 let word = Word::from(&line[start..orig_idx]);
                 start = orig_idx;
