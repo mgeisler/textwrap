@@ -681,8 +681,8 @@ pub fn unfill(text: &str) -> (String, Options<'_>) {
     let mut unfilled = String::with_capacity(text.len());
     let mut detected_line_ending = None;
 
-    for (line, ending) in line_ending::NonEmptyLines(text) {
-        if unfilled.is_empty() {
+    for (idx, (line, ending)) in line_ending::NonEmptyLines(text).enumerate() {
+        if idx == 0 {
             unfilled.push_str(&line[options.initial_indent.len()..]);
         } else {
             unfilled.push(' ');
@@ -1848,6 +1848,17 @@ mod tests {
         assert_eq!(options.width, 5);
         assert_eq!(options.initial_indent, "> ");
         assert_eq!(options.subsequent_indent, "> ");
+    }
+
+    #[test]
+    fn unfill_only_prefixes_issue_466() {
+        // Test that we don't crash if the first line has only prefix
+        // chars *and* the second line is shorter than the first line.
+        let (text, options) = unfill("######\nfoo");
+        assert_eq!(text, " foo");
+        assert_eq!(options.width, 6);
+        assert_eq!(options.initial_indent, "######");
+        assert_eq!(options.subsequent_indent, "");
     }
 
     #[test]
