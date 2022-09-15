@@ -428,6 +428,9 @@ impl<'a> Options<'a> {
     /// than `self.width` can be broken, or if they will be left
     /// sticking out into the right margin.
     ///
+    /// See [`Options::word_splitter`] instead if you want to control
+    /// hyphenation.
+    ///
     /// # Examples
     ///
     /// ```
@@ -492,14 +495,31 @@ impl<'a> Options<'a> {
     /// [`word_splitters::WordSplitter`] is used to fit part of a word
     /// into the current line when wrapping text.
     ///
+    /// See [`Options::break_words`] instead if you want to control the
+    /// handling of words longer than the line width.
+    ///
     /// # Examples
     ///
     /// ```
-    /// use textwrap::{Options, WordSplitter};
-    /// let opt = Options::new(80);
-    /// assert_eq!(opt.word_splitter, WordSplitter::HyphenSplitter);
-    /// let opt = opt.word_splitter(WordSplitter::NoHyphenation);
-    /// assert_eq!(opt.word_splitter, WordSplitter::NoHyphenation);
+    /// use textwrap::{wrap, Options, WordSplitter};
+    ///
+    /// // The default is WordSplitter::HyphenSplitter.
+    /// let options = Options::new(5);
+    /// assert_eq!(wrap("foo-bar-baz", &options),
+    ///            vec!["foo-", "bar-", "baz"]);
+    ///
+    /// // The word is now so long that break_words kick in:
+    /// let options = Options::new(5)
+    ///     .word_splitter(WordSplitter::NoHyphenation);
+    /// assert_eq!(wrap("foo-bar-baz", &options),
+    ///            vec!["foo-b", "ar-ba", "z"]);
+    ///
+    /// // If you want to breaks at all, disable both:
+    /// let options = Options::new(5)
+    ///     .break_words(false)
+    ///     .word_splitter(WordSplitter::NoHyphenation);
+    /// assert_eq!(wrap("foo-bar-baz", &options),
+    ///            vec!["foo-bar-baz"]);
     /// ```
     ///
     /// [`self.word_splitter`]: #structfield.word_splitter
