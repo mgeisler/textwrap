@@ -632,7 +632,9 @@ where
 /// comments (`'#'` and `'/'`).
 ///
 /// The text must come from a single wrapped paragraph. This means
-/// that there can be no `"\n\n"` within the text.
+/// that there can be no empty lines (`"\n\n"` or `"\r\n\r\n"`) within
+/// the text. It is unspecified what happens if `unfill` is called on
+/// more than one paragraph of text.
 ///
 /// # Examples
 ///
@@ -651,12 +653,10 @@ where
 /// assert_eq!(options.line_ending, LineEnding::LF);
 /// ```
 pub fn unfill(text: &str) -> (String, Options<'_>) {
-    let line_ending_pat: &[_] = &['\r', '\n'];
-    let trimmed = text.trim_end_matches(line_ending_pat);
     let prefix_chars: &[_] = &[' ', '-', '+', '*', '>', '#', '/'];
 
     let mut options = Options::new(0);
-    for (idx, line) in trimmed.lines().enumerate() {
+    for (idx, line) in text.lines().enumerate() {
         options.width = std::cmp::max(options.width, core::display_width(line));
         let without_prefix = line.trim_start_matches(prefix_chars);
         let prefix = &line[..line.len() - without_prefix.len()];
@@ -694,7 +694,13 @@ pub fn unfill(text: &str) -> (String, Options<'_>) {
             _ => (),
         }
     }
-    unfilled.push_str(&text[trimmed.len()..]);
+
+    // Add back a line ending if `text` ends with the one we detect.
+    if let Some(line_ending) = detected_line_ending {
+        if text.ends_with(line_ending.as_str()) {
+            unfilled.push_str(line_ending.as_str());
+        }
+    }
 
     options.line_ending = detected_line_ending.unwrap_or(LineEnding::LF);
     (unfilled, options)
@@ -1772,9 +1778,6 @@ mod tests {
         assert_eq!(options.line_ending, LineEnding::CRLF);
     }
 
-    /// If mixed new line sequence is encountered, we want to fallback to `\n`
-    /// 1. it is the default
-    /// 2. it still matches both `\n` and `\r\n` unlike `\r\n` which will not match `\n`
     #[test]
     fn unfill_mixed_new_lines() {
         let (text, options) = unfill("foo\r\nbar\nbaz");
@@ -1786,14 +1789,14 @@ mod tests {
     #[test]
     fn unfill_trailing_newlines() {
         let (text, options) = unfill("foo\nbar\n\n\n");
-        assert_eq!(text, "foo bar\n\n\n");
+        assert_eq!(text, "foo bar\n");
         assert_eq!(options.width, 3);
     }
 
     #[test]
     fn unfill_mixed_trailing_newlines() {
         let (text, options) = unfill("foo\r\nbar\n\r\n\n");
-        assert_eq!(text, "foo bar\n\r\n\n");
+        assert_eq!(text, "foo bar\n");
         assert_eq!(options.width, 3);
         assert_eq!(options.line_ending, LineEnding::LF);
     }
@@ -1858,6 +1861,19 @@ mod tests {
         assert_eq!(text, " foo");
         assert_eq!(options.width, 6);
         assert_eq!(options.initial_indent, "######");
+        assert_eq!(options.subsequent_indent, "");
+    }
+
+    #[test]
+    fn unfill_trailing_newlines_issue_466() {
+        // Test that we don't crash on a '\r' following a string of
+        // '\n'. The problem was that we removed both kinds of
+        // characters in one code path, but not in the other.
+        let (text, options) = unfill("foo\n##\n\n\r");
+        // The \n\n changes subsequent_indent to "".
+        assert_eq!(text, "foo ## \r");
+        assert_eq!(options.width, 3);
+        assert_eq!(options.initial_indent, "");
         assert_eq!(options.subsequent_indent, "");
     }
 
