@@ -765,12 +765,19 @@ where
     Opt: Into<Options<'a>>,
 {
     let mut new_options = new_width_or_options.into();
-    let trimmed = filled_text.trim_end_matches(new_options.line_ending.as_str());
-    let (text, options) = unfill(trimmed);
+    let (text, options) = unfill(filled_text);
+    // The original line ending is kept by `unfill`.
+    let stripped = text.strip_suffix(options.line_ending.as_str());
+    let new_line_ending = new_options.line_ending.as_str();
+
     new_options.initial_indent = options.initial_indent;
     new_options.subsequent_indent = options.subsequent_indent;
-    let mut refilled = fill(&text, new_options);
-    refilled.push_str(&filled_text[trimmed.len()..]);
+    let mut refilled = fill(stripped.unwrap_or(&text), new_options);
+
+    // Add back right line ending if we stripped one off above.
+    if stripped.is_some() {
+        refilled.push_str(new_line_ending);
+    }
     refilled
 }
 
@@ -1883,11 +1890,26 @@ mod tests {
     }
 
     #[test]
-    fn refill_convert_crlf() {
-        assert_eq!(
-            refill("foo\nbar\n", Options::new(5).line_ending(LineEnding::CRLF)),
-            "foo\r\nbar\n",
-        );
+    fn refill_convert_lf_to_crlf() {
+        let options = Options::new(5).line_ending(LineEnding::CRLF);
+        assert_eq!(refill("foo\nbar\n", options), "foo\r\nbar\r\n",);
+    }
+
+    #[test]
+    fn refill_convert_crlf_to_lf() {
+        let options = Options::new(5).line_ending(LineEnding::LF);
+        assert_eq!(refill("foo\r\nbar\r\n", options), "foo\nbar\n",);
+    }
+
+    #[test]
+    fn refill_convert_mixed_newlines() {
+        let options = Options::new(5).line_ending(LineEnding::CRLF);
+        assert_eq!(refill("foo\r\nbar\n", options), "foo\r\nbar\r\n",);
+    }
+
+    #[test]
+    fn refill_defaults_to_lf() {
+        assert_eq!(refill("foo bar baz", 5), "foo\nbar\nbaz");
     }
 
     #[test]
