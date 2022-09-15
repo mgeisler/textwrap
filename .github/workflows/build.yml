@@ -120,6 +120,8 @@ jobs:
           - wrap_first_fit
           - wrap_optimal_fit
           - wrap_optimal_fit_usize
+          - unfill
+          - refill
 
     steps:
       - name: Checkout repository

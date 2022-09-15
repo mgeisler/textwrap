@@ -47,3 +47,15 @@ name = "wrap_optimal_fit_usize"
 path = "fuzz_targets/wrap_optimal_fit_usize.rs"
 test = false
 doc = false
+
+[[bin]]
+name = "refill"
+path = "fuzz_targets/refill.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "unfill"
+path = "fuzz_targets/unfill.rs"
+test = false
+doc = false
