@@ -293,8 +293,8 @@ mod tests {
         };
     }
 
-    fn to_words<'a>(words: Vec<&'a str>) -> Vec<Word<'a>> {
-        words.into_iter().map(|w: &str| Word::from(&w)).collect()
+    fn to_words(words: Vec<&str>) -> Vec<Word<'_>> {
+        words.into_iter().map(Word::from).collect()
     }
 
     macro_rules! test_find_words {
@@ -427,11 +427,11 @@ mod tests {
     #[test]
     fn find_words_color_inside_word() {
         let text = "foo\u{1b}[0m\u{1b}[32mbar\u{1b}[0mbaz";
-        assert_iter_eq!(AsciiSpace.find_words(&text), vec![Word::from(text)]);
+        assert_iter_eq!(AsciiSpace.find_words(text), vec![Word::from(text)]);
 
         #[cfg(feature = "unicode-linebreak")]
         assert_iter_eq!(
-            UnicodeBreakProperties.find_words(&text),
+            UnicodeBreakProperties.find_words(text),
             vec![Word::from(text)]
         );
     }
