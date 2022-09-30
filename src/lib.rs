@@ -146,6 +146,8 @@
 //!   This feature can be disabled if you only ever intend to use
 //!   [`wrap_algorithms::wrap_first_fit`].
 //!
+//! <!-- begin binary-sizes -->
+//!
 //! With Rust 1.59.0, the size impact of the above features on your
 //! binary is as follows:
 //!
@@ -156,6 +158,8 @@
 //! | textwrap with smawk                      |       317 KB |    28 KB |
 //! | textwrap with unicode-width              |       313 KB |    24 KB |
 //! | textwrap with unicode-linebreak          |       395 KB |   106 KB |
+//!
+//! <!-- end binary-sizes -->
 //!
 //! The above sizes are the stripped sizes and the binary is compiled
 //! in release mode with this profile:
