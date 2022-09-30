@@ -20,3 +20,6 @@ hyphenation = ["textwrap/hyphenation"]
 
 [dependencies]
 textwrap = { path = "../../", default-features = false, optional = true }
+
+[dev-dependencies]
+textwrap = { path = "../../" }
