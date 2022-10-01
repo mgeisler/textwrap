@@ -35,7 +35,7 @@ jobs:
 
   pull-request:
     needs: setup
-    if: ${{ needs.setup.outputs.old-version != needs.setup.outputs.new-version }}
+    if: needs.setup.outputs.old-version != needs.setup.outputs.new-version
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
