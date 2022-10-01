@@ -1,0 +1,32 @@
+[package]
+name = "textwrap-benchmarks"
+version = "0.1.0"
+edition = "2021"
+authors = ["Martin Geisler <martin@geisler.net>"]
+description = "Textwrap benchmarks"
+repository = "https://github.com/mgeisler/textwrap"
+license-file = "../LICENSE"
+publish = false  # This should not be uploaded to crates.io
+
+[[bench]]
+name = "linear"
+harness = false
+path = "linear.rs"
+
+[[bench]]
+name = "indent"
+harness = false
+path = "indent.rs"
+
+[[bench]]
+name = "unfill"
+harness = false
+path = "unfill.rs"
+
+[dependencies]
+textwrap = { path = "../", features = ["hyphenation"] }
+
+[dev-dependencies]
+criterion = "0.4.0"
+lipsum = "0.8.0"
+hyphenation = { version = "0.8.4", features = ["embed_en-us"] }
