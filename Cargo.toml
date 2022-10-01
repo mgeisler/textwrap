@@ -51,7 +51,7 @@ unicode-linebreak = { version = "0.1.4", optional = true }
 unicode-width = { version = "0.1.10", optional = true }
 
 [dev-dependencies]
-criterion = "0.3.5"
+criterion = "0.4.0"
 lipsum = "0.8.0"
 unic-emoji-char = "0.9.0"
 version-sync = "0.9.4"
