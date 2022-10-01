@@ -37,7 +37,7 @@ jobs:
       - name: Install ${{ matrix.rust }} Rust
         run: rustup default ${{ matrix.rust }}
 
-      - uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@v2
 
       - name: Test with ${{ matrix.features }}
         run: |
@@ -56,7 +56,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@v2
 
       - name: Test with default features
         run: cargo test
@@ -69,7 +69,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: benchmarks -> target
 
       - name: Build all benchmarks
         run: cargo bench --no-run
@@ -82,7 +84,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@v2
 
       - name: Build documentation and check intra-doc links
         env:
@@ -96,7 +98,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@v2
 
       - name: Clippy with default lints
         run: cargo clippy
@@ -125,7 +127,9 @@ jobs:
       - name: Install nightly Rust
         run: rustup default nightly
 
-      - uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: fuzz -> target
 
       - name: Install cargo-fuzz
         run: cargo install cargo-fuzz
@@ -151,7 +155,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: examples/binary-sizes -> target
 
       - name: Make binary size table
         run: cargo run --example make-table
@@ -167,7 +173,9 @@ jobs:
       - name: Install wasm-pack
         run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
 
-      - uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: examples/wasm -> target
 
       - name: Build textwrap-wasm-demo
         run: wasm-pack build
