@@ -37,10 +37,6 @@ jobs:
       - name: Install ${{ matrix.rust }} Rust
         run: rustup default ${{ matrix.rust }}
 
-      - name: Remove Criterion on Rust 1.56
-        if: matrix.rust == '1.56'
-        run: sed -i -e '/^criterion =/d' Cargo.toml
-
       - uses: Swatinem/rust-cache@v1
 
       - name: Test with ${{ matrix.features }}
@@ -65,9 +61,9 @@ jobs:
       - name: Test with default features
         run: cargo test
 
-  # This builds examples and benchmarks, which are not covered above.
-  build-all:
-    name: Build all targets
+  # This builds benchmarks, which are not covered above.
+  build-benchmarks:
+    name: Build benchmarks
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -75,14 +71,9 @@ jobs:
 
       - uses: Swatinem/rust-cache@v1
 
-      - name: Build all targets with default features
-        run: cargo build --all-targets
-
-      - name: Build all targets without default features
-        run: cargo build --all-targets --no-default-features
-
-      - name: Build all targets with all features
-        run: cargo build --all-targets --all-features
+      - name: Build all benchmarks
+        run: cargo bench --no-run
+        working-directory: benchmarks
 
   build-documentation:
     name: Build documentation

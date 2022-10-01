@@ -10,7 +10,7 @@ keywords = ["text", "formatting", "wrap", "typesetting", "hyphenation"]
 categories = ["text-processing", "command-line-interface"]
 license = "MIT"
 edition = "2021"
-exclude = [".github/", ".gitignore", "benches/", "examples/", "fuzz/", "images/"]
+exclude = [".github/", ".gitignore", "benchmarks/", "examples/", "fuzz/", "images/"]
 
 [[example]]
 name = "hyphenation"
@@ -25,21 +25,6 @@ required-features = ["terminal_size"]
 [package.metadata.docs.rs]
 all-features = true
 
-[[bench]]
-name = "linear"
-harness = false
-path = "benches/linear.rs"
-
-[[bench]]
-name = "indent"
-harness = false
-path = "benches/indent.rs"
-
-[[bench]]
-name = "unfill"
-harness = false
-path = "benches/unfill.rs"
-
 [features]
 default = ["unicode-linebreak", "unicode-width", "smawk"]
 
@@ -51,8 +36,6 @@ unicode-linebreak = { version = "0.1.4", optional = true }
 unicode-width = { version = "0.1.10", optional = true }
 
 [dev-dependencies]
-criterion = "0.4.0"
-lipsum = "0.8.0"
 unic-emoji-char = "0.9.0"
 version-sync = "0.9.4"
 
