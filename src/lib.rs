@@ -1006,77 +1006,86 @@ where
     let subsequent_width = options
         .width
         .saturating_sub(core::display_width(options.subsequent_indent));
+    let line_widths = [initial_width, subsequent_width];
 
     let mut lines = Vec::new();
     for line in text.split(line_ending_str) {
-        let words = options.word_separator.find_words(line);
-        let split_words = word_splitters::split_words(words, &options.word_splitter);
-        let broken_words = if options.break_words {
-            let mut broken_words = core::break_words(split_words, subsequent_width);
-            if !options.initial_indent.is_empty() {
-                // Without this, the first word will always go into
-                // the first line. However, since we break words based
-                // on the _second_ line width, it can be wrong to
-                // unconditionally put the first word onto the first
-                // line. An empty zero-width word fixed this.
-                broken_words.insert(0, core::Word::from(""));
-            }
-            broken_words
-        } else {
-            split_words.collect::<Vec<_>>()
-        };
-
-        let line_widths = [initial_width, subsequent_width];
-        let wrapped_words = options.wrap_algorithm.wrap(&broken_words, &line_widths);
-
-        let mut idx = 0;
-        for words in wrapped_words {
-            let last_word = match words.last() {
-                None => {
-                    lines.push(Cow::from(""));
-                    continue;
-                }
-                Some(word) => word,
-            };
-
-            // We assume here that all words are contiguous in `line`.
-            // That is, the sum of their lengths should add up to the
-            // length of `line`.
-            let len = words
-                .iter()
-                .map(|word| word.len() + word.whitespace.len())
-                .sum::<usize>()
-                - last_word.whitespace.len();
-
-            // The result is owned if we have indentation, otherwise
-            // we can simply borrow an empty string.
-            let mut result = if lines.is_empty() && !options.initial_indent.is_empty() {
-                Cow::Owned(options.initial_indent.to_owned())
-            } else if !lines.is_empty() && !options.subsequent_indent.is_empty() {
-                Cow::Owned(options.subsequent_indent.to_owned())
-            } else {
-                // We can use an empty string here since string
-                // concatenation for `Cow` preserves a borrowed value
-                // when either side is empty.
-                Cow::from("")
-            };
-
-            result += &line[idx..idx + len];
-
-            if !last_word.penalty.is_empty() {
-                result.to_mut().push_str(last_word.penalty);
-            }
-
-            lines.push(result);
-
-            // Advance by the length of `result`, plus the length of
-            // `last_word.whitespace` -- even if we had a penalty, we
-            // need to skip over the whitespace.
-            idx += len + last_word.whitespace.len();
-        }
+        wrap_single_line(line, &options, line_widths, &mut lines);
     }
 
     lines
+}
+
+fn wrap_single_line<'a>(
+    line: &'a str,
+    options: &Options<'_>,
+    line_widths: [usize; 2],
+    lines: &mut Vec<Cow<'a, str>>,
+) {
+    let words = options.word_separator.find_words(line);
+    let split_words = word_splitters::split_words(words, &options.word_splitter);
+    let broken_words = if options.break_words {
+        let mut broken_words = core::break_words(split_words, line_widths[1]);
+        if !options.initial_indent.is_empty() {
+            // Without this, the first word will always go into the
+            // first line. However, since we break words based on the
+            // _second_ line width, it can be wrong to unconditionally
+            // put the first word onto the first line. An empty
+            // zero-width word fixed this.
+            broken_words.insert(0, core::Word::from(""));
+        }
+        broken_words
+    } else {
+        split_words.collect::<Vec<_>>()
+    };
+
+    let wrapped_words = options.wrap_algorithm.wrap(&broken_words, &line_widths);
+
+    let mut idx = 0;
+    for words in wrapped_words {
+        let last_word = match words.last() {
+            None => {
+                lines.push(Cow::from(""));
+                continue;
+            }
+            Some(word) => word,
+        };
+
+        // We assume here that all words are contiguous in `line`.
+        // That is, the sum of their lengths should add up to the
+        // length of `line`.
+        let len = words
+            .iter()
+            .map(|word| word.len() + word.whitespace.len())
+            .sum::<usize>()
+            - last_word.whitespace.len();
+
+        // The result is owned if we have indentation, otherwise we
+        // can simply borrow an empty string.
+        let mut result = if lines.is_empty() && !options.initial_indent.is_empty() {
+            Cow::Owned(options.initial_indent.to_owned())
+        } else if !lines.is_empty() && !options.subsequent_indent.is_empty() {
+            Cow::Owned(options.subsequent_indent.to_owned())
+        } else {
+            // We can use an empty string here since string
+            // concatenation for `Cow` preserves a borrowed value when
+            // either side is empty.
+            Cow::from("")
+        };
+
+        result += &line[idx..idx + len];
+
+        if !last_word.penalty.is_empty() {
+            result.to_mut().push_str(last_word.penalty);
+        }
+
+        lines.push(result);
+
+        // Advance by the length of `result`, plus the length of
+        // `last_word.whitespace` -- even if we had a penalty, we need
+        // to skip over the whitespace.
+        idx += len + last_word.whitespace.len();
+    }
 }
 
 /// Wrap text into columns with a given total width.
