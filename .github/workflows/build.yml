@@ -116,6 +116,7 @@ jobs:
           - wrap_first_fit
           - wrap_optimal_fit
           - wrap_optimal_fit_usize
+          - wrap_fast_path
           - unfill
           - refill
 

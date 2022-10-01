@@ -65,3 +65,9 @@ name = "fill_fast_path"
 path = "fuzz_targets/fill_fast_path.rs"
 test = false
 doc = false
+
+[[bin]]
+name = "wrap_fast_path"
+path = "fuzz_targets/wrap_fast_path.rs"
+test = false
+doc = false

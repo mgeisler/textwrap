@@ -997,9 +997,57 @@ where
     Opt: Into<Options<'a>>,
 {
     let options: Options = width_or_options.into();
-
     let line_ending_str = options.line_ending.as_str();
 
+    let mut lines = Vec::new();
+    for line in text.split(line_ending_str) {
+        wrap_single_line(line, &options, &mut lines);
+    }
+
+    lines
+}
+
+/// Exposed for fuzzing so we can check the slow path is correct.
+#[cfg(fuzzing)]
+pub fn wrap_single_line_for_fuzzing<'a>(
+    line: &'a str,
+    options: &Options<'_>,
+    lines: &mut Vec<Cow<'a, str>>,
+) {
+    wrap_single_line(line, options, lines);
+}
+
+fn wrap_single_line<'a>(line: &'a str, options: &Options<'_>, lines: &mut Vec<Cow<'a, str>>) {
+    let indent = if lines.is_empty() {
+        options.initial_indent
+    } else {
+        options.subsequent_indent
+    };
+    if line.len() < options.width && indent.is_empty() {
+        lines.push(Cow::from(line.trim_end_matches(' ')));
+    } else {
+        wrap_single_line_slow_path(line, options, lines)
+    }
+}
+
+/// Exposed for fuzzing so we can check the slow path is correct.
+#[cfg(fuzzing)]
+pub fn wrap_single_line_slow_path_for_fuzzing<'a>(
+    line: &'a str,
+    options: &Options<'_>,
+    lines: &mut Vec<Cow<'a, str>>,
+) {
+    wrap_single_line_slow_path(line, options, lines)
+}
+
+/// Wrap a single line of text.
+///
+/// This is taken when `line` is longer than `options.width`.
+fn wrap_single_line_slow_path<'a>(
+    line: &'a str,
+    options: &Options<'_>,
+    lines: &mut Vec<Cow<'a, str>>,
+) {
     let initial_width = options
         .width
         .saturating_sub(core::display_width(options.initial_indent));
@@ -1008,20 +1056,6 @@ where
         .saturating_sub(core::display_width(options.subsequent_indent));
     let line_widths = [initial_width, subsequent_width];
 
-    let mut lines = Vec::new();
-    for line in text.split(line_ending_str) {
-        wrap_single_line(line, &options, line_widths, &mut lines);
-    }
-
-    lines
-}
-
-fn wrap_single_line<'a>(
-    line: &'a str,
-    options: &Options<'_>,
-    line_widths: [usize; 2],
-    lines: &mut Vec<Cow<'a, str>>,
-) {
     let words = options.word_separator.find_words(line);
     let split_words = word_splitters::split_words(words, &options.word_splitter);
     let broken_words = if options.break_words {
@@ -1448,6 +1482,21 @@ mod tests {
         assert_eq!(
             wrap("foo bar baz", &options),
             vec!["* foo", "  bar", "  baz"]
+        );
+    }
+
+    #[test]
+    fn only_initial_indent_multiple_lines() {
+        let options = Options::new(10).initial_indent("  ");
+        assert_eq!(wrap("foo\nbar\nbaz", &options), vec!["  foo", "bar", "baz"]);
+    }
+
+    #[test]
+    fn only_subsequent_indent_multiple_lines() {
+        let options = Options::new(10).subsequent_indent("  ");
+        assert_eq!(
+            wrap("foo\nbar\nbaz", &options),
+            vec!["foo", "  bar", "  baz"]
         );
     }
 
