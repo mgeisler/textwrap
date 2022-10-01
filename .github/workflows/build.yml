@@ -37,6 +37,10 @@ jobs:
       - name: Install ${{ matrix.rust }} Rust
         run: rustup default ${{ matrix.rust }}
 
+      - name: Remove Criterion on Rust 1.56
+        if: matrix.rust == '1.56'
+        run: sed -i -e '/^criterion =/d' Cargo.toml
+
       - uses: Swatinem/rust-cache@v1
 
       - name: Test with ${{ matrix.features }}

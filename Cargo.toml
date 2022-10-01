@@ -47,11 +47,11 @@ default = ["unicode-linebreak", "unicode-width", "smawk"]
 hyphenation = { version = "0.8.4", optional = true, features = ["embed_en-us"] }
 smawk = { version = "0.3.1", optional = true }
 terminal_size = { version = "0.2.1", optional = true }
-unicode-linebreak = { version = "0.1.2", optional = true }
-unicode-width = { version = "0.1.9", optional = true }
+unicode-linebreak = { version = "0.1.4", optional = true }
+unicode-width = { version = "0.1.10", optional = true }
 
 [dev-dependencies]
-criterion = "0.3.5"
+criterion = "0.4.0"
 lipsum = "0.8.0"
 unic-emoji-char = "0.9.0"
 version-sync = "0.9.4"
