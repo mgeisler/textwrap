@@ -27,12 +27,13 @@ pub fn benchmark(c: &mut Criterion) {
     ];
     for length in lengths {
         let text = lorem_ipsum(length);
+        let length_id = format!("{length:04}");
 
         let options = textwrap::Options::new(LINE_LENGTH)
             .wrap_algorithm(textwrap::WrapAlgorithm::new_optimal_fit())
             .word_separator(textwrap::WordSeparator::UnicodeBreakProperties);
         group.bench_with_input(
-            BenchmarkId::new("fill_optimal_fit_unicode", length),
+            BenchmarkId::new("fill_optimal_fit_unicode", &length_id),
             &text,
             |b, text| {
                 b.iter(|| textwrap::fill(text, &options));
@@ -43,7 +44,7 @@ pub fn benchmark(c: &mut Criterion) {
             .wrap_algorithm(textwrap::WrapAlgorithm::new_optimal_fit())
             .word_separator(textwrap::WordSeparator::AsciiSpace);
         group.bench_with_input(
-            BenchmarkId::new("fill_optimal_fit_ascii", length),
+            BenchmarkId::new("fill_optimal_fit_ascii", &length_id),
             &text,
             |b, text| {
                 b.iter(|| textwrap::fill(text, &options));
@@ -54,14 +55,14 @@ pub fn benchmark(c: &mut Criterion) {
             .wrap_algorithm(textwrap::WrapAlgorithm::FirstFit)
             .word_separator(textwrap::WordSeparator::AsciiSpace);
         group.bench_with_input(
-            BenchmarkId::new("fill_first_fit", length),
+            BenchmarkId::new("fill_first_fit", &length_id),
             &text,
             |b, text| {
                 b.iter(|| textwrap::fill(text, &options));
             },
         );
 
-        group.bench_function(BenchmarkId::new("fill_inplace", length), |b| {
+        group.bench_function(BenchmarkId::new("fill_inplace", &length_id), |b| {
             b.iter_batched(
                 || text.clone(),
                 |mut text| textwrap::fill_inplace(&mut text, LINE_LENGTH),
@@ -77,7 +78,7 @@ pub fn benchmark(c: &mut Criterion) {
             .word_separator(textwrap::WordSeparator::AsciiSpace)
             .word_splitter(textwrap::WordSplitter::Hyphenation(dictionary));
         group.bench_with_input(
-            BenchmarkId::new("fill_optimal_fit_ascii_hyphenation", length),
+            BenchmarkId::new("fill_optimal_fit_ascii_hyphenation", &length_id),
             &text,
             |b, text| {
                 b.iter(|| textwrap::fill(text, &options));
