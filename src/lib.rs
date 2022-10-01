@@ -605,12 +605,29 @@ where
     Opt: Into<Options<'a>>,
 {
     let options = width_or_options.into();
-    let line_ending_str = options.line_ending.as_str();
 
+    if text.len() < options.width && !text.contains('\n') && options.initial_indent.is_empty() {
+        String::from(text.trim_end_matches(' '))
+    } else {
+        fill_slow_path(text, options)
+    }
+}
+
+/// Exposed for fuzzing so we can check the slow path is correct.
+#[cfg(fuzzing)]
+pub fn fill_slow_path_for_fuzzing<'a>(text: &str, options: Options<'_>) -> String {
+    fill_slow_path(text, options)
+}
+
+/// Slow path for fill.
+///
+/// This is taken when `text` is longer than `options.width`.
+fn fill_slow_path(text: &str, options: Options<'_>) -> String {
     // This will avoid reallocation in simple cases (no
     // indentation, no hyphenation).
     let mut result = String::with_capacity(text.len());
 
+    let line_ending_str = options.line_ending.as_str();
     for (i, line) in wrap(text, options).iter().enumerate() {
         if i > 0 {
             result.push_str(line_ending_str);

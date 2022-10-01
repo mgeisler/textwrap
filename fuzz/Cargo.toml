@@ -59,3 +59,9 @@ name = "unfill"
 path = "fuzz_targets/unfill.rs"
 test = false
 doc = false
+
+[[bin]]
+name = "fill_fast_path"
+path = "fuzz_targets/fill_fast_path.rs"
+test = false
+doc = false
