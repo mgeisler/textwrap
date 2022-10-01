@@ -21,7 +21,11 @@ fn lorem_ipsum(length: usize) -> String {
 
 pub fn benchmark(c: &mut Criterion) {
     let mut group = c.benchmark_group("String lengths");
-    for length in [200, 300, 400, 600, 800, 1200, 1600, 2400, 3200, 4800, 6400] {
+    let lengths = [
+        0, 5, 10, 20, 30, 40, 50, 60, 80, 100, 200, 300, 400, 600, 800, 1200, 1600, 2400, 3200,
+        4800, 6400,
+    ];
+    for length in lengths {
         let text = lorem_ipsum(length);
 
         let options = textwrap::Options::new(LINE_LENGTH)
