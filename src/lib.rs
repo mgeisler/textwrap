@@ -223,6 +223,11 @@ pub use line_ending::LineEnding;
 
 pub mod core;
 
+// This module is only active when running fuzz tests. It provides
+// access to private helpers.
+#[cfg(fuzzing)]
+pub mod fuzzing;
+
 /// Holds configuration options for wrapping and filling text.
 #[derive(Debug, Clone)]
 pub struct Options<'a> {
@@ -613,12 +618,6 @@ where
     }
 }
 
-/// Exposed for fuzzing so we can check the slow path is correct.
-#[cfg(fuzzing)]
-pub fn fill_slow_path_for_fuzzing<'a>(text: &str, options: Options<'_>) -> String {
-    fill_slow_path(text, options)
-}
-
 /// Slow path for fill.
 ///
 /// This is taken when `text` is longer than `options.width`.
@@ -1007,16 +1006,6 @@ where
     lines
 }
 
-/// Exposed for fuzzing so we can check the slow path is correct.
-#[cfg(fuzzing)]
-pub fn wrap_single_line_for_fuzzing<'a>(
-    line: &'a str,
-    options: &Options<'_>,
-    lines: &mut Vec<Cow<'a, str>>,
-) {
-    wrap_single_line(line, options, lines);
-}
-
 fn wrap_single_line<'a>(line: &'a str, options: &Options<'_>, lines: &mut Vec<Cow<'a, str>>) {
     let indent = if lines.is_empty() {
         options.initial_indent
@@ -1028,16 +1017,6 @@ fn wrap_single_line<'a>(line: &'a str, options: &Options<'_>, lines: &mut Vec<Co
     } else {
         wrap_single_line_slow_path(line, options, lines)
     }
-}
-
-/// Exposed for fuzzing so we can check the slow path is correct.
-#[cfg(fuzzing)]
-pub fn wrap_single_line_slow_path_for_fuzzing<'a>(
-    line: &'a str,
-    options: &Options<'_>,
-    lines: &mut Vec<Cow<'a, str>>,
-) {
-    wrap_single_line_slow_path(line, options, lines)
 }
 
 /// Wrap a single line of text.

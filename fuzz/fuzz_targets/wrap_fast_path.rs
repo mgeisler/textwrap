@@ -11,7 +11,7 @@ fuzz_target!(|input: (String, usize)| {
     let mut slow = Vec::new();
 
     let options = textwrap::Options::new(input.1);
-    textwrap::wrap_single_line_for_fuzzing(&input.0, &options, &mut fast);
-    textwrap::wrap_single_line_slow_path_for_fuzzing(&input.0, &options, &mut slow);
+    textwrap::fuzzing::wrap_single_line(&input.0, &options, &mut fast);
+    textwrap::fuzzing::wrap_single_line_slow_path(&input.0, &options, &mut slow);
     assert_eq!(fast, slow);
 });
