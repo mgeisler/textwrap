@@ -11,24 +11,24 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "WasmOptions": () => (/* binding */ WasmOptions),
 /* harmony export */   "WasmPenalties": () => (/* binding */ WasmPenalties),
-/* harmony export */   "__wbg_actualBoundingBoxAscent_da96fa51615769e1": () => (/* binding */ __wbg_actualBoundingBoxAscent_da96fa51615769e1),
-/* harmony export */   "__wbg_actualBoundingBoxDescent_e900cdc3ea67db47": () => (/* binding */ __wbg_actualBoundingBoxDescent_e900cdc3ea67db47),
-/* harmony export */   "__wbg_beginPath_e040b5521d41f537": () => (/* binding */ __wbg_beginPath_e040b5521d41f537),
-/* harmony export */   "__wbg_error_09919627ac0992f5": () => (/* binding */ __wbg_error_09919627ac0992f5),
-/* harmony export */   "__wbg_fillText_a9da23f2c00b2b51": () => (/* binding */ __wbg_fillText_a9da23f2c00b2b51),
-/* harmony export */   "__wbg_lineTo_e0f6cb3b8836cedb": () => (/* binding */ __wbg_lineTo_e0f6cb3b8836cedb),
-/* harmony export */   "__wbg_measureText_7137f00ee7bb9969": () => (/* binding */ __wbg_measureText_7137f00ee7bb9969),
-/* harmony export */   "__wbg_moveTo_8d00712d6e75a749": () => (/* binding */ __wbg_moveTo_8d00712d6e75a749),
-/* harmony export */   "__wbg_new_693216e109162396": () => (/* binding */ __wbg_new_693216e109162396),
-/* harmony export */   "__wbg_restore_56c80343ddc70aeb": () => (/* binding */ __wbg_restore_56c80343ddc70aeb),
-/* harmony export */   "__wbg_save_faa4566184f134f6": () => (/* binding */ __wbg_save_faa4566184f134f6),
-/* harmony export */   "__wbg_setfont_7152cc4657609a93": () => (/* binding */ __wbg_setfont_7152cc4657609a93),
-/* harmony export */   "__wbg_setstrokeStyle_32540003cbfe210b": () => (/* binding */ __wbg_setstrokeStyle_32540003cbfe210b),
-/* harmony export */   "__wbg_settextAlign_b915113cbbf1e047": () => (/* binding */ __wbg_settextAlign_b915113cbbf1e047),
-/* harmony export */   "__wbg_settextBaseline_38fba0bc777dfc84": () => (/* binding */ __wbg_settextBaseline_38fba0bc777dfc84),
-/* harmony export */   "__wbg_stack_0ddaca5d1abfb52f": () => (/* binding */ __wbg_stack_0ddaca5d1abfb52f),
-/* harmony export */   "__wbg_stroke_63664360a52ce7d1": () => (/* binding */ __wbg_stroke_63664360a52ce7d1),
-/* harmony export */   "__wbg_width_1d637c56a808b6a2": () => (/* binding */ __wbg_width_1d637c56a808b6a2),
+/* harmony export */   "__wbg_actualBoundingBoxAscent_263891fadd43361b": () => (/* binding */ __wbg_actualBoundingBoxAscent_263891fadd43361b),
+/* harmony export */   "__wbg_actualBoundingBoxDescent_4b0b0ac59e164733": () => (/* binding */ __wbg_actualBoundingBoxDescent_4b0b0ac59e164733),
+/* harmony export */   "__wbg_beginPath_4e91b7092d0d33d9": () => (/* binding */ __wbg_beginPath_4e91b7092d0d33d9),
+/* harmony export */   "__wbg_error_f851667af71bcfc6": () => (/* binding */ __wbg_error_f851667af71bcfc6),
+/* harmony export */   "__wbg_fillText_e5b1cef36b742bcc": () => (/* binding */ __wbg_fillText_e5b1cef36b742bcc),
+/* harmony export */   "__wbg_lineTo_dbe49320dd6e392a": () => (/* binding */ __wbg_lineTo_dbe49320dd6e392a),
+/* harmony export */   "__wbg_measureText_734acef1b5e2b3fd": () => (/* binding */ __wbg_measureText_734acef1b5e2b3fd),
+/* harmony export */   "__wbg_moveTo_15a09390bee05586": () => (/* binding */ __wbg_moveTo_15a09390bee05586),
+/* harmony export */   "__wbg_new_abda76e883ba8a5f": () => (/* binding */ __wbg_new_abda76e883ba8a5f),
+/* harmony export */   "__wbg_restore_556d7c38c007b3fe": () => (/* binding */ __wbg_restore_556d7c38c007b3fe),
+/* harmony export */   "__wbg_save_a9bb370fb49c5df7": () => (/* binding */ __wbg_save_a9bb370fb49c5df7),
+/* harmony export */   "__wbg_setfont_f55835290596888e": () => (/* binding */ __wbg_setfont_f55835290596888e),
+/* harmony export */   "__wbg_setstrokeStyle_899ea3720dae323b": () => (/* binding */ __wbg_setstrokeStyle_899ea3720dae323b),
+/* harmony export */   "__wbg_settextAlign_2ec9d955460e13ca": () => (/* binding */ __wbg_settextAlign_2ec9d955460e13ca),
+/* harmony export */   "__wbg_settextBaseline_d33235cd2782235c": () => (/* binding */ __wbg_settextBaseline_d33235cd2782235c),
+/* harmony export */   "__wbg_stack_658279fe44541cf6": () => (/* binding */ __wbg_stack_658279fe44541cf6),
+/* harmony export */   "__wbg_stroke_85dee7d87c4a6ead": () => (/* binding */ __wbg_stroke_85dee7d87c4a6ead),
+/* harmony export */   "__wbg_width_87b8dcd7cafaeec1": () => (/* binding */ __wbg_width_87b8dcd7cafaeec1),
 /* harmony export */   "__wbindgen_debug_string": () => (/* binding */ __wbindgen_debug_string),
 /* harmony export */   "__wbindgen_object_drop_ref": () => (/* binding */ __wbindgen_object_drop_ref),
 /* harmony export */   "__wbindgen_string_get": () => (/* binding */ __wbindgen_string_get),
@@ -66,12 +66,13 @@ let cachedTextDecoder = new lTextDecoder('utf-8', { ignoreBOM: true, fatal: true
 
 cachedTextDecoder.decode();
 
-let cachegetUint8Memory0 = null;
+let cachedUint8Memory0 = new Uint8Array();
+
 function getUint8Memory0() {
-    if (cachegetUint8Memory0 === null || cachegetUint8Memory0.buffer !== _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.memory.buffer) {
-        cachegetUint8Memory0 = new Uint8Array(_textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.memory.buffer);
+    if (cachedUint8Memory0.byteLength === 0) {
+        cachedUint8Memory0 = new Uint8Array(_textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.memory.buffer);
     }
-    return cachegetUint8Memory0;
+    return cachedUint8Memory0;
 }
 
 function getStringFromWasm0(ptr, len) {
@@ -148,12 +149,13 @@ function isLikeNone(x) {
     return x === undefined || x === null;
 }
 
-let cachegetInt32Memory0 = null;
+let cachedInt32Memory0 = new Int32Array();
+
 function getInt32Memory0() {
-    if (cachegetInt32Memory0 === null || cachegetInt32Memory0.buffer !== _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.memory.buffer) {
-        cachegetInt32Memory0 = new Int32Array(_textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.memory.buffer);
+    if (cachedInt32Memory0.byteLength === 0) {
+        cachedInt32Memory0 = new Int32Array(_textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.memory.buffer);
     }
-    return cachegetInt32Memory0;
+    return cachedInt32Memory0;
 }
 
 function debugString(val) {
@@ -288,6 +290,7 @@ class WasmOptions {
         _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_wasmoptions_free(ptr);
     }
     /**
+    * @returns {number}
     */
     get width() {
         const ret = _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_get_wasmoptions_width(this.ptr);
@@ -300,6 +303,7 @@ class WasmOptions {
         _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_set_wasmoptions_width(this.ptr, arg0);
     }
     /**
+    * @returns {boolean}
     */
     get break_words() {
         const ret = _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_get_wasmoptions_break_words(this.ptr);
@@ -312,6 +316,7 @@ class WasmOptions {
         _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_set_wasmoptions_break_words(this.ptr, arg0);
     }
     /**
+    * @returns {any}
     */
     get word_separator() {
         const ret = _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_get_wasmoptions_word_separator(this.ptr);
@@ -324,6 +329,7 @@ class WasmOptions {
         _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_set_wasmoptions_word_separator(this.ptr, addHeapObject(arg0));
     }
     /**
+    * @returns {any}
     */
     get word_splitter() {
         const ret = _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_get_wasmoptions_word_splitter(this.ptr);
@@ -336,6 +342,7 @@ class WasmOptions {
         _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_set_wasmoptions_word_splitter(this.ptr, addHeapObject(arg0));
     }
     /**
+    * @returns {any}
     */
     get wrap_algorithm() {
         const ret = _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_get_wasmoptions_wrap_algorithm(this.ptr);
@@ -348,6 +355,7 @@ class WasmOptions {
         _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_set_wasmoptions_wrap_algorithm(this.ptr, addHeapObject(arg0));
     }
     /**
+    * @returns {WasmPenalties}
     */
     get penalties() {
         const ret = _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_get_wasmoptions_penalties(this.ptr);
@@ -401,6 +409,7 @@ class WasmPenalties {
         _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_wasmpenalties_free(ptr);
     }
     /**
+    * @returns {number}
     */
     get nline_penalty() {
         const ret = _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_get_wasmpenalties_nline_penalty(this.ptr);
@@ -413,6 +422,7 @@ class WasmPenalties {
         _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_set_wasmpenalties_nline_penalty(this.ptr, arg0);
     }
     /**
+    * @returns {number}
     */
     get overflow_penalty() {
         const ret = _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_get_wasmpenalties_overflow_penalty(this.ptr);
@@ -425,6 +435,7 @@ class WasmPenalties {
         _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_set_wasmpenalties_overflow_penalty(this.ptr, arg0);
     }
     /**
+    * @returns {number}
     */
     get short_last_line_fraction() {
         const ret = _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_get_wasmpenalties_short_last_line_fraction(this.ptr);
@@ -437,6 +448,7 @@ class WasmPenalties {
         _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_set_wasmpenalties_short_last_line_fraction(this.ptr, arg0);
     }
     /**
+    * @returns {number}
     */
     get short_last_line_penalty() {
         const ret = _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_get_wasmpenalties_short_last_line_penalty(this.ptr);
@@ -449,6 +461,7 @@ class WasmPenalties {
         _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_set_wasmpenalties_short_last_line_penalty(this.ptr, arg0);
     }
     /**
+    * @returns {number}
     */
     get hyphen_penalty() {
         const ret = _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbg_get_wasmpenalties_hyphen_penalty(this.ptr);
@@ -491,22 +504,22 @@ function __wbindgen_string_get(arg0, arg1) {
     getInt32Memory0()[arg0 / 4 + 0] = ptr0;
 };
 
-function __wbg_actualBoundingBoxAscent_da96fa51615769e1(arg0) {
+function __wbg_actualBoundingBoxAscent_263891fadd43361b(arg0) {
     const ret = getObject(arg0).actualBoundingBoxAscent;
     return ret;
 };
 
-function __wbg_actualBoundingBoxDescent_e900cdc3ea67db47(arg0) {
+function __wbg_actualBoundingBoxDescent_4b0b0ac59e164733(arg0) {
     const ret = getObject(arg0).actualBoundingBoxDescent;
     return ret;
 };
 
-function __wbg_new_693216e109162396() {
+function __wbg_new_abda76e883ba8a5f() {
     const ret = new Error();
     return addHeapObject(ret);
 };
 
-function __wbg_stack_0ddaca5d1abfb52f(arg0, arg1) {
+function __wbg_stack_658279fe44541cf6(arg0, arg1) {
     const ret = getObject(arg1).stack;
     const ptr0 = passStringToWasm0(ret, _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbindgen_malloc, _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbindgen_realloc);
     const len0 = WASM_VECTOR_LEN;
@@ -514,7 +527,7 @@ function __wbg_stack_0ddaca5d1abfb52f(arg0, arg1) {
     getInt32Memory0()[arg0 / 4 + 0] = ptr0;
 };
 
-function __wbg_error_09919627ac0992f5(arg0, arg1) {
+function __wbg_error_f851667af71bcfc6(arg0, arg1) {
     try {
         console.error(getStringFromWasm0(arg0, arg1));
     } finally {
@@ -522,56 +535,56 @@ function __wbg_error_09919627ac0992f5(arg0, arg1) {
     }
 };
 
-function __wbg_width_1d637c56a808b6a2(arg0) {
+function __wbg_width_87b8dcd7cafaeec1(arg0) {
     const ret = getObject(arg0).width;
     return ret;
 };
 
-function __wbg_setstrokeStyle_32540003cbfe210b(arg0, arg1) {
+function __wbg_setstrokeStyle_899ea3720dae323b(arg0, arg1) {
     getObject(arg0).strokeStyle = getObject(arg1);
 };
 
-function __wbg_setfont_7152cc4657609a93(arg0, arg1, arg2) {
+function __wbg_setfont_f55835290596888e(arg0, arg1, arg2) {
     getObject(arg0).font = getStringFromWasm0(arg1, arg2);
 };
 
-function __wbg_settextAlign_b915113cbbf1e047(arg0, arg1, arg2) {
+function __wbg_settextAlign_2ec9d955460e13ca(arg0, arg1, arg2) {
     getObject(arg0).textAlign = getStringFromWasm0(arg1, arg2);
 };
 
-function __wbg_settextBaseline_38fba0bc777dfc84(arg0, arg1, arg2) {
+function __wbg_settextBaseline_d33235cd2782235c(arg0, arg1, arg2) {
     getObject(arg0).textBaseline = getStringFromWasm0(arg1, arg2);
 };
 
-function __wbg_beginPath_e040b5521d41f537(arg0) {
+function __wbg_beginPath_4e91b7092d0d33d9(arg0) {
     getObject(arg0).beginPath();
 };
 
-function __wbg_stroke_63664360a52ce7d1(arg0) {
+function __wbg_stroke_85dee7d87c4a6ead(arg0) {
     getObject(arg0).stroke();
 };
 
-function __wbg_lineTo_e0f6cb3b8836cedb(arg0, arg1, arg2) {
+function __wbg_lineTo_dbe49320dd6e392a(arg0, arg1, arg2) {
     getObject(arg0).lineTo(arg1, arg2);
 };
 
-function __wbg_moveTo_8d00712d6e75a749(arg0, arg1, arg2) {
+function __wbg_moveTo_15a09390bee05586(arg0, arg1, arg2) {
     getObject(arg0).moveTo(arg1, arg2);
 };
 
-function __wbg_restore_56c80343ddc70aeb(arg0) {
+function __wbg_restore_556d7c38c007b3fe(arg0) {
     getObject(arg0).restore();
 };
 
-function __wbg_save_faa4566184f134f6(arg0) {
+function __wbg_save_a9bb370fb49c5df7(arg0) {
     getObject(arg0).save();
 };
 
-function __wbg_fillText_a9da23f2c00b2b51() { return handleError(function (arg0, arg1, arg2, arg3, arg4) {
+function __wbg_fillText_e5b1cef36b742bcc() { return handleError(function (arg0, arg1, arg2, arg3, arg4) {
     getObject(arg0).fillText(getStringFromWasm0(arg1, arg2), arg3, arg4);
 }, arguments) };
 
-function __wbg_measureText_7137f00ee7bb9969() { return handleError(function (arg0, arg1, arg2) {
+function __wbg_measureText_734acef1b5e2b3fd() { return handleError(function (arg0, arg1, arg2) {
     const ret = getObject(arg0).measureText(getStringFromWasm0(arg1, arg2));
     return addHeapObject(ret);
 }, arguments) };

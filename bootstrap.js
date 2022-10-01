@@ -331,77 +331,77 @@ __webpack_require__.e(/*! import() */ "index_js").then(__webpack_require__.bind(
 /******/ 							if(wasmImportedFuncCache2 === undefined) wasmImportedFuncCache2 = __webpack_require__.c["../pkg/textwrap_wasm_demo_bg.js"].exports;
 /******/ 							return wasmImportedFuncCache2["__wbindgen_string_get"](p0i32,p1i32);
 /******/ 						},
-/******/ 						"__wbg_actualBoundingBoxAscent_da96fa51615769e1": function(p0i32) {
+/******/ 						"__wbg_actualBoundingBoxAscent_263891fadd43361b": function(p0i32) {
 /******/ 							if(wasmImportedFuncCache3 === undefined) wasmImportedFuncCache3 = __webpack_require__.c["../pkg/textwrap_wasm_demo_bg.js"].exports;
-/******/ 							return wasmImportedFuncCache3["__wbg_actualBoundingBoxAscent_da96fa51615769e1"](p0i32);
+/******/ 							return wasmImportedFuncCache3["__wbg_actualBoundingBoxAscent_263891fadd43361b"](p0i32);
 /******/ 						},
-/******/ 						"__wbg_actualBoundingBoxDescent_e900cdc3ea67db47": function(p0i32) {
+/******/ 						"__wbg_actualBoundingBoxDescent_4b0b0ac59e164733": function(p0i32) {
 /******/ 							if(wasmImportedFuncCache4 === undefined) wasmImportedFuncCache4 = __webpack_require__.c["../pkg/textwrap_wasm_demo_bg.js"].exports;
-/******/ 							return wasmImportedFuncCache4["__wbg_actualBoundingBoxDescent_e900cdc3ea67db47"](p0i32);
+/******/ 							return wasmImportedFuncCache4["__wbg_actualBoundingBoxDescent_4b0b0ac59e164733"](p0i32);
 /******/ 						},
-/******/ 						"__wbg_new_693216e109162396": function() {
+/******/ 						"__wbg_new_abda76e883ba8a5f": function() {
 /******/ 							if(wasmImportedFuncCache5 === undefined) wasmImportedFuncCache5 = __webpack_require__.c["../pkg/textwrap_wasm_demo_bg.js"].exports;
-/******/ 							return wasmImportedFuncCache5["__wbg_new_693216e109162396"]();
+/******/ 							return wasmImportedFuncCache5["__wbg_new_abda76e883ba8a5f"]();
 /******/ 						},
-/******/ 						"__wbg_stack_0ddaca5d1abfb52f": function(p0i32,p1i32) {
+/******/ 						"__wbg_stack_658279fe44541cf6": function(p0i32,p1i32) {
 /******/ 							if(wasmImportedFuncCache6 === undefined) wasmImportedFuncCache6 = __webpack_require__.c["../pkg/textwrap_wasm_demo_bg.js"].exports;
-/******/ 							return wasmImportedFuncCache6["__wbg_stack_0ddaca5d1abfb52f"](p0i32,p1i32);
+/******/ 							return wasmImportedFuncCache6["__wbg_stack_658279fe44541cf6"](p0i32,p1i32);
 /******/ 						},
-/******/ 						"__wbg_error_09919627ac0992f5": function(p0i32,p1i32) {
+/******/ 						"__wbg_error_f851667af71bcfc6": function(p0i32,p1i32) {
 /******/ 							if(wasmImportedFuncCache7 === undefined) wasmImportedFuncCache7 = __webpack_require__.c["../pkg/textwrap_wasm_demo_bg.js"].exports;
-/******/ 							return wasmImportedFuncCache7["__wbg_error_09919627ac0992f5"](p0i32,p1i32);
+/******/ 							return wasmImportedFuncCache7["__wbg_error_f851667af71bcfc6"](p0i32,p1i32);
 /******/ 						},
-/******/ 						"__wbg_width_1d637c56a808b6a2": function(p0i32) {
+/******/ 						"__wbg_width_87b8dcd7cafaeec1": function(p0i32) {
 /******/ 							if(wasmImportedFuncCache8 === undefined) wasmImportedFuncCache8 = __webpack_require__.c["../pkg/textwrap_wasm_demo_bg.js"].exports;
-/******/ 							return wasmImportedFuncCache8["__wbg_width_1d637c56a808b6a2"](p0i32);
+/******/ 							return wasmImportedFuncCache8["__wbg_width_87b8dcd7cafaeec1"](p0i32);
 /******/ 						},
-/******/ 						"__wbg_setstrokeStyle_32540003cbfe210b": function(p0i32,p1i32) {
+/******/ 						"__wbg_setstrokeStyle_899ea3720dae323b": function(p0i32,p1i32) {
 /******/ 							if(wasmImportedFuncCache9 === undefined) wasmImportedFuncCache9 = __webpack_require__.c["../pkg/textwrap_wasm_demo_bg.js"].exports;
-/******/ 							return wasmImportedFuncCache9["__wbg_setstrokeStyle_32540003cbfe210b"](p0i32,p1i32);
+/******/ 							return wasmImportedFuncCache9["__wbg_setstrokeStyle_899ea3720dae323b"](p0i32,p1i32);
 /******/ 						},
-/******/ 						"__wbg_setfont_7152cc4657609a93": function(p0i32,p1i32,p2i32) {
+/******/ 						"__wbg_setfont_f55835290596888e": function(p0i32,p1i32,p2i32) {
 /******/ 							if(wasmImportedFuncCache10 === undefined) wasmImportedFuncCache10 = __webpack_require__.c["../pkg/textwrap_wasm_demo_bg.js"].exports;
-/******/ 							return wasmImportedFuncCache10["__wbg_setfont_7152cc4657609a93"](p0i32,p1i32,p2i32);
+/******/ 							return wasmImportedFuncCache10["__wbg_setfont_f55835290596888e"](p0i32,p1i32,p2i32);
 /******/ 						},
-/******/ 						"__wbg_settextAlign_b915113cbbf1e047": function(p0i32,p1i32,p2i32) {
+/******/ 						"__wbg_settextAlign_2ec9d955460e13ca": function(p0i32,p1i32,p2i32) {
 /******/ 							if(wasmImportedFuncCache11 === undefined) wasmImportedFuncCache11 = __webpack_require__.c["../pkg/textwrap_wasm_demo_bg.js"].exports;
-/******/ 							return wasmImportedFuncCache11["__wbg_settextAlign_b915113cbbf1e047"](p0i32,p1i32,p2i32);
+/******/ 							return wasmImportedFuncCache11["__wbg_settextAlign_2ec9d955460e13ca"](p0i32,p1i32,p2i32);
 /******/ 						},
-/******/ 						"__wbg_settextBaseline_38fba0bc777dfc84": function(p0i32,p1i32,p2i32) {
+/******/ 						"__wbg_settextBaseline_d33235cd2782235c": function(p0i32,p1i32,p2i32) {
 /******/ 							if(wasmImportedFuncCache12 === undefined) wasmImportedFuncCache12 = __webpack_require__.c["../pkg/textwrap_wasm_demo_bg.js"].exports;
-/******/ 							return wasmImportedFuncCache12["__wbg_settextBaseline_38fba0bc777dfc84"](p0i32,p1i32,p2i32);
+/******/ 							return wasmImportedFuncCache12["__wbg_settextBaseline_d33235cd2782235c"](p0i32,p1i32,p2i32);
 /******/ 						},
-/******/ 						"__wbg_beginPath_e040b5521d41f537": function(p0i32) {
+/******/ 						"__wbg_beginPath_4e91b7092d0d33d9": function(p0i32) {
 /******/ 							if(wasmImportedFuncCache13 === undefined) wasmImportedFuncCache13 = __webpack_require__.c["../pkg/textwrap_wasm_demo_bg.js"].exports;
-/******/ 							return wasmImportedFuncCache13["__wbg_beginPath_e040b5521d41f537"](p0i32);
+/******/ 							return wasmImportedFuncCache13["__wbg_beginPath_4e91b7092d0d33d9"](p0i32);
 /******/ 						},
-/******/ 						"__wbg_stroke_63664360a52ce7d1": function(p0i32) {
+/******/ 						"__wbg_stroke_85dee7d87c4a6ead": function(p0i32) {
 /******/ 							if(wasmImportedFuncCache14 === undefined) wasmImportedFuncCache14 = __webpack_require__.c["../pkg/textwrap_wasm_demo_bg.js"].exports;
-/******/ 							return wasmImportedFuncCache14["__wbg_stroke_63664360a52ce7d1"](p0i32);
+/******/ 							return wasmImportedFuncCache14["__wbg_stroke_85dee7d87c4a6ead"](p0i32);
 /******/ 						},
-/******/ 						"__wbg_lineTo_e0f6cb3b8836cedb": function(p0i32,p1f64,p2f64) {
+/******/ 						"__wbg_lineTo_dbe49320dd6e392a": function(p0i32,p1f64,p2f64) {
 /******/ 							if(wasmImportedFuncCache15 === undefined) wasmImportedFuncCache15 = __webpack_require__.c["../pkg/textwrap_wasm_demo_bg.js"].exports;
-/******/ 							return wasmImportedFuncCache15["__wbg_lineTo_e0f6cb3b8836cedb"](p0i32,p1f64,p2f64);
+/******/ 							return wasmImportedFuncCache15["__wbg_lineTo_dbe49320dd6e392a"](p0i32,p1f64,p2f64);
 /******/ 						},
-/******/ 						"__wbg_moveTo_8d00712d6e75a749": function(p0i32,p1f64,p2f64) {
+/******/ 						"__wbg_moveTo_15a09390bee05586": function(p0i32,p1f64,p2f64) {
 /******/ 							if(wasmImportedFuncCache16 === undefined) wasmImportedFuncCache16 = __webpack_require__.c["../pkg/textwrap_wasm_demo_bg.js"].exports;
-/******/ 							return wasmImportedFuncCache16["__wbg_moveTo_8d00712d6e75a749"](p0i32,p1f64,p2f64);
+/******/ 							return wasmImportedFuncCache16["__wbg_moveTo_15a09390bee05586"](p0i32,p1f64,p2f64);
 /******/ 						},
-/******/ 						"__wbg_restore_56c80343ddc70aeb": function(p0i32) {
+/******/ 						"__wbg_restore_556d7c38c007b3fe": function(p0i32) {
 /******/ 							if(wasmImportedFuncCache17 === undefined) wasmImportedFuncCache17 = __webpack_require__.c["../pkg/textwrap_wasm_demo_bg.js"].exports;
-/******/ 							return wasmImportedFuncCache17["__wbg_restore_56c80343ddc70aeb"](p0i32);
+/******/ 							return wasmImportedFuncCache17["__wbg_restore_556d7c38c007b3fe"](p0i32);
 /******/ 						},
-/******/ 						"__wbg_save_faa4566184f134f6": function(p0i32) {
+/******/ 						"__wbg_save_a9bb370fb49c5df7": function(p0i32) {
 /******/ 							if(wasmImportedFuncCache18 === undefined) wasmImportedFuncCache18 = __webpack_require__.c["../pkg/textwrap_wasm_demo_bg.js"].exports;
-/******/ 							return wasmImportedFuncCache18["__wbg_save_faa4566184f134f6"](p0i32);
+/******/ 							return wasmImportedFuncCache18["__wbg_save_a9bb370fb49c5df7"](p0i32);
 /******/ 						},
-/******/ 						"__wbg_fillText_a9da23f2c00b2b51": function(p0i32,p1i32,p2i32,p3f64,p4f64) {
+/******/ 						"__wbg_fillText_e5b1cef36b742bcc": function(p0i32,p1i32,p2i32,p3f64,p4f64) {
 /******/ 							if(wasmImportedFuncCache19 === undefined) wasmImportedFuncCache19 = __webpack_require__.c["../pkg/textwrap_wasm_demo_bg.js"].exports;
-/******/ 							return wasmImportedFuncCache19["__wbg_fillText_a9da23f2c00b2b51"](p0i32,p1i32,p2i32,p3f64,p4f64);
+/******/ 							return wasmImportedFuncCache19["__wbg_fillText_e5b1cef36b742bcc"](p0i32,p1i32,p2i32,p3f64,p4f64);
 /******/ 						},
-/******/ 						"__wbg_measureText_7137f00ee7bb9969": function(p0i32,p1i32,p2i32) {
+/******/ 						"__wbg_measureText_734acef1b5e2b3fd": function(p0i32,p1i32,p2i32) {
 /******/ 							if(wasmImportedFuncCache20 === undefined) wasmImportedFuncCache20 = __webpack_require__.c["../pkg/textwrap_wasm_demo_bg.js"].exports;
-/******/ 							return wasmImportedFuncCache20["__wbg_measureText_7137f00ee7bb9969"](p0i32,p1i32,p2i32);
+/******/ 							return wasmImportedFuncCache20["__wbg_measureText_734acef1b5e2b3fd"](p0i32,p1i32,p2i32);
 /******/ 						},
 /******/ 						"__wbindgen_debug_string": function(p0i32,p1i32) {
 /******/ 							if(wasmImportedFuncCache21 === undefined) wasmImportedFuncCache21 = __webpack_require__.c["../pkg/textwrap_wasm_demo_bg.js"].exports;
@@ -438,7 +438,7 @@ __webpack_require__.e(/*! import() */ "index_js").then(__webpack_require__.bind(
 /******/ 					promises.push(installedWasmModuleData);
 /******/ 				else {
 /******/ 					var importObject = wasmImportObjects[wasmModuleId]();
-/******/ 					var req = fetch(__webpack_require__.p + "" + {"index_js":{"../pkg/textwrap_wasm_demo_bg.wasm":"0a9e3c37a050d2c67774"}}[chunkId][wasmModuleId] + ".module.wasm");
+/******/ 					var req = fetch(__webpack_require__.p + "" + {"index_js":{"../pkg/textwrap_wasm_demo_bg.wasm":"bd4bbc54a280a496839a"}}[chunkId][wasmModuleId] + ".module.wasm");
 /******/ 					var promise;
 /******/ 					if(importObject && typeof importObject.then === 'function' && typeof WebAssembly.compileStreaming === 'function') {
 /******/ 						promise = Promise.all([WebAssembly.compileStreaming(req), importObject]).then(function(items) {
