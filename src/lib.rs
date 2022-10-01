@@ -223,6 +223,11 @@ pub use line_ending::LineEnding;
 
 pub mod core;
 
+// This module is only active when running fuzz tests. It provides
+// access to private helpers.
+#[cfg(fuzzing)]
+pub mod fuzzing;
+
 /// Holds configuration options for wrapping and filling text.
 #[derive(Debug, Clone)]
 pub struct Options<'a> {
@@ -605,12 +610,23 @@ where
     Opt: Into<Options<'a>>,
 {
     let options = width_or_options.into();
-    let line_ending_str = options.line_ending.as_str();
 
+    if text.len() < options.width && !text.contains('\n') && options.initial_indent.is_empty() {
+        String::from(text.trim_end_matches(' '))
+    } else {
+        fill_slow_path(text, options)
+    }
+}
+
+/// Slow path for fill.
+///
+/// This is taken when `text` is longer than `options.width`.
+fn fill_slow_path(text: &str, options: Options<'_>) -> String {
     // This will avoid reallocation in simple cases (no
     // indentation, no hyphenation).
     let mut result = String::with_capacity(text.len());
 
+    let line_ending_str = options.line_ending.as_str();
     for (i, line) in wrap(text, options).iter().enumerate() {
         if i > 0 {
             result.push_str(line_ending_str);
@@ -980,86 +996,109 @@ where
     Opt: Into<Options<'a>>,
 {
     let options: Options = width_or_options.into();
-
     let line_ending_str = options.line_ending.as_str();
 
+    let mut lines = Vec::new();
+    for line in text.split(line_ending_str) {
+        wrap_single_line(line, &options, &mut lines);
+    }
+
+    lines
+}
+
+fn wrap_single_line<'a>(line: &'a str, options: &Options<'_>, lines: &mut Vec<Cow<'a, str>>) {
+    let indent = if lines.is_empty() {
+        options.initial_indent
+    } else {
+        options.subsequent_indent
+    };
+    if line.len() < options.width && indent.is_empty() {
+        lines.push(Cow::from(line.trim_end_matches(' ')));
+    } else {
+        wrap_single_line_slow_path(line, options, lines)
+    }
+}
+
+/// Wrap a single line of text.
+///
+/// This is taken when `line` is longer than `options.width`.
+fn wrap_single_line_slow_path<'a>(
+    line: &'a str,
+    options: &Options<'_>,
+    lines: &mut Vec<Cow<'a, str>>,
+) {
     let initial_width = options
         .width
         .saturating_sub(core::display_width(options.initial_indent));
     let subsequent_width = options
         .width
         .saturating_sub(core::display_width(options.subsequent_indent));
+    let line_widths = [initial_width, subsequent_width];
 
-    let mut lines = Vec::new();
-    for line in text.split(line_ending_str) {
-        let words = options.word_separator.find_words(line);
-        let split_words = word_splitters::split_words(words, &options.word_splitter);
-        let broken_words = if options.break_words {
-            let mut broken_words = core::break_words(split_words, subsequent_width);
-            if !options.initial_indent.is_empty() {
-                // Without this, the first word will always go into
-                // the first line. However, since we break words based
-                // on the _second_ line width, it can be wrong to
-                // unconditionally put the first word onto the first
-                // line. An empty zero-width word fixed this.
-                broken_words.insert(0, core::Word::from(""));
+    let words = options.word_separator.find_words(line);
+    let split_words = word_splitters::split_words(words, &options.word_splitter);
+    let broken_words = if options.break_words {
+        let mut broken_words = core::break_words(split_words, line_widths[1]);
+        if !options.initial_indent.is_empty() {
+            // Without this, the first word will always go into the
+            // first line. However, since we break words based on the
+            // _second_ line width, it can be wrong to unconditionally
+            // put the first word onto the first line. An empty
+            // zero-width word fixed this.
+            broken_words.insert(0, core::Word::from(""));
+        }
+        broken_words
+    } else {
+        split_words.collect::<Vec<_>>()
+    };
+
+    let wrapped_words = options.wrap_algorithm.wrap(&broken_words, &line_widths);
+
+    let mut idx = 0;
+    for words in wrapped_words {
+        let last_word = match words.last() {
+            None => {
+                lines.push(Cow::from(""));
+                continue;
             }
-            broken_words
-        } else {
-            split_words.collect::<Vec<_>>()
+            Some(word) => word,
         };
 
-        let line_widths = [initial_width, subsequent_width];
-        let wrapped_words = options.wrap_algorithm.wrap(&broken_words, &line_widths);
+        // We assume here that all words are contiguous in `line`.
+        // That is, the sum of their lengths should add up to the
+        // length of `line`.
+        let len = words
+            .iter()
+            .map(|word| word.len() + word.whitespace.len())
+            .sum::<usize>()
+            - last_word.whitespace.len();
 
-        let mut idx = 0;
-        for words in wrapped_words {
-            let last_word = match words.last() {
-                None => {
-                    lines.push(Cow::from(""));
-                    continue;
-                }
-                Some(word) => word,
-            };
+        // The result is owned if we have indentation, otherwise we
+        // can simply borrow an empty string.
+        let mut result = if lines.is_empty() && !options.initial_indent.is_empty() {
+            Cow::Owned(options.initial_indent.to_owned())
+        } else if !lines.is_empty() && !options.subsequent_indent.is_empty() {
+            Cow::Owned(options.subsequent_indent.to_owned())
+        } else {
+            // We can use an empty string here since string
+            // concatenation for `Cow` preserves a borrowed value when
+            // either side is empty.
+            Cow::from("")
+        };
 
-            // We assume here that all words are contiguous in `line`.
-            // That is, the sum of their lengths should add up to the
-            // length of `line`.
-            let len = words
-                .iter()
-                .map(|word| word.len() + word.whitespace.len())
-                .sum::<usize>()
-                - last_word.whitespace.len();
+        result += &line[idx..idx + len];
 
-            // The result is owned if we have indentation, otherwise
-            // we can simply borrow an empty string.
-            let mut result = if lines.is_empty() && !options.initial_indent.is_empty() {
-                Cow::Owned(options.initial_indent.to_owned())
-            } else if !lines.is_empty() && !options.subsequent_indent.is_empty() {
-                Cow::Owned(options.subsequent_indent.to_owned())
-            } else {
-                // We can use an empty string here since string
-                // concatenation for `Cow` preserves a borrowed value
-                // when either side is empty.
-                Cow::from("")
-            };
-
-            result += &line[idx..idx + len];
-
-            if !last_word.penalty.is_empty() {
-                result.to_mut().push_str(last_word.penalty);
-            }
-
-            lines.push(result);
-
-            // Advance by the length of `result`, plus the length of
-            // `last_word.whitespace` -- even if we had a penalty, we
-            // need to skip over the whitespace.
-            idx += len + last_word.whitespace.len();
+        if !last_word.penalty.is_empty() {
+            result.to_mut().push_str(last_word.penalty);
         }
-    }
 
-    lines
+        lines.push(result);
+
+        // Advance by the length of `result`, plus the length of
+        // `last_word.whitespace` -- even if we had a penalty, we need
+        // to skip over the whitespace.
+        idx += len + last_word.whitespace.len();
+    }
 }
 
 /// Wrap text into columns with a given total width.
@@ -1422,6 +1461,21 @@ mod tests {
         assert_eq!(
             wrap("foo bar baz", &options),
             vec!["* foo", "  bar", "  baz"]
+        );
+    }
+
+    #[test]
+    fn only_initial_indent_multiple_lines() {
+        let options = Options::new(10).initial_indent("  ");
+        assert_eq!(wrap("foo\nbar\nbaz", &options), vec!["  foo", "bar", "baz"]);
+    }
+
+    #[test]
+    fn only_subsequent_indent_multiple_lines() {
+        let options = Options::new(10).subsequent_indent("  ");
+        assert_eq!(
+            wrap("foo\nbar\nbaz", &options),
+            vec!["foo", "  bar", "  baz"]
         );
     }
 

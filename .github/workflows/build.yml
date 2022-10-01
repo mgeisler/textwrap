@@ -114,9 +114,11 @@ jobs:
         fuzz-target:
           - fill_first_fit
           - fill_optimal_fit
+          - fill_fast_path
           - wrap_first_fit
           - wrap_optimal_fit
           - wrap_optimal_fit_usize
+          - wrap_fast_path
           - unfill
           - refill
 
