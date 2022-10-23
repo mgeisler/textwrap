@@ -229,6 +229,7 @@ pub mod core;
 pub mod fuzzing;
 
 /// Holds configuration options for wrapping and filling text.
+#[non_exhaustive]
 #[derive(Debug, Clone)]
 pub struct Options<'a> {
     /// The width in columns at which the text will be wrapped.
@@ -280,36 +281,30 @@ impl<'a> From<usize> for Options<'a> {
 }
 
 impl<'a> Options<'a> {
-    /// Creates a new [`Options`] with the specified width. Equivalent to
+    /// Creates a new [`Options`] with the specified width.
+    ///
+    /// The other fields are given default values as follows:
     ///
     /// ```
     /// # use textwrap::{LineEnding, Options, WordSplitter, WordSeparator, WrapAlgorithm};
     /// # let width = 80;
-    /// # let actual = Options::new(width);
-    /// # let expected =
-    /// Options {
-    ///     width: width,
-    ///     line_ending: LineEnding::LF,
-    ///     initial_indent: "",
-    ///     subsequent_indent: "",
-    ///     break_words: true,
-    ///     #[cfg(feature = "unicode-linebreak")]
-    ///     word_separator: WordSeparator::UnicodeBreakProperties,
-    ///     #[cfg(not(feature = "unicode-linebreak"))]
-    ///     word_separator: WordSeparator::AsciiSpace,
-    ///     #[cfg(feature = "smawk")]
-    ///     wrap_algorithm: WrapAlgorithm::new_optimal_fit(),
-    ///     #[cfg(not(feature = "smawk"))]
-    ///     wrap_algorithm: WrapAlgorithm::FirstFit,
-    ///     word_splitter: WordSplitter::HyphenSplitter,
-    /// }
-    /// # ;
-    /// # assert_eq!(actual.width, expected.width);
-    /// # assert_eq!(actual.line_ending, expected.line_ending);
-    /// # assert_eq!(actual.initial_indent, expected.initial_indent);
-    /// # assert_eq!(actual.subsequent_indent, expected.subsequent_indent);
-    /// # assert_eq!(actual.break_words, expected.break_words);
-    /// # assert_eq!(actual.word_splitter, expected.word_splitter);
+    /// let options = Options::new(width);
+    /// assert_eq!(options.line_ending, LineEnding::LF);
+    /// assert_eq!(options.initial_indent, "");
+    /// assert_eq!(options.subsequent_indent, "");
+    /// assert_eq!(options.break_words, true);
+    ///
+    /// #[cfg(feature = "unicode-linebreak")]
+    /// assert_eq!(options.word_separator, WordSeparator::UnicodeBreakProperties);
+    /// #[cfg(not(feature = "unicode-linebreak"))]
+    /// assert_eq!(options.word_separator, WordSeparator::AsciiSpace);
+    ///
+    /// #[cfg(feature = "smawk")]
+    /// assert_eq!(options.wrap_algorithm, WrapAlgorithm::new_optimal_fit());
+    /// #[cfg(not(feature = "smawk"))]
+    /// assert_eq!(options.wrap_algorithm, WrapAlgorithm::FirstFit);
+    ///
+    /// assert_eq!(options.word_splitter, WordSplitter::HyphenSplitter);
     /// ```
     ///
     /// Note that the default word separator and wrap algorithms
@@ -1218,26 +1213,23 @@ where
 /// text remains untouched.
 ///
 /// Since we can only replace existing whitespace in the input with
-/// `'\n'`, we cannot do hyphenation nor can we split words longer
-/// than the line width. We also need to use `AsciiSpace` as the word
-/// separator since we need `' '` characters between words in order to
-/// replace some of them with a `'\n'`. Indentation is also ruled out.
-/// In other words, `fill_inplace(width)` behaves as if you had called
-/// [`fill`] with these options:
+/// `'\n'` (there is no space for `"\r\n"`), we cannot do hyphenation
+/// nor can we split words longer than the line width. We also need to
+/// use `AsciiSpace` as the word separator since we need `' '`
+/// characters between words in order to replace some of them with a
+/// `'\n'`. Indentation is also ruled out. In other words,
+/// `fill_inplace(width)` behaves as if you had called [`fill`] with
+/// these options:
 ///
 /// ```
 /// # use textwrap::{core, LineEnding, Options, WordSplitter, WordSeparator, WrapAlgorithm};
 /// # let width = 80;
-/// Options {
-///     width: width,
-///     line_ending: LineEnding::LF,
-///     initial_indent: "",
-///     subsequent_indent: "",
-///     break_words: false,
-///     word_separator: WordSeparator::AsciiSpace,
-///     wrap_algorithm: WrapAlgorithm::FirstFit,
-///     word_splitter: WordSplitter::NoHyphenation,
-/// };
+/// Options::new(width)
+///     .break_words(false)
+///     .line_ending(LineEnding::LF)
+///     .word_separator(WordSeparator::AsciiSpace)
+///     .wrap_algorithm(WrapAlgorithm::FirstFit)
+///     .word_splitter(WordSplitter::NoHyphenation);
 /// ```
 ///
 /// The wrap algorithm is [`WrapAlgorithm::FirstFit`] since this
