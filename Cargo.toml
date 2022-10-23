@@ -1,6 +1,6 @@
 [package]
 name = "textwrap"
-version = "0.15.1"
+version = "0.16.0"
 authors = ["Martin Geisler <martin@geisler.net>"]
 description = "Library for word wrapping, indenting, and dedenting strings. Has optional support for Unicode and emojis as well as machine hyphenation."
 documentation = "https://docs.rs/textwrap/"
