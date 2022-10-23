@@ -17,7 +17,7 @@ mod unix_only {
     use termion::event::Key;
     use termion::input::TermRead;
     use termion::raw::{IntoRawMode, RawTerminal};
-    use termion::screen::AlternateScreen;
+    use termion::screen::IntoAlternateScreen;
     use termion::{color, cursor, style};
     use textwrap::{wrap, Options, WordSeparator, WordSplitter, WrapAlgorithm};
 
@@ -292,7 +292,7 @@ mod unix_only {
         };
 
         let stdin = io::stdin();
-        let mut screen = AlternateScreen::from(io::stdout().into_raw_mode()?);
+        let mut screen = io::stdout().into_raw_mode()?.into_alternate_screen()?;
         write!(screen, "{}", cursor::BlinkingUnderline)?;
         draw_text(&text, &options, &word_splitter_label, &mut screen)?;
 
