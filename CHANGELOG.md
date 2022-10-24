@@ -26,6 +26,12 @@ make line endings configurable, it adds new fast paths to `fill` and
 * [#448](https://github.com/mgeisler/textwrap/pull/448): Migrate to
   the Rust 2021 edition.
 
+## Version 0.15.2 (2022-10-24)
+
+This release is identical to 0.15.0 and is only there to give people a
+way to install crates which depend on the yanked 0.15.1 release. See
+[#484](https://github.com/mgeisler/textwrap/issues/484) for details.
+
 ## Version 0.15.1 (2022-09-15)
 
 This release was yanked since it accidentally broke backwards
