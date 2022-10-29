@@ -44,20 +44,20 @@ pub struct Penalties {
     /// let penalties = Penalties::new();
     ///
     /// // Perfect fit, both words are on a single line with no overflow.
-    /// let wrapped = wrap_optimal_fit(&fragments, &[length], &penalties).unwrap();
+    /// let wrapped = wrap_optimal_fit(&fragments, &[length], 0, &penalties).unwrap();
     /// assert_eq!(wrapped, vec![&[Word::from(short), Word::from(&long)]]);
     ///
     /// // The words no longer fit, yet we get a single line back. While
     /// // the cost of overflow (`1 * 2500`) is the same as the cost of the
     /// // gap (`50 * 50 = 2500`), the tie is broken by `nline_penalty`
     /// // which makes it cheaper to overflow than to use two lines.
-    /// let wrapped = wrap_optimal_fit(&fragments, &[length - 1.0], &penalties).unwrap();
+    /// let wrapped = wrap_optimal_fit(&fragments, &[length - 1.0], 0, &penalties).unwrap();
     /// assert_eq!(wrapped, vec![&[Word::from(short), Word::from(&long)]]);
     ///
     /// // The cost of overflow would be 2 * 2500, whereas the cost of
     /// // the gap is only `49 * 49 + nline_penalty = 2401 + 1000 =
     /// // 3401`. We therefore get two lines.
-    /// let wrapped = wrap_optimal_fit(&fragments, &[length - 2.0], &penalties).unwrap();
+    /// let wrapped = wrap_optimal_fit(&fragments, &[length - 2.0], 0, &penalties).unwrap();
     /// assert_eq!(wrapped, vec![&[Word::from(short)],
     ///                          &[Word::from(&long)]]);
     /// ```
@@ -283,13 +283,13 @@ impl std::error::Error for OverflowError {}
 ///
 /// impl Fragment for Word {
 ///     fn width(&self) -> f64 { self.0 }
-///     fn whitespace_width(&self) -> f64 { 1.0 }
+///     fn whitespace_width(&self, tab_width: u8) -> f64 { 1.0 }
 ///     fn penalty_width(&self) -> f64 { 0.0 }
 /// }
 ///
 /// // Wrapping overflows because 1e155 * 1e155 = 1e310, which is
 /// // larger than f64::MAX:
-/// assert_eq!(wrap_optimal_fit(&[Word(0.0), Word(0.0)], &[1e155], &Penalties::default()),
+/// assert_eq!(wrap_optimal_fit(&[Word(0.0), Word(0.0)], &[1e155], 0, &Penalties::default()),
 ///            Err(OverflowError));
 /// ```
 ///
@@ -302,6 +302,7 @@ impl std::error::Error for OverflowError {}
 pub fn wrap_optimal_fit<'a, 'b, T: Fragment>(
     fragments: &'a [T],
     line_widths: &'b [f64],
+    tab_width: u8,
     penalties: &'b Penalties,
 ) -> Result<Vec<&'a [T]>, OverflowError> {
     // The final line width is used for all remaining lines.
@@ -310,7 +311,7 @@ pub fn wrap_optimal_fit<'a, 'b, T: Fragment>(
     let mut width = 0.0;
     widths.push(width);
     for fragment in fragments {
-        width += fragment.width() + fragment.whitespace_width();
+        width += fragment.width() + fragment.whitespace_width(tab_width);
         widths.push(width);
     }
 
@@ -328,7 +329,7 @@ pub fn wrap_optimal_fit<'a, 'b, T: Fragment>(
         // Compute the width of a line spanning fragments[i..j] in
         // constant time. We need to adjust widths[j] by subtracting
         // the whitespace of fragment[j-1] and then add the penalty.
-        let line_width = widths[j] - widths[i] - fragments[j - 1].whitespace_width()
+        let line_width = widths[j] - widths[i] - fragments[j - 1].whitespace_width(tab_width)
             + fragments[j - 1].penalty_width();
 
         // We compute cost of the line containing fragments[i..j]. We
@@ -398,7 +399,7 @@ mod tests {
     #[rustfmt::skip]
     impl Fragment for Word {
         fn width(&self) -> f64 { self.0 }
-        fn whitespace_width(&self) -> f64 { 1.0 }
+        fn whitespace_width(&self, _: u8) -> f64 { 1.0 }
         fn penalty_width(&self) -> f64 { 0.0 }
     }
 
@@ -406,7 +407,7 @@ mod tests {
     fn wrap_fragments_with_infinite_widths() {
         let words = vec![Word(f64::INFINITY)];
         assert_eq!(
-            wrap_optimal_fit(&words, &[0.0], &Penalties::default()),
+            wrap_optimal_fit(&words, &[0.0], 0, &Penalties::default()),
             Err(OverflowError)
         );
     }
@@ -415,7 +416,7 @@ mod tests {
     fn wrap_fragments_with_huge_widths() {
         let words = vec![Word(1e200), Word(1e250), Word(1e300)];
         assert_eq!(
-            wrap_optimal_fit(&words, &[1e300], &Penalties::default()),
+            wrap_optimal_fit(&words, &[1e300], 0, &Penalties::default()),
             Err(OverflowError)
         );
     }
@@ -426,7 +427,7 @@ mod tests {
         // makes the `gap * gap` cost fit comfortably in a f64.
         let words = vec![Word(1e25), Word(1e50), Word(1e75)];
         assert_eq!(
-            wrap_optimal_fit(&words, &[1e100], &Penalties::default()),
+            wrap_optimal_fit(&words, &[1e100], 0, &Penalties::default()),
             Ok(vec![&vec![Word(1e25), Word(1e50), Word(1e75)][..]])
         );
     }

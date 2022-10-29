@@ -1,7 +1,6 @@
 //! Functionality for wrapping text into columns.
 
-use crate::core::display_width;
-use crate::{wrap, Options};
+use crate::{core, wrap, Options};
 
 /// Wrap text into columns with a given total width.
 ///
@@ -23,9 +22,9 @@ use crate::{wrap, Options};
 /// # let columns = 2;
 /// # let options = textwrap::Options::new(80);
 /// let inner_width = options.width
-///     - textwrap::core::display_width(left_gap)
-///     - textwrap::core::display_width(right_gap)
-///     - textwrap::core::display_width(middle_gap) * (columns - 1);
+///     - textwrap::core::display_width(left_gap, options.tab_width)
+///     - textwrap::core::display_width(right_gap, options.tab_width)
+///     - textwrap::core::display_width(middle_gap, options.tab_width) * (columns - 1);
 /// let column_width = inner_width / columns;
 /// ```
 ///
@@ -74,6 +73,8 @@ where
     assert!(columns > 0);
 
     let mut options: Options = total_width_or_options.into();
+    let tab_width = options.tab_width;
+    let display_width = |text| core::display_width(text, tab_width);
 
     let inner_width = options
         .width
@@ -189,5 +190,22 @@ mod tests {
     #[should_panic]
     fn wrap_columns_panic_with_zero_columns() {
         wrap_columns("", 0, 10, "", "", "");
+    }
+
+    #[test]
+    fn wrap_columns_with_tabs() {
+        let options = Options::new(23).tab_width(4);
+
+        #[cfg(feature = "smawk")]
+        let expected = vec!["|hello     |is\tlong|", "|this      |yeah      |"];
+        #[cfg(all(not(feature = "smawk"), feature = "unicode-linebreak"))]
+        let expected = vec!["|hello     |long      |", "|this\tis|yeah      |"];
+        #[cfg(not(any(feature = "smawk", feature = "unicode-linebreak")))]
+        let expected = vec!["|hello\tt|\tlong  |", "|his\tis |\tyeah  |"];
+
+        assert_eq!(
+            wrap_columns("hello\tthis\tis\tlong\tyeah", 2, options, "|", "|", "|"),
+            expected
+        )
     }
 }
