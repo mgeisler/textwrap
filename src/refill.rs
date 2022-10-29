@@ -7,8 +7,8 @@ use crate::{fill, LineEnding, Options};
 /// Unpack a paragraph of already-wrapped text.
 ///
 /// This function attempts to recover the original text from a single
-/// paragraph of text produced by the [`fill`] function. This means
-/// that it turns
+/// paragraph of wrapped text, such as what [`fill()`] would produce.
+/// This means that it turns
 ///
 /// ```text
 /// textwrap: a small
@@ -115,9 +115,8 @@ pub fn unfill(text: &str) -> (String, Options<'_>) {
 
 /// Refill a paragraph of wrapped text with a new width.
 ///
-/// This function will first use the [`unfill`] function to remove
-/// newlines from the text. Afterwards the text is filled again using
-/// the [`fill`] function.
+/// This function will first use [`unfill()`] to remove newlines from
+/// the text. Afterwards the text is filled again using [`fill()`].
 ///
 /// The `new_width_or_options` argument specify the new width and can
 /// specify other options as well — except for

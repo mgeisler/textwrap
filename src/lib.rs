@@ -17,8 +17,9 @@
 //! # }
 //! ```
 //!
-//! The [`wrap`] function returns the individual lines, use [`fill`]
-//! is you want the lines joined with `'\n'` to form a `String`.
+//! The [`wrap()`] function returns the individual lines, use
+//! [`fill()`] is you want the lines joined with `'\n'` to form a
+//! `String`.
 //!
 //! If you enable the `hyphenation` Cargo feature, you can get
 //! automatic hyphenation for a number of languages:
@@ -70,8 +71,8 @@
 //!
 //! The textwrap library also offers functions for adding a prefix to
 //! every line of a string and to remove leading whitespace. As an
-//! example, the [`indent`] function allows you to turn lines of text
-//! into a bullet list:
+//! example, [`indent()`] allows you to turn lines of text into a
+//! bullet list:
 //!
 //! ```
 //! let before = "\
@@ -87,7 +88,7 @@
 //! assert_eq!(textwrap::indent(before, "* "), after);
 //! ```
 //!
-//! Removing leading whitespace is done with [`dedent`]:
+//! Removing leading whitespace is done with [`dedent()`]:
 //!
 //! ```
 //! let before = "
@@ -131,8 +132,7 @@
 //! * `unicode-width`: enables correct width computation of non-ASCII
 //!   characters via the [unicode-width] crate. Without this feature,
 //!   every [`char`] is 1 column wide, except for emojis which are 2
-//!   columns wide. See the [`core::display_width`] function for
-//!   details.
+//!   columns wide. See [`core::display_width()`] for details.
 //!
 //!   This feature can be disabled if you only need to wrap ASCII
 //!   text, or if the functions in [`core`] are used directly with
@@ -140,11 +140,11 @@
 //!   other ways.
 //!
 //! * `smawk`: enables linear-time wrapping of the whole paragraph via
-//!   the [smawk] crate. See the [`wrap_algorithms::wrap_optimal_fit`]
-//!   function for details on the optimal-fit algorithm.
+//!   the [smawk] crate. See [`wrap_algorithms::wrap_optimal_fit()`]
+//!   for details on the optimal-fit algorithm.
 //!
 //!   This feature can be disabled if you only ever intend to use
-//!   [`wrap_algorithms::wrap_first_fit`].
+//!   [`wrap_algorithms::wrap_first_fit()`].
 //!
 //! <!-- begin binary-sizes -->
 //!
@@ -178,8 +178,8 @@
 //! These Cargo features enable new functionality:
 //!
 //! * `terminal_size`: enables automatic detection of the terminal
-//!   width via the [terminal_size] crate. See the
-//!   [`Options::with_termwidth`] constructor for details.
+//!   width via the [terminal_size] crate. See
+//!   [`Options::with_termwidth()`] for details.
 //!
 //! * `hyphenation`: enables language-sensitive hyphenation via the
 //!   [hyphenation] crate. See the [`word_splitters::WordSplitter`]
@@ -233,8 +233,7 @@ pub use wrap_algorithms::WrapAlgorithm;
 /// Fill a line of text at a given width.
 ///
 /// The result is a [`String`], complete with newlines between each
-/// line. Use the [`wrap`] function if you need access to the
-/// individual lines.
+/// line. Use [`wrap()`] if you need access to the individual lines.
 ///
 /// The easiest way to use this function is to pass an integer for
 /// `width_or_options`:
@@ -299,8 +298,8 @@ fn fill_slow_path(text: &str, options: Options<'_>) -> String {
 /// The result is a vector of lines, each line is of type [`Cow<'_,
 /// str>`](Cow), which means that the line will borrow from the input
 /// `&str` if possible. The lines do not have trailing whitespace,
-/// including a final `'\n'`. Please use the [`fill`] function if you
-/// need a [`String`] instead.
+/// including a final `'\n'`. Please use [`fill()`] if you need a
+/// [`String`] instead.
 ///
 /// The easiest way to use this function is to pass an integer for
 /// `width_or_options`:
@@ -600,7 +599,7 @@ fn wrap_single_line_slow_path<'a>(
 /// let column_width = inner_width / columns;
 /// ```
 ///
-/// The `text` is wrapped using [`wrap`] and the given `options`
+/// The `text` is wrapped using [`wrap()`] and the given `options`
 /// argument, but the width is overwritten to the computed
 /// `column_width`.
 ///
@@ -696,7 +695,7 @@ where
 /// use `AsciiSpace` as the word separator since we need `' '`
 /// characters between words in order to replace some of them with a
 /// `'\n'`. Indentation is also ruled out. In other words,
-/// `fill_inplace(width)` behaves as if you had called [`fill`] with
+/// `fill_inplace(width)` behaves as if you had called [`fill()`] with
 /// these options:
 ///
 /// ```
@@ -715,7 +714,7 @@ where
 /// `fill_inplace` is to get the string broken into newlines as fast
 /// as possible.
 ///
-/// A last difference is that (unlike [`fill`]) `fill_inplace` can
+/// A last difference is that (unlike [`fill()`]) `fill_inplace` can
 /// leave trailing whitespace on lines. This is because we wrap by
 /// inserting a `'\n'` at the final whitespace in the input string:
 ///
@@ -731,8 +730,8 @@ where
 ///
 /// # Performance
 ///
-/// In benchmarks, `fill_inplace` is about twice as fast as [`fill`].
-/// Please see the [`linear`
+/// In benchmarks, `fill_inplace` is about twice as fast as
+/// [`fill()`]. Please see the [`linear`
 /// benchmark](https://github.com/mgeisler/textwrap/blob/master/benchmarks/linear.rs)
 /// for details.
 pub fn fill_inplace(text: &mut String, width: usize) {
