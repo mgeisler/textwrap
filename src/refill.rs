@@ -60,11 +60,11 @@ use crate::{fill, LineEnding, Options};
 /// assert_eq!(options.line_ending, LineEnding::LF);
 /// ```
 pub fn unfill(text: &str) -> (String, Options<'_>) {
-    let prefix_chars: &[_] = &[' ', '-', '+', '*', '>', '#', '/'];
+    let prefix_chars: &[_] = &[' ', '\t', '-', '+', '*', '>', '#', '/'];
 
     let mut options = Options::new(0);
     for (idx, line) in text.lines().enumerate() {
-        options.width = std::cmp::max(options.width, display_width(line));
+        options.width = std::cmp::max(options.width, display_width(line, options.tab_width));
         let without_prefix = line.trim_start_matches(prefix_chars);
         let prefix = &line[..line.len() - without_prefix.len()];
 

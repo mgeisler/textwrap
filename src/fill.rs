@@ -39,8 +39,12 @@ where
 {
     let options = width_or_options.into();
 
-    if text.len() < options.width && !text.contains('\n') && options.initial_indent.is_empty() {
-        String::from(text.trim_end_matches(' '))
+    if text.len() < options.width
+        && options.tab_width <= 1
+        && !text.contains('\n')
+        && options.initial_indent.is_empty()
+    {
+        String::from(text.trim_end_matches(&[' ', '\t']))
     } else {
         fill_slow_path(text, options)
     }
@@ -117,7 +121,11 @@ pub(crate) fn fill_slow_path(text: &str, options: Options<'_>) -> String {
 /// [`fill()`]. Please see the [`linear`
 /// benchmark](https://github.com/mgeisler/textwrap/blob/master/benchmarks/linear.rs)
 /// for details.
-pub fn fill_inplace(text: &mut String, width: usize) {
+pub fn fill_inplace<'a, Opt>(text: &mut String, width_or_options: Opt)
+where
+    Opt: Into<Options<'a>>,
+{
+    let options: Options = width_or_options.into();
     let mut indices = Vec::new();
 
     let mut offset = 0;
@@ -125,7 +133,8 @@ pub fn fill_inplace(text: &mut String, width: usize) {
         let words = WordSeparator::AsciiSpace
             .find_words(line)
             .collect::<Vec<_>>();
-        let wrapped_words = wrap_algorithms::wrap_first_fit(&words, &[width as f64]);
+        let wrapped_words =
+            wrap_algorithms::wrap_first_fit(&words, &[options.width as f64], options.tab_width);
 
         let mut line_offset = offset;
         for words in &wrapped_words[..wrapped_words.len() - 1] {
@@ -208,6 +217,21 @@ mod tests {
             ),
             "1 3 5\n7\n1 3 5\n7"
         );
+    }
+
+    #[test]
+    fn fill_tabs() {
+        let options = Options::new(10).tab_width(4);
+        assert_eq!(
+            fill("Hello\t there\t friends", options),
+            "Hello\nthere\nfriends"
+        );
+    }
+
+    #[test]
+    fn fill_tabs_prevent_fast_path() {
+        let options = Options::new(10).tab_width(4);
+        assert_eq!(fill("Hey\tworld", options), "Hey\nworld");
     }
 
     #[test]
@@ -294,5 +318,25 @@ mod tests {
         let mut text = String::from("foo  bar    baz");
         fill_inplace(&mut text, 10);
         assert_eq!(text, "foo  bar   \nbaz");
+    }
+
+    #[test]
+    fn fill_inplace_only_tabs() {
+        let mut text = String::from("Hello\tWorld");
+        fill_inplace(&mut text, 8);
+
+        // fill_inplace shouldn't change the text, since it uses
+        // the ASCII space as the word separator.
+        assert_eq!(text, "Hello\tWorld");
+    }
+
+    #[test]
+    fn fill_inplace_tabs() {
+        let options = Options::new(10).tab_width(4);
+        let mut text = String::from("Hello\t there\t friends");
+
+        fill_inplace(&mut text, options);
+
+        assert_eq!(text, "Hello\t\nthere\t\nfriends");
     }
 }

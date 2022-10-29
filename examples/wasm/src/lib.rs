@@ -152,7 +152,7 @@ impl textwrap::core::Fragment for CanvasWord<'_> {
     }
 
     #[inline]
-    fn whitespace_width(&self) -> f64 {
+    fn whitespace_width(&self, _: u8) -> f64 {
         self.whitespace_width
     }
 
@@ -351,7 +351,7 @@ pub fn draw_wrapped_text(
     let mut lineno = 0;
     for line in text.split('\n') {
         let words = word_separator.find_words(line);
-        let split_words = split_words(words, &word_splitter);
+        let split_words = split_words(words, &word_splitter, 0);
 
         let canvas_words = split_words
             .flat_map(|word| {
@@ -366,10 +366,10 @@ pub fn draw_wrapped_text(
 
         let line_lengths = [options.width];
         let wrapped_words = match options.wrap_algorithm {
-            WasmWrapAlgorithm::FirstFit => wrap_first_fit(&canvas_words, &line_lengths),
+            WasmWrapAlgorithm::FirstFit => wrap_first_fit(&canvas_words, &line_lengths, 0),
             WasmWrapAlgorithm::OptimalFit => {
                 let penalties = options.penalties.into();
-                wrap_optimal_fit(&canvas_words, &line_lengths, &penalties).unwrap()
+                wrap_optimal_fit(&canvas_words, &line_lengths, 0, &penalties).unwrap()
             }
             _ => Err("WasmOptions has an invalid wrap_algorithm field")?,
         };
