@@ -2,7 +2,7 @@
 //!
 //! The functions and structs in this module can be used to implement
 //! advanced wrapping functionality when [`wrap()`](super::wrap)
-//! [`fill()`](super::fill) don't do what you want.
+//! [`fill()`](super::fill()) don't do what you want.
 //!
 //! In general, you want to follow these steps when wrapping
 //! something:

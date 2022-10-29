@@ -5,7 +5,7 @@ use std::borrow::Cow;
 
 /// Exposed for fuzzing so we can check the slow path is correct.
 pub fn fill_slow_path<'a>(text: &str, options: Options<'_>) -> String {
-    super::fill_slow_path(text, options)
+    crate::fill::fill_slow_path(text, options)
 }
 
 /// Exposed for fuzzing so we can check the slow path is correct.
