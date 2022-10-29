@@ -215,41 +215,18 @@ pub mod wrap_algorithms;
 mod indentation;
 mod line_ending;
 mod options;
+#[cfg(feature = "terminal_size")]
+mod termwidth;
 mod word_separators;
 
 pub use indentation::{dedent, indent};
 pub use line_ending::LineEnding;
 pub use options::Options;
+#[cfg(feature = "terminal_size")]
+pub use termwidth::termwidth;
 pub use word_separators::WordSeparator;
 pub use word_splitters::WordSplitter;
 pub use wrap_algorithms::WrapAlgorithm;
-
-/// Return the current terminal width.
-///
-/// If the terminal width cannot be determined (typically because the
-/// standard output is not connected to a terminal), a default width
-/// of 80 characters will be used.
-///
-/// # Examples
-///
-/// Create an [`Options`] for wrapping at the current terminal width
-/// with a two column margin to the left and the right:
-///
-/// ```no_run
-/// use textwrap::{termwidth, Options};
-///
-/// let width = termwidth() - 4; // Two columns on each side.
-/// let options = Options::new(width)
-///     .initial_indent("  ")
-///     .subsequent_indent("  ");
-/// ```
-///
-/// **Note:** Only available when the `terminal_size` Cargo feature is
-/// enabled.
-#[cfg(feature = "terminal_size")]
-pub fn termwidth() -> usize {
-    terminal_size::terminal_size().map_or(80, |(terminal_size::Width(w), _)| w.into())
-}
 
 /// Fill a line of text at a given width.
 ///

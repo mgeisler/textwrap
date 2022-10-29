@@ -96,28 +96,6 @@ impl<'a> Options<'a> {
         }
     }
 
-    /// Creates a new [`Options`] with `width` set to the current
-    /// terminal width. If the terminal width cannot be determined
-    /// (typically because the standard input and output is not
-    /// connected to a terminal), a width of 80 characters will be
-    /// used. Other settings use the same defaults as
-    /// [`Options::new`].
-    ///
-    /// Equivalent to:
-    ///
-    /// ```no_run
-    /// use textwrap::{termwidth, Options};
-    ///
-    /// let options = Options::new(termwidth());
-    /// ```
-    ///
-    /// **Note:** Only available when the `terminal_size` feature is
-    /// enabled.
-    #[cfg(feature = "terminal_size")]
-    pub fn with_termwidth() -> Self {
-        Self::new(crate::termwidth())
-    }
-
     /// Change [`self.line_ending`]. This specifies which of the
     /// supported line endings should be used to break the lines of the
     /// input text.
