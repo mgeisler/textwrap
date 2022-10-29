@@ -206,30 +206,23 @@ mod readme_doctest {}
 
 use std::borrow::Cow;
 
-mod indentation;
-pub use crate::indentation::{dedent, indent};
-
-mod word_separators;
-pub use word_separators::WordSeparator;
-
-pub mod word_splitters;
-pub use word_splitters::WordSplitter;
-
-pub mod wrap_algorithms;
-pub use wrap_algorithms::WrapAlgorithm;
-
-mod line_ending;
-pub use line_ending::LineEnding;
-
-mod options;
-pub use options::Options;
-
 pub mod core;
-
-// This module is only active when running fuzz tests. It provides
-// access to private helpers.
 #[cfg(fuzzing)]
 pub mod fuzzing;
+pub mod word_splitters;
+pub mod wrap_algorithms;
+
+mod indentation;
+mod line_ending;
+mod options;
+mod word_separators;
+
+pub use indentation::{dedent, indent};
+pub use line_ending::LineEnding;
+pub use options::Options;
+pub use word_separators::WordSeparator;
+pub use word_splitters::WordSplitter;
+pub use wrap_algorithms::WrapAlgorithm;
 
 /// Return the current terminal width.
 ///
