@@ -1,7 +1,6 @@
 #![no_main]
 use libfuzzer_sys::fuzz_target;
-use textwrap::Options;
-use textwrap::WrapAlgorithm;
+use textwrap::{Options, WrapAlgorithm};
 
 fuzz_target!(|input: (String, usize)| {
     if input.0.len() > 100_000 {
