@@ -255,8 +255,8 @@ impl std::error::Error for OverflowError {}
 ///
 /// This means that the time complexity remains O(_n_) where _n_ is
 /// the number of words. Compared to
-/// [`wrap_first_fit`](super::wrap_first_fit), this function is about
-/// 4 times slower.
+/// [`wrap_first_fit()`](super::wrap_first_fit), this function is
+/// about 4 times slower.
 ///
 /// The optimization of per-line costs over the entire paragraph is
 /// inspired by the line breaking algorithm used in TeX, as described
