@@ -25,42 +25,30 @@ pub fn benchmark(c: &mut Criterion) {
         0, 5, 10, 20, 30, 40, 50, 60, 80, 100, 200, 300, 400, 600, 800, 1200, 1600, 2400, 3200,
         4800, 6400,
     ];
+    let wrap_algorithms = [
+        (textwrap::WrapAlgorithm::new_optimal_fit(), "optimal_fit"),
+        (textwrap::WrapAlgorithm::FirstFit, "first_fit"),
+    ];
+    let word_separators = [
+        (textwrap::WordSeparator::UnicodeBreakProperties, "unicode"),
+        (textwrap::WordSeparator::AsciiSpace, "ascii"),
+    ];
+
     for length in lengths {
         let text = lorem_ipsum(length);
         let length_id = format!("{length:04}");
 
-        let options = textwrap::Options::new(LINE_LENGTH)
-            .wrap_algorithm(textwrap::WrapAlgorithm::new_optimal_fit())
-            .word_separator(textwrap::WordSeparator::UnicodeBreakProperties);
-        group.bench_with_input(
-            BenchmarkId::new("optimal_fit_unicode", &length_id),
-            &text,
-            |b, text| {
-                b.iter(|| textwrap::fill(text, &options));
-            },
-        );
-
-        let options = textwrap::Options::new(LINE_LENGTH)
-            .wrap_algorithm(textwrap::WrapAlgorithm::new_optimal_fit())
-            .word_separator(textwrap::WordSeparator::AsciiSpace);
-        group.bench_with_input(
-            BenchmarkId::new("optimal_fit_ascii", &length_id),
-            &text,
-            |b, text| {
-                b.iter(|| textwrap::fill(text, &options));
-            },
-        );
-
-        let options = textwrap::Options::new(LINE_LENGTH)
-            .wrap_algorithm(textwrap::WrapAlgorithm::FirstFit)
-            .word_separator(textwrap::WordSeparator::AsciiSpace);
-        group.bench_with_input(
-            BenchmarkId::new("first_fit", &length_id),
-            &text,
-            |b, text| {
-                b.iter(|| textwrap::fill(text, &options));
-            },
-        );
+        for (algorithm, algorithm_name) in &wrap_algorithms {
+            for (separator, separator_name) in &word_separators {
+                let name = format!("{algorithm_name}_{separator_name}");
+                let options = textwrap::Options::new(LINE_LENGTH)
+                    .wrap_algorithm(*algorithm)
+                    .word_separator(*separator);
+                group.bench_with_input(BenchmarkId::new(&name, &length_id), &text, |b, text| {
+                    b.iter(|| textwrap::fill(text, &options));
+                });
+            }
+        }
 
         group.bench_function(BenchmarkId::new("inplace", &length_id), |b| {
             b.iter_batched(
