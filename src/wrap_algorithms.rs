@@ -101,7 +101,7 @@ impl PartialEq for WrapAlgorithm {
     /// }
     /// ```
     ///
-    /// Note that `WrapAlgorithm::Custom1` values never compare equal:
+    /// Note that `WrapAlgorithm::Custom` values never compare equal:
     ///
     /// ```
     /// use textwrap::WrapAlgorithm;
