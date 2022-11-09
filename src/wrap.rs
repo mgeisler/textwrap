@@ -679,7 +679,7 @@ mod tests {
         let green_hello = "\u{1b}[0m\u{1b}[32mHello\u{1b}[0m";
         let blue_world = "\u{1b}[0m\u{1b}[34mWorld!\u{1b}[0m";
         assert_eq!(
-            wrap(&(String::from(green_hello) + " " + blue_world), 6),
+            wrap(&format!("{} {}", green_hello, blue_world), 6),
             vec![green_hello, blue_world],
         );
     }
