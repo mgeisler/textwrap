@@ -55,7 +55,18 @@ pub fn benchmark(c: &mut Criterion) {
             .wrap_algorithm(textwrap::WrapAlgorithm::FirstFit)
             .word_separator(textwrap::WordSeparator::AsciiSpace);
         group.bench_with_input(
-            BenchmarkId::new("first_fit", &length_id),
+            BenchmarkId::new("first_fit_ascii", &length_id),
+            &text,
+            |b, text| {
+                b.iter(|| textwrap::fill(text, &options));
+            },
+        );
+
+        let options = textwrap::Options::new(LINE_LENGTH)
+            .wrap_algorithm(textwrap::WrapAlgorithm::FirstFit)
+            .word_separator(textwrap::WordSeparator::UnicodeBreakProperties);
+        group.bench_with_input(
+            BenchmarkId::new("first_fit_unicode", &length_id),
             &text,
             |b, text| {
                 b.iter(|| textwrap::fill(text, &options));
