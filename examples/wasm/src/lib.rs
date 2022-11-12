@@ -76,7 +76,7 @@ impl<'a> CanvasWord<'a> {
         for (idx, grapheme) in self.word.grapheme_indices(true) {
             let with_grapheme = &self.word[start..idx + grapheme.len()];
             let without_grapheme = &self.word[start..idx];
-            if idx > 0 && canvas_width(&ctx, with_grapheme) > max_width {
+            if idx > 0 && canvas_width(ctx, with_grapheme) > max_width {
                 // The part without the grapheme fits on the line. We
                 // give it a width of max_width instead of its natural
                 // width to ensure that it takes up the full line.
@@ -119,9 +119,9 @@ impl<'a> CanvasWord<'a> {
                 // We can be a more "natural" or "monotone" behavior
                 // by making the parts take up at least the full line
                 // width.
-                let natural_width = canvas_width(ctx, &without_grapheme);
+                let natural_width = canvas_width(ctx, without_grapheme);
                 words.push(CanvasWord {
-                    word: &without_grapheme,
+                    word: without_grapheme,
                     width: max_width.max(natural_width),
                     whitespace: "",
                     whitespace_width: 0.0,
@@ -275,14 +275,14 @@ impl WasmPenalties {
     }
 }
 
-impl Into<Penalties> for WasmPenalties {
-    fn into(self) -> Penalties {
+impl From<WasmPenalties> for Penalties {
+    fn from(val: WasmPenalties) -> Self {
         Penalties {
-            nline_penalty: self.nline_penalty,
-            overflow_penalty: self.overflow_penalty,
-            short_last_line_fraction: self.short_last_line_fraction,
-            short_last_line_penalty: self.short_last_line_penalty,
-            hyphen_penalty: self.hyphen_penalty,
+            nline_penalty: val.nline_penalty,
+            overflow_penalty: val.overflow_penalty,
+            short_last_line_fraction: val.short_last_line_fraction,
+            short_last_line_penalty: val.short_last_line_penalty,
+            hyphen_penalty: val.hyphen_penalty,
         }
     }
 }
@@ -394,7 +394,7 @@ pub fn draw_wrapped_text(
             ctx.set_font("10px sans-serif");
             ctx.fill_text(
                 &format!("{:.1}px", x - X_OFFSET),
-                1.5 * X_OFFSET + options.width as f64,
+                1.5 * X_OFFSET + options.width,
                 y,
             )?;
             ctx.restore();
@@ -405,7 +405,7 @@ pub fn draw_wrapped_text(
         ctx,
         "blue",
         (
-            X_OFFSET + options.width as f64,
+            X_OFFSET + options.width,
             metrics.actual_bounding_box_ascent(),
         ),
         &[(0.0, baseline_distance * lineno as f64)],
