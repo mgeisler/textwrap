@@ -32,7 +32,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Install ${{ matrix.rust }} Rust
         run: rustup default ${{ matrix.rust }}
@@ -54,7 +54,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - uses: Swatinem/rust-cache@v2
 
@@ -67,7 +67,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - uses: Swatinem/rust-cache@v2
         with:
@@ -82,7 +82,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - uses: Swatinem/rust-cache@v2
 
@@ -109,7 +109,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Install nightly Rust
         run: rustup default nightly
@@ -122,7 +122,7 @@ jobs:
         run: cargo install cargo-fuzz
 
       - name: Cache fuzz corpus
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: fuzz/corpus/${{ matrix.fuzz-target }}
           key: fuzz-corpus-${{ matrix.fuzz-target }}-${{ github.run_id }}
@@ -140,7 +140,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - uses: Swatinem/rust-cache@v2
         with:
@@ -155,7 +155,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Install wasm-pack
         run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
@@ -177,7 +177,7 @@ jobs:
         working-directory: examples/wasm/www
 
       - name: Upload bundled textwrap-wasm-demo-app
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: textwrap-wasm-demo-app
           path: examples/wasm/www/dist
@@ -189,7 +189,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: gh-pages
 
