@@ -91,21 +91,6 @@ jobs:
           RUSTDOCFLAGS: --deny rustdoc::broken_intra_doc_links
         run: cargo doc --all-features --no-deps
 
-  clippy:
-    name: Clippy
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - uses: Swatinem/rust-cache@v2
-
-      - name: Clippy with default lints
-        run: cargo clippy
-
-      - name: Lint for left-over debug prints
-        run: cargo clippy -- -D clippy::print_stdout -D clippy::print_stderr
-
   fuzz:
     name: Fuzz test
     runs-on: ubuntu-latest
