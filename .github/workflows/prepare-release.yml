@@ -25,9 +25,9 @@ jobs:
           echo "Version from Cargo:  $OLD_VERSION"
           echo "Version from branch: $NEW_VERSION"
 
-          echo "::set-output name=name::$NAME"
-          echo "::set-output name=old-version::$OLD_VERSION"
-          echo "::set-output name=new-version::$NEW_VERSION"
+          echo "name=$NAME" >> $GITHUB_OUTPUT
+          echo "old-version=$OLD_VERSION" >> $GITHUB_OUTPUT
+          echo "new-version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
       - name: Verify version format
         run: |

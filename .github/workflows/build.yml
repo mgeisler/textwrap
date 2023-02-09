@@ -208,9 +208,9 @@ jobs:
           git add --verbose --all
           if git diff --staged --quiet --exit-code; then
             echo "No changes found in textwrap-wasm-demo-app"
-            echo '::set-output name=has-changes::false'
+            echo 'has-changes=false' >> $GITHUB_OUTPUT
           else
-            echo '::set-output name=has-changes::true'
+            echo 'has-changes=true' >> $GITHUB_OUTPUT
           fi
 
       - name: Record build info

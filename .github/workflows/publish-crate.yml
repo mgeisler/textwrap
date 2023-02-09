@@ -23,9 +23,9 @@ jobs:
           VERSION=$(cargo metadata -q --no-deps | jq -r '.packages[0].version')
           CHANGELOG=$(awk '/^## Version/ {i++}; i==1 {print}; i>1 {exit}' CHANGELOG.md \
             | python3 -c 'import sys, json; print(json.dumps(sys.stdin.read()))')
-          echo "::set-output name=name::$NAME"
-          echo "::set-output name=version::$VERSION"
-          echo "::set-output name=changelog::$CHANGELOG"
+          echo "name=$NAME" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "changelog=$CHANGELOG" >> $GITHUB_OUTPUT
           echo "Found $NAME-$VERSION"
 
       - name: Lookup ${{ steps.vars.outputs.version }} tag
