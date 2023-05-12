@@ -45,7 +45,7 @@ This is a major feature release with two main changes:
   instead of `usize` for fragment widths.
 
   This fixes problems with overflows in the internal computations of
-  `wrap_optimal_fit` when fragments (words) or line lenghts had
+  `wrap_optimal_fit` when fragments (words) or line lengths had
   extreme values, such as `usize::MAX`.
 
 * [#438](https://github.com/mgeisler/textwrap/pull/438): Simplify
@@ -135,7 +135,7 @@ let options: Options<
 > = Options::new(80);
 ```
 
-This is quite a mouthful, so we suggest using type inferrence where
+This is quite a mouthful, so we suggest using type inference where
 possible. You won’t see any chance if you call `wrap` directly with a
 width or with an `Options` value constructed on the fly. Please open
 an issue if this causes problems for you!
@@ -486,7 +486,7 @@ Added a regression test for the case where `width` is set to
 
 ## Version 0.8.0 (2017-09-04)
 
-The `Wrapper` stuct is now generic over the type of word splitter
+The `Wrapper` struct is now generic over the type of word splitter
 being used. This means less boxing and a nicer API. The
 `Wrapper::word_splitter` method has been removed. This is a *breaking
 API change* if you used the method to change the word splitter.

@@ -69,7 +69,7 @@ pub enum WordSplitter {
 
     /// Use a custom function as the word splitter.
     ///
-    /// This varian lets you implement a custom word splitter using
+    /// This variant lets you implement a custom word splitter using
     /// your own function.
     ///
     /// # Examples
