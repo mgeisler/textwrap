@@ -180,7 +180,7 @@ impl WrapAlgorithm {
 
             #[cfg(feature = "smawk")]
             WrapAlgorithm::OptimalFit(penalties) => {
-                // The computation cannnot overflow when the line
+                // The computation cannot overflow when the line
                 // widths are restricted to usize.
                 wrap_optimal_fit(words, &f64_line_widths, penalties).unwrap()
             }
