@@ -224,6 +224,14 @@ mod tests {
     }
 
     #[test]
+    fn test_unfill_consecutive_different_prefix() {
+        let (text, options) = unfill("foo\n*\n/");
+        assert_eq!(text, "foo * /");
+        assert_eq!(options.width, 3);
+        assert_eq!(options.line_ending, LineEnding::LF);
+    }
+
+    #[test]
     fn unfill_trailing_newlines() {
         let (text, options) = unfill("foo\nbar\n\n\n");
         assert_eq!(text, "foo bar\n");
