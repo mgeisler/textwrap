@@ -224,10 +224,10 @@ mod tests {
     }
 
     #[test]
-    fn test_unfill_missing() {
-        let (text, options) = unfill("í\n*\n/");
-        assert_eq!(text, "í * /");
-        assert_eq!(options.width, 1);
+    fn test_unfill_consecutive_different_prefix() {
+        let (text, options) = unfill("foo\n*\n/");
+        assert_eq!(text, "foo * /");
+        assert_eq!(options.width, 3);
         assert_eq!(options.line_ending, LineEnding::LF);
     }
 
