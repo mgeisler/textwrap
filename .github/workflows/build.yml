@@ -22,7 +22,7 @@ jobs:
     strategy:
       matrix:
         rust:
-          - 1.56  # MSRV, Rust 2021
+          - '1.60'  # Current MSRV
           - stable
           - nightly
         features:
