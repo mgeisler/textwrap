@@ -16,20 +16,21 @@ env:
 
 jobs:
 
+  # Here we check that we can run `cargo test` on modern versions of
+  # Rust. Below we check that we can build the library on an old
+  # version as well.
   ubuntu:
     name: Ubuntu
     runs-on: ubuntu-latest
     strategy:
       matrix:
         rust:
-          - '1.60'  # Current MSRV
           - stable
           - nightly
         features:
           - no default features
           - all features
           - default features
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -60,6 +61,34 @@ jobs:
 
       - name: Test with default features
         run: cargo test
+
+  msrv:
+    name: Minimum supported Rust version
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        features:
+          - no default features
+          - all features
+          - default features
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install Rust 1.56  # MSRV from Cargo.toml
+        run: rustup default 1.56
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Build with ${{ matrix.features }}
+        run: |
+          FLAG="${{ matrix.features }}"
+          if [[ "$FLAG" = "default features" ]]; then
+            FLAG=''  # Needs no flag
+          else
+            FLAG="--${FLAG// /-}"  # Turn 'foo bar' into '--foo-bar'
+          fi
+          cargo build $FLAG
 
   # This builds benchmarks, which are not covered above.
   build-benchmarks:
