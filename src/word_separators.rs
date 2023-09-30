@@ -10,9 +10,9 @@
 //! sequence of emojis is another example where line breaks might be
 //! wanted even if there are no whitespace to be found.
 //!
-//! The [`WordSeparator`] trait is responsible for determining where
-//! there words are in a line of text. Please refer to the trait and
-//! the structs which implement it for more information.
+//! The [`WordSeparator`] enum is responsible for determining where
+//! there words are in a line of text. Please refer to the enum and
+//! its variants for more information.
 
 #[cfg(feature = "unicode-linebreak")]
 use crate::core::skip_ansi_escape_sequence;
