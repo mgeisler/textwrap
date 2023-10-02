@@ -168,6 +168,7 @@ impl WrapAlgorithm {
         &self,
         words: &'b [Word<'a>],
         line_widths: &'b [usize],
+        tab_width: u8,
     ) -> Vec<&'b [Word<'a>]> {
         // Every integer up to 2u64.pow(f64::MANTISSA_DIGITS) = 2**53
         // = 9_007_199_254_740_992 can be represented without loss by
@@ -176,13 +177,13 @@ impl WrapAlgorithm {
         let f64_line_widths = line_widths.iter().map(|w| *w as f64).collect::<Vec<_>>();
 
         match self {
-            WrapAlgorithm::FirstFit => wrap_first_fit(words, &f64_line_widths),
+            WrapAlgorithm::FirstFit => wrap_first_fit(words, &f64_line_widths, tab_width),
 
             #[cfg(feature = "smawk")]
             WrapAlgorithm::OptimalFit(penalties) => {
                 // The computation cannot overflow when the line
                 // widths are restricted to usize.
-                wrap_optimal_fit(words, &f64_line_widths, penalties).unwrap()
+                wrap_optimal_fit(words, &f64_line_widths, tab_width, penalties).unwrap()
             }
 
             WrapAlgorithm::Custom(func) => func(words, line_widths),
@@ -231,7 +232,7 @@ impl Default for WrapAlgorithm {
 ///
 /// let text = "These few words will unfortunately not wrap nicely.";
 /// let words = WordSeparator::AsciiSpace.find_words(text).collect::<Vec<_>>();
-/// assert_eq!(lines_to_strings(wrap_first_fit(&words, &[15.0])),
+/// assert_eq!(lines_to_strings(wrap_first_fit(&words, &[15.0], 0)),
 ///            vec!["These few words",
 ///                 "will",  // <-- short line
 ///                 "unfortunately",
@@ -242,7 +243,7 @@ impl Default for WrapAlgorithm {
 /// #[cfg(feature = "smawk")]
 /// use textwrap::wrap_algorithms::{wrap_optimal_fit, Penalties};
 /// #[cfg(feature = "smawk")]
-/// assert_eq!(lines_to_strings(wrap_optimal_fit(&words, &[15.0], &Penalties::new()).unwrap()),
+/// assert_eq!(lines_to_strings(wrap_optimal_fit(&words, &[15.0], 0, &Penalties::new()).unwrap()),
 ///            vec!["These few",
 ///                 "words will",
 ///                 "unfortunately",
@@ -284,7 +285,7 @@ impl Default for WrapAlgorithm {
 ///
 /// impl Fragment for Task<'_> {
 ///     fn width(&self) -> f64 { self.hours }
-///     fn whitespace_width(&self) -> f64 { self.sweep }
+///     fn whitespace_width(&self, tab_width: u8) -> f64 { self.sweep }
 ///     fn penalty_width(&self) -> f64 { self.cleanup }
 /// }
 ///
@@ -308,7 +309,7 @@ impl Default for WrapAlgorithm {
 ///     let mut days = Vec::new();
 ///     // Assign tasks to days. The assignment is a vector of slices,
 ///     // with a slice per day.
-///     let assigned_days: Vec<&[Task<'a>]> = wrap_first_fit(&tasks, &[day_length]);
+///     let assigned_days: Vec<&[Task<'a>]> = wrap_first_fit(&tasks, &[day_length], 0);
 ///     for day in assigned_days.iter() {
 ///         let last = day.last().unwrap();
 ///         let work_hours: f64 = day.iter().map(|t| t.hours + t.sweep).sum();
@@ -347,6 +348,7 @@ impl Default for WrapAlgorithm {
 pub fn wrap_first_fit<'a, T: Fragment>(
     fragments: &'a [T],
     line_widths: &[f64],
+    tab_width: u8,
 ) -> Vec<&'a [T]> {
     // The final line width is used for all remaining lines.
     let default_line_width = line_widths.last().copied().unwrap_or(0.0);
@@ -364,7 +366,7 @@ pub fn wrap_first_fit<'a, T: Fragment>(
             start = idx;
             width = 0.0;
         }
-        width += fragment.width() + fragment.whitespace_width();
+        width += fragment.width() + fragment.whitespace_width(tab_width);
     }
     lines.push(&fragments[start..]);
     lines
@@ -380,7 +382,7 @@ mod tests {
     #[rustfmt::skip]
     impl Fragment for Word {
         fn width(&self) -> f64 { self.0 }
-        fn whitespace_width(&self) -> f64 { 1.0 }
+        fn whitespace_width(&self, _: u8) -> f64 { 1.0 }
         fn penalty_width(&self) -> f64 { 0.0 }
     }
 
@@ -397,7 +399,7 @@ mod tests {
         // Wrap at just under f64::MAX (~19e307). The tiny
         // whitespace_widths disappear because of loss of precision.
         assert_eq!(
-            wrap_first_fit(&words, &[15e307]),
+            wrap_first_fit(&words, &[15e307], 0),
             &[
                 vec![
                     Word(1e307),

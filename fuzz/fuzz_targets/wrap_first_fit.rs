@@ -14,12 +14,12 @@ struct Word {
 #[rustfmt::skip]
 impl core::Fragment for Word {
     fn width(&self) -> f64 { self.width }
-    fn whitespace_width(&self) -> f64 { self.whitespace_width }
+    fn whitespace_width(&self, _: u8) -> f64 { self.whitespace_width }
     fn penalty_width(&self) -> f64 { self.penalty_width }
 }
 
 fuzz_target!(|input: (f64, Vec<Word>)| {
     let width = input.0;
     let words = input.1;
-    let _ = wrap_first_fit(&words, &[width]);
+    let _ = wrap_first_fit(&words, &[width], 0);
 });

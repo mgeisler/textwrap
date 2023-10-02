@@ -23,6 +23,11 @@ name = "unfill"
 harness = false
 path = "unfill.rs"
 
+[[bench]]
+name = "display_width"
+harness = false
+path = "display_width.rs"
+
 [dependencies]
 textwrap = { path = "../", features = ["hyphenation"] }
 

@@ -202,8 +202,8 @@ pub(crate) fn wrap_single_line<'a>(
     } else {
         options.subsequent_indent
     };
-    if line.len() < options.width && indent.is_empty() {
-        lines.push(Cow::from(line.trim_end_matches(' ')));
+    if line.len() < options.width && options.tab_width <= 1 && indent.is_empty() {
+        lines.push(Cow::from(line.trim_end_matches(&[' ', '\t'])));
     } else {
         wrap_single_line_slow_path(line, options, lines)
     }
@@ -217,18 +217,20 @@ pub(crate) fn wrap_single_line_slow_path<'a>(
     options: &Options<'_>,
     lines: &mut Vec<Cow<'a, str>>,
 ) {
+    let line = line.trim_end_matches(&[' ', '\t']);
+
     let initial_width = options
         .width
-        .saturating_sub(display_width(options.initial_indent));
+        .saturating_sub(display_width(options.initial_indent, options.tab_width));
     let subsequent_width = options
         .width
-        .saturating_sub(display_width(options.subsequent_indent));
+        .saturating_sub(display_width(options.subsequent_indent, options.tab_width));
     let line_widths = [initial_width, subsequent_width];
 
     let words = options.word_separator.find_words(line);
-    let split_words = split_words(words, &options.word_splitter);
+    let split_words = split_words(words, &options.word_splitter, options.tab_width);
     let broken_words = if options.break_words {
-        let mut broken_words = break_words(split_words, line_widths[1]);
+        let mut broken_words = break_words(split_words, line_widths[1], options.tab_width);
         if !options.initial_indent.is_empty() {
             // Without this, the first word will always go into the
             // first line. However, since we break words based on the
@@ -242,7 +244,9 @@ pub(crate) fn wrap_single_line_slow_path<'a>(
         split_words.collect::<Vec<_>>()
     };
 
-    let wrapped_words = options.wrap_algorithm.wrap(&broken_words, &line_widths);
+    let wrapped_words = options
+        .wrap_algorithm
+        .wrap(&broken_words, &line_widths, options.tab_width);
 
     let mut idx = 0;
     for words in wrapped_words {
