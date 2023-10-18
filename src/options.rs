@@ -118,6 +118,13 @@ impl<'a> Options<'a> {
         }
     }
 
+    /// Set [`self.width`] to the given value.
+    ///
+    /// [`self.width`]: #structfield.width
+    pub fn width(self, width: usize) -> Self {
+        Options { width, ..self }
+    }
+
     /// Change [`self.initial_indent`]. The initial indentation is
     /// used on the very first line of output.
     ///
