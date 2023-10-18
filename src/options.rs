@@ -1,5 +1,7 @@
 //! Options for wrapping text.
 
+use std::borrow::Cow;
+
 use crate::{LineEnding, WordSeparator, WordSplitter, WrapAlgorithm};
 
 /// Holds configuration options for wrapping and filling text.
@@ -287,6 +289,39 @@ impl<'a> Options<'a> {
             wrap_algorithm: self.wrap_algorithm,
             word_splitter,
         }
+    }
+
+    /// Wrap a line of text at a given width.
+    ///
+    /// The result is a vector of lines, each line is of type [`Cow<'_,
+    /// str>`](Cow), which means that the line will borrow from the input
+    /// `&str` if possible. The lines do not have trailing whitespace,
+    /// including a final `'\n'`. Please use [`fill()`](crate::fill()) if
+    /// you need a [`String`] instead.
+    ///
+    /// See [`crate::wrap`] for more details.
+    pub fn wrap<'s>(&self, text: &'s str) -> Vec<Cow<'s, str>> {
+        crate::wrap(text, self)
+    }
+
+    /// Fill a line of text at a given width.
+    ///
+    /// The result is a [`String`], complete with newlines between each
+    /// line. Use [`wrap()`] if you need access to the individual lines.
+    ///
+    /// See [`crate::fill`] for more information.
+    pub fn fill(&self, text: &str) -> String {
+        crate::fill(text, self)
+    }
+
+    /// Unpack a paragraph of already-wrapped text.
+    ///
+    /// This function attempts to recover the original text from a single
+    /// paragraph of wrapped text, such as what [`fill()`] would produce.
+    ///
+    /// See [`crate::refill`] for more details.
+    pub fn refill(&self, filled_text: &str) -> String {
+        crate::refill(filled_text, self)
     }
 }
 
