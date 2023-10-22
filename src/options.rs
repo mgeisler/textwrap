@@ -136,9 +136,9 @@ impl<'a> Options<'a> {
     /// ```
     ///
     /// [`self.initial_indent`]: #structfield.initial_indent
-    pub fn initial_indent(self, indent: &'a str) -> Self {
+    pub fn initial_indent(self, initial_indent: &'a str) -> Self {
         Options {
-            initial_indent: indent,
+            initial_indent,
             ..self
         }
     }
@@ -172,9 +172,9 @@ impl<'a> Options<'a> {
     /// ```
     ///
     /// [`self.subsequent_indent`]: #structfield.subsequent_indent
-    pub fn subsequent_indent(self, indent: &'a str) -> Self {
+    pub fn subsequent_indent(self, subsequent_indent: &'a str) -> Self {
         Options {
-            subsequent_indent: indent,
+            subsequent_indent,
             ..self
         }
     }
@@ -202,9 +202,9 @@ impl<'a> Options<'a> {
     /// ```
     ///
     /// [`self.break_words`]: #structfield.break_words
-    pub fn break_words(self, setting: bool) -> Self {
+    pub fn break_words(self, break_words: bool) -> Self {
         Options {
-            break_words: setting,
+            break_words,
             ..self
         }
     }
@@ -216,14 +216,8 @@ impl<'a> Options<'a> {
     /// [`self.word_separator`]: #structfield.word_separator
     pub fn word_separator(self, word_separator: WordSeparator) -> Options<'a> {
         Options {
-            width: self.width,
-            line_ending: self.line_ending,
-            initial_indent: self.initial_indent,
-            subsequent_indent: self.subsequent_indent,
-            break_words: self.break_words,
-            word_separator: word_separator,
-            wrap_algorithm: self.wrap_algorithm,
-            word_splitter: self.word_splitter,
+            word_separator,
+            ..self
         }
     }
 
@@ -234,14 +228,8 @@ impl<'a> Options<'a> {
     /// [`self.wrap_algorithm`]: #structfield.wrap_algorithm
     pub fn wrap_algorithm(self, wrap_algorithm: WrapAlgorithm) -> Options<'a> {
         Options {
-            width: self.width,
-            line_ending: self.line_ending,
-            initial_indent: self.initial_indent,
-            subsequent_indent: self.subsequent_indent,
-            break_words: self.break_words,
-            word_separator: self.word_separator,
-            wrap_algorithm: wrap_algorithm,
-            word_splitter: self.word_splitter,
+            wrap_algorithm,
+            ..self
         }
     }
 
@@ -278,14 +266,8 @@ impl<'a> Options<'a> {
     /// [`self.word_splitter`]: #structfield.word_splitter
     pub fn word_splitter(self, word_splitter: WordSplitter) -> Options<'a> {
         Options {
-            width: self.width,
-            line_ending: self.line_ending,
-            initial_indent: self.initial_indent,
-            subsequent_indent: self.subsequent_indent,
-            break_words: self.break_words,
-            word_separator: self.word_separator,
-            wrap_algorithm: self.wrap_algorithm,
             word_splitter,
+            ..self
         }
     }
 }
