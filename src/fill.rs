@@ -171,13 +171,13 @@ mod tests {
     #[test]
     fn non_breaking_space() {
         let options = Options::new(5).break_words(false);
-        assert_eq!(fill("foo bar baz", &options), "foo bar baz");
+        assert_eq!(fill("foo bar baz", options), "foo bar baz");
     }
 
     #[test]
     fn non_breaking_hyphen() {
         let options = Options::new(5).break_words(false);
-        assert_eq!(fill("foo‑bar‑baz", &options), "foo‑bar‑baz");
+        assert_eq!(fill("foo‑bar‑baz", options), "foo‑bar‑baz");
     }
 
     #[test]
@@ -219,14 +219,14 @@ mod tests {
     #[test]
     fn break_words_empty_lines() {
         assert_eq!(
-            fill("foo\nbar", &Options::new(2).break_words(false)),
+            fill("foo\nbar", Options::new(2).break_words(false)),
             "foo\nbar"
         );
     }
 
     #[test]
     fn fill_inplace_empty() {
-        let mut text = String::from("");
+        let mut text = String::new();
         fill_inplace(&mut text, 80);
         assert_eq!(text, "");
     }

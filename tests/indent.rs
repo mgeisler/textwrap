@@ -20,10 +20,10 @@ const WINDOWS_CASES: [&str; 2] = [
 #[test]
 fn test_indent_nomargin_default() {
     // indent should do nothing if 'prefix' is empty.
-    for text in ROUNDTRIP_CASES.iter() {
+    for text in &ROUNDTRIP_CASES {
         assert_eq!(&indent(text, ""), text);
     }
-    for text in WINDOWS_CASES.iter() {
+    for text in &WINDOWS_CASES {
         assert_eq!(&indent(text, ""), text);
     }
 }
@@ -31,7 +31,7 @@ fn test_indent_nomargin_default() {
 #[test]
 fn test_roundtrip_spaces() {
     // A whitespace prefix should roundtrip with dedent
-    for text in ROUNDTRIP_CASES.iter() {
+    for text in &ROUNDTRIP_CASES {
         assert_eq!(&dedent(&indent(text, "    ")), text);
     }
 }
@@ -39,7 +39,7 @@ fn test_roundtrip_spaces() {
 #[test]
 fn test_roundtrip_tabs() {
     // A whitespace prefix should roundtrip with dedent
-    for text in ROUNDTRIP_CASES.iter() {
+    for text in &ROUNDTRIP_CASES {
         assert_eq!(&dedent(&indent(text, "\t\t")), text);
     }
 }
@@ -47,7 +47,7 @@ fn test_roundtrip_tabs() {
 #[test]
 fn test_roundtrip_mixed() {
     // A whitespace prefix should roundtrip with dedent
-    for text in ROUNDTRIP_CASES.iter() {
+    for text in &ROUNDTRIP_CASES {
         assert_eq!(&dedent(&indent(text, " \t  \t ")), text);
     }
 }
@@ -65,7 +65,7 @@ fn test_indent_default() {
         "\n  Hi.\n  This is a test.\n  Testing.\n",
     ];
     for (text, expect) in ROUNDTRIP_CASES.iter().zip(expected.iter()) {
-        assert_eq!(&indent(text, prefix), expect)
+        assert_eq!(&indent(text, prefix), expect);
     }
     let expected = [
         // Use Windows line endings
@@ -74,14 +74,14 @@ fn test_indent_default() {
         "  Hi.\r\n  This is a test.\n\r\n  Testing.\r\n\n",
     ];
     for (text, expect) in WINDOWS_CASES.iter().zip(expected.iter()) {
-        assert_eq!(&indent(text, prefix), expect)
+        assert_eq!(&indent(text, prefix), expect);
     }
 }
 
 #[test]
 fn indented_text_should_have_the_same_number_of_lines_as_the_original_text() {
     let texts = ["foo\nbar", "foo\nbar\n", "foo\nbar\nbaz"];
-    for original in texts.iter() {
+    for original in &texts {
         let indented = indent(original, "");
         assert_eq!(&indented, original);
     }

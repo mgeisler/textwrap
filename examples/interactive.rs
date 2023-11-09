@@ -52,9 +52,9 @@ mod unix_only {
         Ok(())
     }
 
-    fn draw_text<'a>(
+    fn draw_text(
         text: &str,
-        options: &Options<'a>,
+        options: &Options<'_>,
         word_splitter_label: &str,
         stdout: &mut RawTerminal<io::Stdout>,
     ) -> Result<(), io::Error> {

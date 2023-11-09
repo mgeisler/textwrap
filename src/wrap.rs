@@ -205,7 +205,7 @@ pub(crate) fn wrap_single_line<'a>(
     if line.len() < options.width && indent.is_empty() {
         lines.push(Cow::from(line.trim_end_matches(' ')));
     } else {
-        wrap_single_line_slow_path(line, options, lines)
+        wrap_single_line_slow_path(line, options, lines);
     }
 }
 
