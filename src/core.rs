@@ -60,10 +60,11 @@ pub(crate) fn skip_ansi_escape_sequence<I: Iterator<Item = char>>(ch: char, char
         } else if next == Some(']') {
             // We have found the start of an Operating System Command, which
             // extends until the next sequence "\x1b\\" (the String Terminator
-            // sequence).
+            // sequence) or the BEL character. The BEL character is non-standard,
+            // but it is still used quite often, for example, by GNU ls.
             let mut last = ']';
             for new in chars {
-                if new == '\\' && last == CSI.0 {
+                if new == '\x07' || (new == '\\' && last == CSI.0) {
                     return true;
                 }
                 last = new;
