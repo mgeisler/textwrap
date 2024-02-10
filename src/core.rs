@@ -41,37 +41,45 @@ const CSI: (char, char) = ('\x1b', '[');
 /// The final bytes of an ANSI escape sequence must be in this range.
 const ANSI_FINAL_BYTE: std::ops::RangeInclusive<char> = '\x40'..='\x7e';
 
-/// Skip ANSI escape sequences. The `ch` is the current `char`, the
-/// `chars` provide the following characters. The `chars` will be
-/// modified if `ch` is the start of an ANSI escape sequence.
+/// Skip ANSI escape sequences.
+///
+/// The `ch` is the current `char`, the `chars` provide the following
+/// characters. The `chars` will be modified if `ch` is the start of
+/// an ANSI escape sequence.
+///
+/// Returns `true` if one or more chars were skipped.
 #[inline]
 pub(crate) fn skip_ansi_escape_sequence<I: Iterator<Item = char>>(ch: char, chars: &mut I) -> bool {
-    if ch == CSI.0 {
-        let next = chars.next();
-        if next == Some(CSI.1) {
-            // We have found the start of an ANSI escape code, typically
-            // used for colored terminal text. We skip until we find a
-            // "final byte" in the range 0x40–0x7E.
-            for ch in chars {
-                if ANSI_FINAL_BYTE.contains(&ch) {
-                    return true;
-                }
-            }
-        } else if next == Some(']') {
-            // We have found the start of an Operating System Command, which
-            // extends until the next sequence "\x1b\\" (the String Terminator
-            // sequence) or the BEL character. The BEL character is non-standard,
-            // but it is still used quite often, for example, by GNU ls.
-            let mut last = ']';
-            for new in chars {
-                if new == '\x07' || (new == '\\' && last == CSI.0) {
-                    return true;
-                }
-                last = new;
+    if ch != CSI.0 {
+        return false; // Nothing to skip here.
+    }
+
+    let next = chars.next();
+    if next == Some(CSI.1) {
+        // We have found the start of an ANSI escape code, typically
+        // used for colored terminal text. We skip until we find a
+        // "final byte" in the range 0x40–0x7E.
+        for ch in chars {
+            if ANSI_FINAL_BYTE.contains(&ch) {
+                break;
             }
         }
+    } else if next == Some(']') {
+        // We have found the start of an Operating System Command,
+        // which extends until the next sequence "\x1b\\" (the String
+        // Terminator sequence) or the BEL character. The BEL
+        // character is non-standard, but it is still used quite
+        // often, for example, by GNU ls.
+        let mut last = ']';
+        for new in chars {
+            if new == '\x07' || (new == '\\' && last == CSI.0) {
+                break;
+            }
+            last = new;
+        }
     }
-    false
+
+    true // Indicate that some chars were skipped.
 }
 
 #[cfg(feature = "unicode-width")]
