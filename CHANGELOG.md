@@ -3,6 +3,20 @@
 This file lists the most important changes made in each release of
 `textwrap`.
 
+## Version 0.16.1 (2024-02-17)
+
+This release fixes `display_width` to ignore inline-hyperlinks. The minimum
+supported version of Rust is now documented to be 1.56.
+
+* [#526](https://github.com/mgeisler/textwrap/pull/526): Ignore ANSI hyperlinks
+  in `display_width`: calculations.
+* [#521](https://github.com/mgeisler/textwrap/pull/521): Add `Options::width`
+  setter method.
+* [#520](https://github.com/mgeisler/textwrap/pull/520): Clarify that
+  `WordSeparator` is an enum rather than a trait.
+* [#518](https://github.com/mgeisler/textwrap/pull/518): Test with latest stable
+  and nightly Rust, but check that we can build with Rust 1.56.
+
 ## Version 0.16.0 (2022-10-23)
 
 This release marks `Options` as `non_exhaustive` and extends it to
