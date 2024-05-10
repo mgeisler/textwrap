@@ -84,8 +84,12 @@ pub(crate) fn skip_ansi_escape_sequence<I: Iterator<Item = char>>(ch: char, char
 
 #[cfg(feature = "unicode-width")]
 #[inline]
-fn ch_width(ch: char) -> usize {
-    unicode_width::UnicodeWidthChar::width(ch).unwrap_or(0)
+fn ch_width(ch: char, tab_width: u8) -> usize {
+    if ch == '\t' {
+        tab_width as usize
+    } else {
+        unicode_width::UnicodeWidthChar::width(ch).unwrap_or(0)
+    }
 }
 
 /// First character which [`ch_width`] will classify as double-width.
@@ -95,8 +99,10 @@ const DOUBLE_WIDTH_CUTOFF: char = '\u{1100}';
 
 #[cfg(not(feature = "unicode-width"))]
 #[inline]
-fn ch_width(ch: char) -> usize {
-    if ch < DOUBLE_WIDTH_CUTOFF {
+fn ch_width(ch: char, tab_width: u8) -> usize {
+    if ch == '\t' {
+        tab_width as usize
+    } else if ch < DOUBLE_WIDTH_CUTOFF {
         1
     } else {
         2
@@ -111,9 +117,9 @@ fn ch_width(ch: char) -> usize {
 /// ```
 /// use textwrap::core::display_width;
 ///
-/// assert_eq!(display_width("Café Plain"), 10);
-/// assert_eq!(display_width("\u{1b}[31mCafé Rouge\u{1b}[0m"), 10);
-/// assert_eq!(display_width("\x1b]8;;http://example.com\x1b\\This is a link\x1b]8;;\x1b\\"), 14);
+/// assert_eq!(display_width("Café Plain", 0), 10);
+/// assert_eq!(display_width("\u{1b}[31mCafé Rouge\u{1b}[0m", 0), 10);
+/// assert_eq!(display_width("\x1b]8;;http://example.com\x1b\\This is a link\x1b]8;;\x1b\\", 0), 14);
 /// ```
 ///
 /// **Note:** When the `unicode-width` Cargo feature is disabled, the
@@ -131,11 +137,11 @@ fn ch_width(ch: char) -> usize {
 /// ```
 /// use textwrap::core::display_width;
 ///
-/// assert_eq!(display_width("Cafe Plain"), 10);
+/// assert_eq!(display_width("Cafe Plain", 0), 10);
 /// #[cfg(feature = "unicode-width")]
-/// assert_eq!(display_width("Cafe\u{301} Plain"), 10);
+/// assert_eq!(display_width("Cafe\u{301} Plain", 0), 10);
 /// #[cfg(not(feature = "unicode-width"))]
-/// assert_eq!(display_width("Cafe\u{301} Plain"), 11);
+/// assert_eq!(display_width("Cafe\u{301} Plain", 0), 11);
 /// ```
 ///
 /// ## Emojis and CJK Characters
@@ -147,8 +153,8 @@ fn ch_width(ch: char) -> usize {
 /// ```
 /// use textwrap::core::display_width;
 ///
-/// assert_eq!(display_width("😂😭🥺🤣✨😍🙏🥰😊🔥"), 20);
-/// assert_eq!(display_width("你好"), 4);  // “Nǐ hǎo” or “Hello” in Chinese
+/// assert_eq!(display_width("😂😭🥺🤣✨😍🙏🥰😊🔥", 0), 20);
+/// assert_eq!(display_width("你好", 0), 4);  // “Nǐ hǎo” or “Hello” in Chinese
 /// ```
 ///
 /// # Limitations
@@ -174,9 +180,9 @@ fn ch_width(ch: char) -> usize {
 ///
 /// assert_eq!("👨‍🦰".chars().collect::<Vec<char>>(), ['\u{1f468}', '\u{200d}', '\u{1f9b0}']);
 /// #[cfg(feature = "unicode-width")]
-/// assert_eq!(display_width("👨‍🦰"), 4);
+/// assert_eq!(display_width("👨‍🦰", 0), 4);
 /// #[cfg(not(feature = "unicode-width"))]
-/// assert_eq!(display_width("👨‍🦰"), 6);
+/// assert_eq!(display_width("👨‍🦰", 0), 6);
 /// ```
 ///
 /// This happens because the grapheme consists of three code points:
@@ -196,14 +202,14 @@ fn ch_width(ch: char) -> usize {
 /// [Unicode equivalence]: https://en.wikipedia.org/wiki/Unicode_equivalence
 /// [CJK characters]: https://en.wikipedia.org/wiki/CJK_characters
 /// [emoji modifier sequences]: https://unicode.org/emoji/charts/full-emoji-modifiers.html
-pub fn display_width(text: &str) -> usize {
+pub fn display_width(text: &str, tab_width: u8) -> usize {
     let mut chars = text.chars();
     let mut width = 0;
     while let Some(ch) = chars.next() {
         if skip_ansi_escape_sequence(ch, &mut chars) {
             continue;
         }
-        width += ch_width(ch);
+        width += ch_width(ch, tab_width);
     }
     width
 }
@@ -224,7 +230,7 @@ pub trait Fragment: std::fmt::Debug {
 
     /// Displayed width of the whitespace that must follow the word
     /// when the word is not at the end of a line.
-    fn whitespace_width(&self) -> f64;
+    fn whitespace_width(&self, tab_width: u8) -> f64;
 
     /// Displayed width of the penalty that must be inserted if the
     /// word falls at the end of a line.
@@ -258,13 +264,15 @@ impl std::ops::Deref for Word<'_> {
 impl<'a> Word<'a> {
     /// Construct a `Word` from a string.
     ///
-    /// A trailing stretch of `' '` is automatically taken to be the
-    /// whitespace part of the word.
+    /// All trailing whitespace is automatically taken to be the whitespace part
+    /// of the word.
     pub fn from(word: &str) -> Word<'_> {
-        let trimmed = word.trim_end_matches(' ');
+        let trimmed = word.trim_end_matches(&[' ', '\t']);
         Word {
             word: trimmed,
-            width: display_width(trimmed),
+            // trimmed shouldn't contain whitespace, so we don't need to pass
+            // an accurate tab_width.
+            width: display_width(trimmed, 0),
             whitespace: &word[trimmed.len()..],
             penalty: "",
         }
@@ -279,11 +287,15 @@ impl<'a> Word<'a> {
     /// ```
     /// use textwrap::core::Word;
     /// assert_eq!(
-    ///     Word::from("Hello!  ").break_apart(3).collect::<Vec<_>>(),
+    ///     Word::from("Hello!  ").break_apart(3, 0).collect::<Vec<_>>(),
     ///     vec![Word::from("Hel"), Word::from("lo!  ")]
     /// );
     /// ```
-    pub fn break_apart<'b>(&'b self, line_width: usize) -> impl Iterator<Item = Word<'a>> + 'b {
+    pub fn break_apart<'b>(
+        &'b self,
+        line_width: usize,
+        tab_width: u8,
+    ) -> impl Iterator<Item = Word<'a>> + 'b {
         let mut char_indices = self.word.char_indices();
         let mut offset = 0;
         let mut width = 0;
@@ -294,27 +306,26 @@ impl<'a> Word<'a> {
                     continue;
                 }
 
-                if width > 0 && width + ch_width(ch) > line_width {
+                if width > 0 && width + ch_width(ch, tab_width) > line_width {
                     let word = Word {
                         word: &self.word[offset..idx],
-                        width: width,
                         whitespace: "",
                         penalty: "",
+                        width,
                     };
                     offset = idx;
-                    width = ch_width(ch);
+                    width = ch_width(ch, tab_width);
                     return Some(word);
                 }
 
-                width += ch_width(ch);
+                width += ch_width(ch, tab_width);
             }
 
             if offset < self.word.len() {
                 let word = Word {
                     word: &self.word[offset..],
-                    width: width,
-                    whitespace: self.whitespace,
-                    penalty: self.penalty,
+                    width,
+                    ..*self
                 };
                 offset = self.word.len();
                 return Some(word);
@@ -331,11 +342,9 @@ impl Fragment for Word<'_> {
         self.width as f64
     }
 
-    // We assume the whitespace consist of ' ' only. This allows us to
-    // compute the display width in constant time.
     #[inline]
-    fn whitespace_width(&self) -> f64 {
-        self.whitespace.len() as f64
+    fn whitespace_width(&self, tab_width: u8) -> f64 {
+        display_width(self.whitespace, tab_width) as f64
     }
 
     // We assume the penalty is `""` or `"-"`. This allows us to
@@ -351,14 +360,14 @@ impl Fragment for Word<'_> {
 /// This simply calls [`Word::break_apart`] on words that are too
 /// wide. This means that no extra `'-'` is inserted, the word is
 /// simply broken into smaller pieces.
-pub fn break_words<'a, I>(words: I, line_width: usize) -> Vec<Word<'a>>
+pub fn break_words<'a, I>(words: I, line_width: usize, tab_width: u8) -> Vec<Word<'a>>
 where
     I: IntoIterator<Item = Word<'a>>,
 {
     let mut shortened_words = Vec::new();
     for word in words {
         if word.width() > line_width as f64 {
-            shortened_words.extend(word.break_apart(line_width));
+            shortened_words.extend(word.break_apart(line_width, tab_width));
         } else {
             shortened_words.push(word);
         }
@@ -397,7 +406,7 @@ mod tests {
                 assert_eq!(ch.width().unwrap(), 1, "char: {}", desc);
 
                 #[cfg(not(feature = "unicode-width"))]
-                assert_eq!(ch_width(ch), 1, "char: {}", desc);
+                assert_eq!(ch_width(ch, 0), 1, "char: {}", desc);
             }
         }
 
@@ -415,7 +424,7 @@ mod tests {
                 assert!(ch.width().unwrap() <= 2, "char: {}", desc);
 
                 #[cfg(not(feature = "unicode-width"))]
-                assert_eq!(ch_width(ch), 2, "char: {}", desc);
+                assert_eq!(ch_width(ch, 0), 2, "char: {}", desc);
             }
         }
 
@@ -426,10 +435,13 @@ mod tests {
     #[test]
     fn display_width_works() {
         assert_eq!("Café Plain".len(), 11); // “é” is two bytes
-        assert_eq!(display_width("Café Plain"), 10);
-        assert_eq!(display_width("\u{1b}[31mCafé Rouge\u{1b}[0m"), 10);
+        assert_eq!(display_width("Café Plain", 0), 10);
+        assert_eq!(display_width("\u{1b}[31mCafé Rouge\u{1b}[0m", 0), 10);
         assert_eq!(
-            display_width("\x1b]8;;http://example.com\x1b\\This is a link\x1b]8;;\x1b\\"),
+            display_width(
+                "\x1b]8;;http://example.com\x1b\\This is a link\x1b]8;;\x1b\\",
+                0
+            ),
             14
         );
     }
@@ -437,25 +449,25 @@ mod tests {
     #[test]
     fn display_width_narrow_emojis() {
         #[cfg(feature = "unicode-width")]
-        assert_eq!(display_width("⁉"), 1);
+        assert_eq!(display_width("⁉", 0), 1);
 
         // The ⁉ character is above DOUBLE_WIDTH_CUTOFF.
         #[cfg(not(feature = "unicode-width"))]
-        assert_eq!(display_width("⁉"), 2);
+        assert_eq!(display_width("⁉", 0), 2);
     }
 
     #[test]
     fn display_width_narrow_emojis_variant_selector() {
         #[cfg(feature = "unicode-width")]
-        assert_eq!(display_width("⁉\u{fe0f}"), 1);
+        assert_eq!(display_width("⁉\u{fe0f}", 0), 1);
 
         // The variant selector-16 is also counted.
         #[cfg(not(feature = "unicode-width"))]
-        assert_eq!(display_width("⁉\u{fe0f}"), 4);
+        assert_eq!(display_width("⁉\u{fe0f}", 0), 4);
     }
 
     #[test]
     fn display_width_emojis() {
-        assert_eq!(display_width("😂😭🥺🤣✨😍🙏🥰😊🔥"), 20);
+        assert_eq!(display_width("😂😭🥺🤣✨😍🙏🥰😊🔥", 0), 20);
     }
 }

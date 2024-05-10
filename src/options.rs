@@ -8,6 +8,8 @@ use crate::{LineEnding, WordSeparator, WordSplitter, WrapAlgorithm};
 pub struct Options<'a> {
     /// The width in columns at which the text will be wrapped.
     pub width: usize,
+    /// How wide a tab character should be considered to be.
+    pub tab_width: u8,
     /// Line ending used for breaking lines.
     pub line_ending: LineEnding,
     /// Indentation used for the first line of output. See the
@@ -36,6 +38,7 @@ impl<'a> From<&'a Options<'a>> for Options<'a> {
     fn from(options: &'a Options<'a>) -> Self {
         Self {
             width: options.width,
+            tab_width: options.tab_width,
             line_ending: options.line_ending,
             initial_indent: options.initial_indent,
             subsequent_indent: options.subsequent_indent,
@@ -86,6 +89,7 @@ impl<'a> Options<'a> {
     pub const fn new(width: usize) -> Self {
         Options {
             width,
+            tab_width: 0,
             line_ending: LineEnding::LF,
             initial_indent: "",
             subsequent_indent: "",
@@ -123,6 +127,26 @@ impl<'a> Options<'a> {
     /// [`self.width`]: #structfield.width
     pub fn width(self, width: usize) -> Self {
         Options { width, ..self }
+    }
+
+    /// Change [`self.tab_width`]. The tab width is how wide
+    /// a tab character should be considered. By default, a tab
+    /// character to be consiered to have a width of 0.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use textwrap::{Options, wrap};
+    ///
+    /// assert_eq!(wrap("foo\tbar baz", Options::new(12).tab_width(0)),
+    ///     vec!["foo\tbar baz"]);
+    /// assert_eq!(wrap("foo\tbar baz", Options::new(12).tab_width(4)),
+    ///     vec!["foo\tbar", "baz"]);
+    /// ```
+    ///
+    /// [`self.tab_width`]: #structfield.tab_width
+    pub fn tab_width(self, tab_width: u8) -> Self {
+        Options { tab_width, ..self }
     }
 
     /// Change [`self.initial_indent`]. The initial indentation is
