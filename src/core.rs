@@ -357,7 +357,7 @@ where
 {
     let mut shortened_words = Vec::new();
     for word in words {
-        if word.width() > line_width as f64 {
+        if word.width > line_width {
             shortened_words.extend(word.break_apart(line_width));
         } else {
             shortened_words.push(word);
