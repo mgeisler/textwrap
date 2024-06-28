@@ -10,7 +10,7 @@ keywords = ["text", "formatting", "wrap", "typesetting", "hyphenation"]
 categories = ["text-processing", "command-line-interface"]
 license = "MIT"
 edition = "2021"
-rust-version = "1.56"
+rust-version = "1.62"
 exclude = [".github/", ".gitignore", "benchmarks/", "examples/", "fuzz/", "images/"]
 
 [[example]]
@@ -28,6 +28,9 @@ all-features = true
 
 [features]
 default = ["unicode-linebreak", "unicode-width", "smawk"]
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(fuzzing)'] }
 
 [dependencies]
 hyphenation = { version = "0.8.4", optional = true, features = ["embed_en-us"] }
