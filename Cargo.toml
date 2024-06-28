@@ -29,6 +29,9 @@ all-features = true
 [features]
 default = ["unicode-linebreak", "unicode-width", "smawk"]
 
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(fuzzing)'] }
+
 [dependencies]
 hyphenation = { version = "0.8.4", optional = true, features = ["embed_en-us"] }
 smawk = { version = "0.3.1", optional = true }
