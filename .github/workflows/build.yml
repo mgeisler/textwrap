@@ -23,6 +23,7 @@ jobs:
     name: Ubuntu
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         rust:
           - stable
@@ -66,6 +67,7 @@ jobs:
     name: Minimum supported Rust version
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         features:
           - no default features
@@ -75,8 +77,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Install Rust 1.56  # MSRV from Cargo.toml
-        run: rustup default 1.56
+      - name: Find Minimum Support Rust Version
+        run: |
+          echo "msrv=$(egrep 'rust-version\s*=\s*"([0-9.]+)"' Cargo.toml | cut -d '"' -f 2)" >> "$GITHUB_ENV"
+
+      - name: Install Rust ${{ env.msrv }} (MSRV)
+        run: rustup default $msrv
 
       - uses: Swatinem/rust-cache@v2
 
@@ -124,6 +130,7 @@ jobs:
     name: Fuzz test
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         fuzz-target:
           - fill_first_fit
