@@ -213,7 +213,7 @@ jobs:
         working-directory: examples/wasm/www
 
       - name: Upload bundled textwrap-wasm-demo-app
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: textwrap-wasm-demo-app
           path: examples/wasm/www/dist
@@ -233,7 +233,7 @@ jobs:
         run: rm *
 
       - name: Download bundled textwrap-wasm-demo-app
-        uses: actions/download-artifact@v4.1.7
+        uses: actions/download-artifact@v4
         with:
           name: textwrap-wasm-demo-app
 
