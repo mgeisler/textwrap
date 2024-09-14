@@ -33,7 +33,7 @@ use crate::core::{display_width, Word};
 /// details.
 ///
 /// [hyphenation]: https://docs.rs/hyphenation/
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub enum WordSplitter {
     /// Use this as a [`Options.word_splitter`] to avoid any kind of
     /// hyphenation:
@@ -98,17 +98,6 @@ pub enum WordSplitter {
     Hyphenation(hyphenation::Standard),
 }
 
-impl std::fmt::Debug for WordSplitter {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            WordSplitter::NoHyphenation => f.write_str("NoHyphenation"),
-            WordSplitter::HyphenSplitter => f.write_str("HyphenSplitter"),
-            WordSplitter::Custom(_) => f.write_str("Custom(...)"),
-            #[cfg(feature = "hyphenation")]
-            WordSplitter::Hyphenation(dict) => write!(f, "Hyphenation({})", dict.language()),
-        }
-    }
-}
 
 impl PartialEq<WordSplitter> for WordSplitter {
     fn eq(&self, other: &WordSplitter) -> bool {
