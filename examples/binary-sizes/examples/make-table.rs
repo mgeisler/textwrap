@@ -1,4 +1,4 @@
-//! Compile Textwrap with differnet featurs and record the resulting
+//! Compile Textwrap with different features and record the resulting
 //! binary size. Produces a Markdown table.
 
 use std::fmt::Write;
