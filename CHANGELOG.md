@@ -572,7 +572,7 @@ Other changes include optimizations, so version 0.5.0 is roughly
 
 Documented complexities and tested these via `cargo bench`.
 
-* Fixed [#13][issue-13]: Immediatedly add word if it fits.
+* Fixed [#13][issue-13]: Immediately add word if it fits.
 * Fixed [#14][issue-14]: Avoid splitting on initial hyphens.
 
 ## Version 0.3.0 (2017-01-07)
