@@ -270,3 +270,21 @@ jobs:
       - name: Deploy textwrap-wasm-demo-app
         if: steps.git-add.outputs.has-changes == 'true'
         run: git push origin
+
+  format:
+    name: Format
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # We use an unstable rustfmt feature and we thus need the
+      # nightly channel to enforce the formatting.
+      - name: Setup Rust nightly
+        run: rustup default nightly
+
+      - name: Install rustfmt
+        run: rustup component add rustfmt
+
+      - name: Check Formatting
+        uses: dprint/check@v2.2
