@@ -34,14 +34,14 @@ unexpected_cfgs = { level = "warn", check-cfg = ["cfg(fuzzing)"] }
 
 [dependencies]
 hyphenation = { version = "0.8.4", optional = true, features = ["embed_en-us"] }
-smawk = { version = "0.3.1", optional = true }
-terminal_size = { version = "0.2.1", optional = true }
-unicode-linebreak = { version = "0.1.4", optional = true }
-unicode-width = { version = "0.1.10", optional = true }
+smawk = { version = "0.3.2", optional = true }
+terminal_size = { version = "0.4.0", optional = true }
+unicode-linebreak = { version = "0.1.5", optional = true }
+unicode-width = { version = "0.2.0", optional = true }
 
 [dev-dependencies]
 unic-emoji-char = "0.9.0"
-version-sync = "0.9.4"
+version-sync = "0.9.5"
 
 [target."cfg(unix)".dev-dependencies]
-termion = "2.0.1"
+termion = "4.0.2"
