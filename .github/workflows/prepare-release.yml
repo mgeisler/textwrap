@@ -14,7 +14,7 @@ jobs:
       new-version: ${{ steps.vars.outputs.new-version }}
     steps:
       - name: Check out repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set variables
         id: vars
@@ -39,7 +39,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Configure Git user
         run: |
