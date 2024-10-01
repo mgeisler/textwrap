@@ -28,4 +28,4 @@ jobs:
           args: '--${{ matrix.features }}'
 
       - name: Upload to codecov.io
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v4
