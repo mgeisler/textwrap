@@ -47,7 +47,7 @@ jobs:
           git config user.email "martin@geisler.net"
 
       - name: Install Graphviz
-        uses: ts-graphviz/setup-graphviz@v1
+        uses: ts-graphviz/setup-graphviz@v2
 
       # We use debug builds since they compile a little faster.
       - name: Install cargo-depgraph
