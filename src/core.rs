@@ -243,8 +243,8 @@ pub struct Word<'a> {
     pub whitespace: &'a str,
     /// Penalty string to insert if the word falls at the end of a line.
     pub penalty: &'a str,
-    // Cached width in columns.
-    pub(crate) width: usize,
+    /// Cached width in columns.
+    pub width: usize,
 }
 
 impl std::ops::Deref for Word<'_> {
