@@ -344,10 +344,7 @@ impl Default for WrapAlgorithm {
 ///
 /// Apologies to anyone who actually knows how to build a house and
 /// knows how long each step takes :-)
-pub fn wrap_first_fit<'a, T: Fragment>(
-    fragments: &'a [T],
-    line_widths: &[f64],
-) -> Vec<&'a [T]> {
+pub fn wrap_first_fit<'a, T: Fragment>(fragments: &'a [T], line_widths: &[f64]) -> Vec<&'a [T]> {
     // The final line width is used for all remaining lines.
     let default_line_width = line_widths.last().copied().unwrap_or(0.0);
     let mut lines = Vec::new();
