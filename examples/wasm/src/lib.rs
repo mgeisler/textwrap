@@ -169,7 +169,7 @@ fn draw_path(
     steps: &[(f64, f64)],
 ) {
     ctx.save();
-    ctx.set_stroke_style(&style.into());
+    ctx.set_stroke_style_str(style);
     ctx.begin_path();
     ctx.move_to(x, y);
     for (delta_x, delta_y) in steps {
