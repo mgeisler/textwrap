@@ -34,7 +34,7 @@ jobs:
         with:
           script: |
             const version = '${{ steps.vars.outputs.version }}'
-            const tags = await github.repos.listTags(context.repo)
+            const tags = await github.rest.repos.listTags(context.repo)
             if (tags.data.some(tag => tag.name == version)) {
                 core.info(`Found ${version} tag -- will skip publish step`)
                 return false
