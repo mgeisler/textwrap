@@ -10,8 +10,9 @@
 // A dependency graph that contains any wasm must all be imported
 // asynchronously. This `bootstrap.js` file does the single async import, so
 // that no one else needs to worry about it again.
-__webpack_require__.e(/*! import() */ "index_js").then(__webpack_require__.bind(__webpack_require__, /*! ./index.js */ "./index.js"))
-  .catch(e => console.error("Error importing `index.js`:", e));
+__webpack_require__.e(/*! import() */ "index_js").then(__webpack_require__.bind(__webpack_require__, /*! ./index.js */ "./index.js")).catch((e) =>
+  console.error("Error importing `index.js`:", e),
+);
 
 
 /***/ })
@@ -418,7 +419,7 @@ __webpack_require__.e(/*! import() */ "index_js").then(__webpack_require__.bind(
 /******/ 					promises.push(installedWasmModuleData);
 /******/ 				else {
 /******/ 					var importObject = wasmImportObjects[wasmModuleId]();
-/******/ 					var req = fetch(__webpack_require__.p + "" + {"index_js":{"../pkg/textwrap_wasm_demo_bg.wasm":"49e633ecd4fddec5a65f"}}[chunkId][wasmModuleId] + ".module.wasm");
+/******/ 					var req = fetch(__webpack_require__.p + "" + {"index_js":{"../pkg/textwrap_wasm_demo_bg.wasm":"123be3607726ffb03438"}}[chunkId][wasmModuleId] + ".module.wasm");
 /******/ 					var promise;
 /******/ 					if(importObject && typeof importObject.then === 'function' && typeof WebAssembly.compileStreaming === 'function') {
 /******/ 						promise = Promise.all([WebAssembly.compileStreaming(req), importObject]).then(function(items) {

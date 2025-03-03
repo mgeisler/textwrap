@@ -1,52 +1,55 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
-    <meta charset="utf-8">
+    <meta charset="utf-8" />
     <title>Textwrap WebAssembly demo</title>
     <style>
-     body, #footer {
-       background: #f1f9f9
-     }
+      body,
+      #footer {
+        background: #f1f9f9;
+      }
 
-     #text {
-       box-sizing: border-box;
-       width: 100%;
-       resize: vertical;
-     }
+      #text {
+        box-sizing: border-box;
+        width: 100%;
+        resize: vertical;
+      }
 
-     #line-width {
-       display: block;
-       margin: 0;
-     }
+      #line-width {
+        display: block;
+        margin: 0;
+      }
 
-     #canvas {
-       display: block;
-     }
+      #canvas {
+        display: block;
+      }
 
-     #footer {
-       position: fixed;
-       left: 8px;
-       right: 8px;
-       bottom: 0;
-       border-top: thin solid grey;
-     }
+      #footer {
+        position: fixed;
+        left: 8px;
+        right: 8px;
+        bottom: 0;
+        border-top: thin solid grey;
+      }
 
-     div.option {
-       display: inline-block;
-       padding-right: 1em;
-     }
+      div.option {
+        display: inline-block;
+        padding-right: 1em;
+      }
     </style>
   </head>
   <body>
     <h1>Textwrap WebAssembly Demo</h1>
 
-    <textarea rows="5" id="text">Welcome to the interactive WebAssembly demo!
+    <textarea rows="5" id="text">
+Welcome to the interactive WebAssembly demo!
 
-You can test the word-wrapping behavior by editing the text 😍✨</textarea>
+You can test the word-wrapping behavior by editing the text 😍✨</textarea
+    >
 
     <div>
       <div class="option">
-        <input type="number" id="font-size" min="8" max="72" value="20"> px
+        <input type="number" id="font-size" min="8" max="72" value="20" /> px
         <select id="font-family">
           <option value="sans-serif">Sans-serif</option>
           <option value="serif">Serif</option>
@@ -56,12 +59,12 @@ You can test the word-wrapping behavior by editing the text 😍✨</textarea>
 
       <div class="option">
         <label for="line-width-text">Line width:</label>
-        <input type="number" id="line-width-text" min="0"> px.
+        <input type="number" id="line-width-text" min="0" /> px.
       </div>
 
       <div class="option">
         <label for="break-words">Break long words:</label>
-        <input id="break-words" type="checkbox" checked>
+        <input id="break-words" type="checkbox" checked />
       </div>
 
       <div class="option">
@@ -85,52 +88,87 @@ You can test the word-wrapping behavior by editing the text 😍✨</textarea>
         <select id="wrap-algorithm">
           <option value="OptimalFit">Optimal-fit</option>
           <option value="FirstFit">First-fit</option>
-        </select>	
+        </select>
       </div>
 
       <div class="option">
         <label for="nline-penalty">Nth line penalty:</label>
-        <input type="number" id="nline-penalty-text">
-        <input type="range" id="nline-penalty" min="0" max="10000" value="1000">
+        <input type="number" id="nline-penalty-text" />
+        <input
+          type="range"
+          id="nline-penalty"
+          min="0"
+          max="10000"
+          value="1000"
+        />
       </div>
 
       <div class="option">
         <label for="overflow-penalty">Overflow penalty:</label>
-        <input type="number" id="overflow-penalty-text">
-        <input type="range" id="overflow-penalty" min="0" max="10000" value="7500">
+        <input type="number" id="overflow-penalty-text" />
+        <input
+          type="range"
+          id="overflow-penalty"
+          min="0"
+          max="10000"
+          value="7500"
+        />
       </div>
 
       <div class="option">
         <label for="short-line-fraction">Short line fraction:</label>
-        <input type="number" id="short-line-fraction-text">
-        <input type="range" id="short-line-fraction" min="1" max="10" value="4">
+        <input type="number" id="short-line-fraction-text" />
+        <input
+          type="range"
+          id="short-line-fraction"
+          min="1"
+          max="10"
+          value="4"
+        />
       </div>
 
       <div class="option">
         <label for="short-last-line-penalty">Short line penalty:</label>
-        <input type="number" id="short-last-line-penalty-text">
-        <input type="range" id="short-last-line-penalty" min="0" max="2000" value="100">
+        <input type="number" id="short-last-line-penalty-text" />
+        <input
+          type="range"
+          id="short-last-line-penalty"
+          min="0"
+          max="2000"
+          value="100"
+        />
       </div>
 
       <div class="option">
         <label for="hyphen-penalty">Hyphen penalty:</label>
-        <input type="number" id="hyphen-penalty-text">
-        <input type="range" id="hyphen-penalty" min="0" max="2000" value="100">
+        <input type="number" id="hyphen-penalty-text" />
+        <input
+          type="range"
+          id="hyphen-penalty"
+          min="0"
+          max="2000"
+          value="100"
+        />
       </div>
     </div>
 
     <div>
-      <input type="range" id="line-width" min="0" max="300" value="250">
+      <input type="range" id="line-width" min="0" max="300" value="250" />
       <canvas id="canvas"></canvas>
     </div>
 
     <div id="footer">
-      <p>Built at <span id="build-date">unknown</span> using Textwrap
-        commit <span id="build-commit">unknown</span>.</p>
+      <p>
+        Built at <span id="build-date">unknown</span> using Textwrap commit
+        <span id="build-commit">unknown</span>.
+      </p>
     </div>
 
     <script src="bootstrap.js"></script>
-    <script data-goatcounter="https://mgeisler.goatcounter.com/count"
-            async src="//gc.zgo.at/count.js"></script>
+    <script
+      data-goatcounter="https://mgeisler.goatcounter.com/count"
+      async
+      src="//gc.zgo.at/count.js"
+    ></script>
   </body>
 </html>
