@@ -47,7 +47,7 @@ impl<'a> From<&'a Options<'a>> for Options<'a> {
     }
 }
 
-impl<'a> From<usize> for Options<'a> {
+impl From<usize> for Options<'_> {
     fn from(width: usize) -> Self {
         Options::new(width)
     }
