@@ -22,10 +22,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Run cargo-tarpaulin
-        uses: actions-rs/tarpaulin@v0.1
-        with:
-          args: '--${{ matrix.features }}'
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@cargo-llvm-cov
 
-      - name: Upload to codecov.io
-        uses: codecov/codecov-action@v4
+      - name: Run tests with Coverage report enabled
+        run: cargo llvm-cov test --${{ matrix.features }} --codecov --locked --output-path codecov_report.json
+
+      - name: Upload coverage report to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: ./codecov_report.json
