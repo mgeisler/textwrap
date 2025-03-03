@@ -165,6 +165,9 @@ jobs:
         with:
           version: ${{ needs.setup.outputs.new-version }}
 
+      - name: Check semver compatibility
+        uses: obi1kenobi/cargo-semver-checks-action@v2
+
       - name: Build and test
         run: |
           cargo test
