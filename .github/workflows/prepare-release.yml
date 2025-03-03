@@ -94,7 +94,7 @@ jobs:
             const new_version = '${{ needs.setup.outputs.new-version }}'
 
             let cutoff = '1970-01-01'
-            const releases = await github.repos.listReleases(context.repo)
+            const releases = await github.rest.repos.listReleases(context.repo)
             for (const release of releases.data) {
               if (release.tag_name == old_version) {
                 cutoff = release.published_at
@@ -105,7 +105,7 @@ jobs:
 
             let q = [`repo:${context.repo.owner}/${context.repo.repo}`,
                      'is:pr', 'is:merged', `merged:>${cutoff}`]
-            const prs = await github.paginate(github.search.issuesAndPullRequests, {
+            const prs = await github.paginate(github.rest.search.issuesAndPullRequests, {
               q: q.join(' '),
               sort: 'created',
               order: 'asc',
@@ -183,7 +183,7 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const pr = await github.pulls.create({
+            const pr = await github.rest.pulls.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
               head: 'release-${{ needs.setup.outputs.new-version }}',
