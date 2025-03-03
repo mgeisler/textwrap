@@ -2,16 +2,16 @@
 name = "textwrap"
 version = "0.16.1"
 authors = ["Martin Geisler <martin@geisler.net>"]
-description = "Library for word wrapping, indenting, and dedenting strings. Has optional support for Unicode and emojis as well as machine hyphenation."
-documentation = "https://docs.rs/textwrap/"
-repository = "https://github.com/mgeisler/textwrap"
-readme = "README.md"
-keywords = ["text", "formatting", "wrap", "typesetting", "hyphenation"]
 categories = ["text-processing", "command-line-interface"]
-license = "MIT"
+documentation = "https://docs.rs/textwrap/"
 edition = "2021"
-rust-version = "1.66"
 exclude = [".github/", ".gitignore", "benchmarks/", "examples/", "fuzz/", "images/"]
+keywords = ["text", "formatting", "wrap", "typesetting", "hyphenation"]
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/mgeisler/textwrap"
+rust-version = "1.66"
+description = "Library for word wrapping, indenting, and dedenting strings. Has optional support for Unicode and emojis as well as machine hyphenation."
 
 [[example]]
 name = "hyphenation"

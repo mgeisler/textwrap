@@ -2,11 +2,11 @@
 name = "textwrap-binary-sizes-demo"
 version = "0.1.0"
 authors = ["Martin Geisler <martin@geisler.net>"]
-description = "Textwrap binary size demo"
-repository = "https://github.com/mgeisler/textwrap"
-license-file = "../../LICENSE"
 edition = "2021"
-publish = false  # This demo project should not be uploaded to crates.io
+license-file = "../../LICENSE"
+publish = false # This demo project should not be uploaded to crates.io
+repository = "https://github.com/mgeisler/textwrap"
+description = "Textwrap binary size demo"
 
 [profile.release]
 lto = true

@@ -98,7 +98,6 @@ pub enum WordSplitter {
     Hyphenation(hyphenation::Standard),
 }
 
-
 impl PartialEq<WordSplitter> for WordSplitter {
     fn eq(&self, other: &WordSplitter) -> bool {
         match (self, other) {

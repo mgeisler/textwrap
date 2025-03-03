@@ -156,7 +156,6 @@ impl PartialEq for WordSeparator {
     }
 }
 
-
 impl WordSeparator {
     /// Create a new word separator.
     ///

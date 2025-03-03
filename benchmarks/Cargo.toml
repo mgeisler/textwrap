@@ -1,12 +1,12 @@
 [package]
 name = "textwrap-benchmarks"
 version = "0.1.0"
-edition = "2021"
 authors = ["Martin Geisler <martin@geisler.net>"]
-description = "Textwrap benchmarks"
-repository = "https://github.com/mgeisler/textwrap"
+edition = "2021"
 license-file = "../LICENSE"
-publish = false  # This should not be uploaded to crates.io
+publish = false # This should not be uploaded to crates.io
+repository = "https://github.com/mgeisler/textwrap"
+description = "Textwrap benchmarks"
 
 [[bench]]
 name = "linear"
@@ -28,5 +28,5 @@ textwrap = { path = "../", features = ["hyphenation"] }
 
 [dev-dependencies]
 criterion = "0.4.0"
-lipsum = "0.8.0"
 hyphenation = { version = "0.8.4", features = ["embed_en-us"] }
+lipsum = "0.8.0"
