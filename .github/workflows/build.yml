@@ -6,7 +6,7 @@ on:
     branches:
       - master
   schedule:
-    - cron: '30 17 * * 5'  # Every Friday at 17:30 UTC
+    - cron: "30 17 * * 5" # Every Friday at 17:30 UTC
 
 env:
   CARGO_TERM_COLOR: always
@@ -15,7 +15,6 @@ env:
   RUSTFLAGS: -D warnings
 
 jobs:
-
   # Here we check that we can run `cargo test` on modern versions of
   # Rust. Below we check that we can build the library on an old
   # version as well.

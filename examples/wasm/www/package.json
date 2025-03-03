@@ -1,29 +1,29 @@
 {
-    "name": "textwrap-wasm-demo-app",
-    "version": "0.1.0",
-    "description": "Textwrap WebAssembly demo application",
-    "main": "index.js",
-    "scripts": {
-        "build": "webpack build",
-        "start": "webpack serve"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/mgeisler/textwrap.git"
-    },
-    "author": "Martin Geisler <martin@geisler.net>",
-    "license": "MIT",
-    "bugs": {
-        "url": "https://github.com/mgeisler/textwrap/issues"
-    },
-    "homepage": "https://github.com/mgeisler/textwrap",
-    "dependencies": {
-        "textwrap-wasm-demo": "file:../pkg"
-    },
-    "devDependencies": {
-        "copy-webpack-plugin": "^12.0.2",
-        "webpack": "^5.94.0",
-        "webpack-cli": "^6.0.1",
-        "webpack-dev-server": "^5.2.0"
-    }
+  "name": "textwrap-wasm-demo-app",
+  "version": "0.1.0",
+  "description": "Textwrap WebAssembly demo application",
+  "main": "index.js",
+  "scripts": {
+    "build": "webpack build",
+    "start": "webpack serve"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mgeisler/textwrap.git"
+  },
+  "author": "Martin Geisler <martin@geisler.net>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mgeisler/textwrap/issues"
+  },
+  "homepage": "https://github.com/mgeisler/textwrap",
+  "dependencies": {
+    "textwrap-wasm-demo": "file:../pkg"
+  },
+  "devDependencies": {
+    "copy-webpack-plugin": "^12.0.2",
+    "webpack": "^5.94.0",
+    "webpack-cli": "^6.0.1",
+    "webpack-dev-server": "^5.2.0"
+  }
 }

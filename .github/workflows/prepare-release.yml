@@ -3,7 +3,7 @@ name: Prepare Release PR
 on:
   push:
     branches:
-      - 'release-*'
+      - "release-*"
 
 jobs:
   setup:
@@ -167,7 +167,7 @@ jobs:
 
       - name: Build and test
         run: |
-            cargo test
+          cargo test
 
       - name: Commit version bump
         run: |
