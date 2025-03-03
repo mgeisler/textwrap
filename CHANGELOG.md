@@ -2,6 +2,18 @@
 
 This file lists the most important changes made in each release of `textwrap`.
 
+## Version 0.16.2 (2025-03-03)
+
+This release fixes an unnecessary `f64` cast, updates all dependencies, bumps
+the minimum supported Rust version to 1.70.
+
+- [#540](https://github.com/mgeisler/textwrap/pull/540): Avoid spurious `f64`
+  cast and comparison.
+- [#565](https://github.com/mgeisler/textwrap/pull/565): Configure automatic
+  Dependabot updates.
+- [#579](https://github.com/mgeisler/textwrap/pull/579): Bump `rust-version` to
+  1.70.
+
 ## Version 0.16.1 (2024-02-17)
 
 This release fixes `display_width` to ignore inline-hyperlinks. The minimum
