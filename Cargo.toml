@@ -10,7 +10,7 @@ keywords = ["text", "formatting", "wrap", "typesetting", "hyphenation"]
 license = "MIT"
 readme = "README.md"
 repository = "https://github.com/mgeisler/textwrap"
-rust-version = "1.66"
+rust-version = "1.70"
 description = "Library for word wrapping, indenting, and dedenting strings. Has optional support for Unicode and emojis as well as machine hyphenation."
 
 [[example]]
