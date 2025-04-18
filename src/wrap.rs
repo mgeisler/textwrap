@@ -203,7 +203,11 @@ pub(crate) fn wrap_single_line<'a>(
         options.subsequent_indent
     };
     if line.len() < options.width && indent.is_empty() {
-        lines.push(Cow::from(line.trim_end_matches(' ')));
+        if options.preserve_trailing_space {
+            lines.push(Cow::from(line));
+        } else {
+            lines.push(Cow::from(line.trim_end_matches(' ')));
+        }
     } else {
         wrap_single_line_slow_path(line, options, lines)
     }
@@ -280,6 +284,8 @@ pub(crate) fn wrap_single_line_slow_path<'a>(
 
         if !last_word.penalty.is_empty() {
             result.to_mut().push_str(last_word.penalty);
+        } else if options.preserve_trailing_space {
+            result.to_mut().push_str(last_word.whitespace);
         }
 
         lines.push(result);
@@ -364,6 +370,17 @@ mod tests {
         // gets too long and is broken, the first word starts in
         // column zero and is not indented.
         assert_eq!(wrap("foo     bar     baz  ", 5), vec!["foo", "bar", "baz"]);
+    }
+
+    #[test]
+    fn preserve_trailing_whitespace() {
+        let options = Options::new(5).preserve_trailing_space(true);
+        // Preserve the whitespace at the end of the line, allowing it
+        // to overflow if it is just whitespaces.
+        assert_eq!(
+            wrap("foo     bar     baz  ", &options),
+            vec!["foo     ", "bar     ", "baz  "]
+        );
     }
 
     #[test]
@@ -670,6 +687,14 @@ mod tests {
         assert_eq!(wrap("  ", 80), vec![""]);
         assert_eq!(wrap("  \n  ", 80), vec!["", ""]);
         assert_eq!(wrap("  \n \n  \n ", 80), vec!["", "", "", ""]);
+    }
+
+    #[test]
+    fn wrap_preserves_line_breaks_and_trailing_whitespace() {
+        let options = Options::new(80).preserve_trailing_space(true);
+        assert_eq!(wrap("  ", &options), vec!["  "]);
+        assert_eq!(wrap("  \n  ", &options), vec!["  ", "  "]);
+        assert_eq!(wrap("  \n \n  \n ", &options), vec!["  ", " ", "  ", " "]);
     }
 
     #[test]
