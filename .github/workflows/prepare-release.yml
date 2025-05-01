@@ -161,7 +161,7 @@ jobs:
         shell: python3 {0} src/lib.rs
 
       - name: Update crate version to ${{ needs.setup.outputs.new-version }}
-        uses: thomaseizinger/set-crate-version@1.0.0
+        uses: thomaseizinger/set-crate-version@1.0.1
         with:
           version: ${{ needs.setup.outputs.new-version }}
 
