@@ -30,6 +30,8 @@ pub struct Options<'a> {
     /// splitting words on hyphens, or it can be used to implement
     /// language-aware machine hyphenation.
     pub word_splitter: WordSplitter,
+    /// Allow trailing spaces to be preserved at the end of the line.
+    pub preserve_trailing_space: bool,
 }
 
 impl<'a> From<&'a Options<'a>> for Options<'a> {
@@ -43,6 +45,7 @@ impl<'a> From<&'a Options<'a>> for Options<'a> {
             word_separator: options.word_separator,
             wrap_algorithm: options.wrap_algorithm,
             word_splitter: options.word_splitter.clone(),
+            preserve_trailing_space: options.preserve_trailing_space,
         }
     }
 }
@@ -66,6 +69,7 @@ impl<'a> Options<'a> {
     /// assert_eq!(options.initial_indent, "");
     /// assert_eq!(options.subsequent_indent, "");
     /// assert_eq!(options.break_words, true);
+    /// assert_eq!(options.preserve_trailing_space, false);
     ///
     /// #[cfg(feature = "unicode-linebreak")]
     /// assert_eq!(options.word_separator, WordSeparator::UnicodeBreakProperties);
@@ -93,6 +97,7 @@ impl<'a> Options<'a> {
             word_separator: WordSeparator::new(),
             wrap_algorithm: WrapAlgorithm::new(),
             word_splitter: WordSplitter::HyphenSplitter,
+            preserve_trailing_space: false,
         }
     }
 
@@ -274,6 +279,17 @@ impl<'a> Options<'a> {
     pub fn word_splitter(self, word_splitter: WordSplitter) -> Options<'a> {
         Options {
             word_splitter,
+            ..self
+        }
+    }
+
+    /// Change [`self.preserve_trailing_space`]. This controls if the
+    /// trailing spaces at the end of line is preserved, or trimmed.
+    ///
+    /// [`self.preserve_trailing_space`]: #structfield.preserve_trailing_space
+    pub fn preserve_trailing_space(self, preserve_trailing_space: bool) -> Options<'a> {
+        Options {
+            preserve_trailing_space,
             ..self
         }
     }
