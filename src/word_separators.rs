@@ -288,14 +288,14 @@ fn find_words_unicode_break_properties<'a>(
     Box::new(std::iter::from_fn(move || {
         for (idx, _) in opportunities.by_ref() {
             if let Some((orig_idx, _)) = idx_map.find(|&(_, stripped_idx)| stripped_idx == idx) {
-                let word = Word::from(&line[start..orig_idx]);
+                let word = Word::from_unicode(&line[start..orig_idx]);
                 start = orig_idx;
                 return Some(word);
             }
         }
 
         if start < line.len() {
-            let word = Word::from(&line[start..]);
+            let word = Word::from_unicode(&line[start..]);
             start = line.len();
             return Some(word);
         }
@@ -316,10 +316,6 @@ mod tests {
         };
     }
 
-    fn to_words(words: Vec<&str>) -> Vec<Word<'_>> {
-        words.into_iter().map(Word::from).collect()
-    }
-
     macro_rules! test_find_words {
         ($ascii_name:ident,
          $unicode_name:ident,
@@ -327,7 +323,7 @@ mod tests {
             #[test]
             fn $ascii_name() {
                 $(
-                    let expected_words = to_words($ascii_words.to_vec());
+                    let expected_words: Vec<_> = $ascii_words.into_iter().map(Word::from).collect();
                     let actual_words = WordSeparator::AsciiSpace
                         .find_words($line)
                         .collect::<Vec<_>>();
@@ -339,7 +335,7 @@ mod tests {
             #[cfg(feature = "unicode-linebreak")]
             fn $unicode_name() {
                 $(
-                    let expected_words = to_words($unicode_words.to_vec());
+                    let expected_words: Vec<_> = $unicode_words.into_iter().map(Word::from_unicode).collect();
                     let actual_words = WordSeparator::UnicodeBreakProperties
                         .find_words($line)
                         .collect::<Vec<_>>();
@@ -466,5 +462,28 @@ mod tests {
 
         #[cfg(not(feature = "unicode-linebreak"))]
         assert!(matches!(WordSeparator::new(), AsciiSpace));
+    }
+
+    #[test]
+    #[cfg(feature = "unicode-linebreak")]
+    fn unicode_trailing_whitespace_newline() {
+        let text = "foo  \nbar";
+        assert_iter_eq!(
+            UnicodeBreakProperties.find_words(text),
+            vec![
+                Word {
+                    word: "foo",
+                    whitespace: "  \n",
+                    penalty: "",
+                    width: 3,
+                },
+                Word {
+                    word: "bar",
+                    whitespace: "",
+                    penalty: "",
+                    width: 3,
+                },
+            ]
+        );
     }
 }
