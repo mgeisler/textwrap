@@ -286,4 +286,4 @@ jobs:
         run: rustup component add rustfmt
 
       - name: Check Formatting
-        uses: dprint/check@v2.2
+        uses: dprint/check@v2.3
