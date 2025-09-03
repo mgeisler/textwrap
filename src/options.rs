@@ -1,5 +1,7 @@
 //! Options for wrapping text.
 
+use std::borrow::Cow;
+
 use crate::{LineEnding, WordSeparator, WordSplitter, WrapAlgorithm};
 
 /// Holds configuration options for wrapping and filling text.
@@ -12,10 +14,10 @@ pub struct Options<'a> {
     pub line_ending: LineEnding,
     /// Indentation used for the first line of output. See the
     /// [`Options::initial_indent`] method.
-    pub initial_indent: &'a str,
+    pub initial_indent: Cow<'a, str>,
     /// Indentation used for subsequent lines of output. See the
     /// [`Options::subsequent_indent`] method.
-    pub subsequent_indent: &'a str,
+    pub subsequent_indent: Cow<'a, str>,
     /// Allow long words to be broken if they cannot fit on a line.
     /// When set to `false`, some lines may be longer than
     /// `self.width`. See the [`Options::break_words`] method.
@@ -39,8 +41,8 @@ impl<'a> From<&'a Options<'a>> for Options<'a> {
         Self {
             width: options.width,
             line_ending: options.line_ending,
-            initial_indent: options.initial_indent,
-            subsequent_indent: options.subsequent_indent,
+            initial_indent: Cow::Borrowed(&options.initial_indent),
+            subsequent_indent: Cow::Borrowed(&options.subsequent_indent),
             break_words: options.break_words,
             word_separator: options.word_separator,
             wrap_algorithm: options.wrap_algorithm,
@@ -91,8 +93,8 @@ impl<'a> Options<'a> {
         Options {
             width,
             line_ending: LineEnding::LF,
-            initial_indent: "",
-            subsequent_indent: "",
+            initial_indent: Cow::Borrowed(""),
+            subsequent_indent: Cow::Borrowed(""),
             break_words: true,
             word_separator: WordSeparator::new(),
             wrap_algorithm: WrapAlgorithm::new(),
@@ -148,9 +150,12 @@ impl<'a> Options<'a> {
     /// ```
     ///
     /// [`self.initial_indent`]: #structfield.initial_indent
-    pub fn initial_indent(self, initial_indent: &'a str) -> Self {
+    pub fn initial_indent<T>(self, initial_indent: T) -> Self
+    where
+        Cow<'a, str>: From<T>,
+    {
         Options {
-            initial_indent,
+            initial_indent: initial_indent.into(),
             ..self
         }
     }
@@ -184,9 +189,12 @@ impl<'a> Options<'a> {
     /// ```
     ///
     /// [`self.subsequent_indent`]: #structfield.subsequent_indent
-    pub fn subsequent_indent(self, subsequent_indent: &'a str) -> Self {
+    pub fn subsequent_indent<T>(self, subsequent_indent: T) -> Self
+    where
+        Cow<'a, str>: From<T>,
+    {
         Options {
-            subsequent_indent,
+            subsequent_indent: subsequent_indent.into(),
             ..self
         }
     }

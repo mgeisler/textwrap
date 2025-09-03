@@ -198,9 +198,9 @@ pub(crate) fn wrap_single_line<'a>(
     lines: &mut Vec<Cow<'a, str>>,
 ) {
     let indent = if lines.is_empty() {
-        options.initial_indent
+        &options.initial_indent
     } else {
-        options.subsequent_indent
+        &options.subsequent_indent
     };
     if line.len() < options.width && indent.is_empty() {
         if options.preserve_trailing_space {
@@ -223,10 +223,10 @@ pub(crate) fn wrap_single_line_slow_path<'a>(
 ) {
     let initial_width = options
         .width
-        .saturating_sub(display_width(options.initial_indent));
+        .saturating_sub(display_width(&options.initial_indent));
     let subsequent_width = options
         .width
-        .saturating_sub(display_width(options.subsequent_indent));
+        .saturating_sub(display_width(&options.subsequent_indent));
     let line_widths = [initial_width, subsequent_width];
 
     let words = options.word_separator.find_words(line);
@@ -270,9 +270,9 @@ pub(crate) fn wrap_single_line_slow_path<'a>(
         // The result is owned if we have indentation, otherwise we
         // can simply borrow an empty string.
         let mut result = if lines.is_empty() && !options.initial_indent.is_empty() {
-            Cow::Owned(options.initial_indent.to_owned())
+            Cow::Owned(options.initial_indent.clone().into_owned())
         } else if !lines.is_empty() && !options.subsequent_indent.is_empty() {
-            Cow::Owned(options.subsequent_indent.to_owned())
+            Cow::Owned(options.subsequent_indent.clone().into_owned())
         } else {
             // We can use an empty string here since string
             // concatenation for `Cow` preserves a borrowed value when

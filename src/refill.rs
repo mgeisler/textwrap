@@ -1,5 +1,7 @@
 //! Functionality for unfilling and refilling text.
 
+use std::borrow::Cow;
+
 use crate::core::display_width;
 use crate::line_ending::NonEmptyLines;
 use crate::{fill, LineEnding, Options};
@@ -69,18 +71,18 @@ pub fn unfill(text: &str) -> (String, Options<'_>) {
         let prefix = &line[..line.len() - without_prefix.len()];
 
         if idx == 0 {
-            options.initial_indent = prefix;
+            options.initial_indent = Cow::Borrowed(prefix);
         } else if idx == 1 {
-            options.subsequent_indent = prefix;
+            options.subsequent_indent = Cow::Borrowed(prefix);
         } else if idx > 1 {
             for ((idx, x), y) in prefix.char_indices().zip(options.subsequent_indent.chars()) {
                 if x != y {
-                    options.subsequent_indent = &prefix[..idx];
+                    options.subsequent_indent = Cow::Borrowed(&prefix[..idx]);
                     break;
                 }
             }
             if prefix.len() < options.subsequent_indent.len() {
-                options.subsequent_indent = prefix;
+                options.subsequent_indent = Cow::Borrowed(prefix);
             }
         }
     }
