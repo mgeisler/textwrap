@@ -264,8 +264,7 @@ pub(crate) fn wrap_single_line_slow_path<'a>(
         let len = words
             .iter()
             .map(|word| word.len() + word.whitespace.len())
-            .sum::<usize>()
-            - last_word.whitespace.len();
+            .sum::<usize>();
 
         // The result is owned if we have indentation, otherwise we
         // can simply borrow an empty string.
@@ -280,12 +279,14 @@ pub(crate) fn wrap_single_line_slow_path<'a>(
             Cow::from("")
         };
 
-        result += &line[idx..idx + len];
+        if last_word.penalty.is_empty() && options.preserve_trailing_space {
+            result += &line[idx..idx + len];
+        } else {
+            result += &line[idx..idx + len - last_word.whitespace.len()];
+        }
 
         if !last_word.penalty.is_empty() {
             result.to_mut().push_str(last_word.penalty);
-        } else if options.preserve_trailing_space {
-            result.to_mut().push_str(last_word.whitespace);
         }
 
         lines.push(result);
@@ -293,7 +294,7 @@ pub(crate) fn wrap_single_line_slow_path<'a>(
         // Advance by the length of `result`, plus the length of
         // `last_word.whitespace` -- even if we had a penalty, we need
         // to skip over the whitespace.
-        idx += len + last_word.whitespace.len();
+        idx += len;
     }
 }
 
