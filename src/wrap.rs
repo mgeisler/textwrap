@@ -192,7 +192,7 @@ where
     lines
 }
 
-pub(crate) fn wrap_single_line<'a>(
+pub fn wrap_single_line<'a>(
     line: &'a str,
     options: &Options<'_>,
     lines: &mut Vec<Cow<'a, str>>,
