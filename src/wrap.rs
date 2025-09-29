@@ -699,6 +699,19 @@ mod tests {
     }
 
     #[test]
+    fn preserve_trailing_space_borrows_spaces() {
+        use std::borrow::Cow::Owned;
+        let lines = wrap(
+            "foo bar baz",
+            Options::new(10).preserve_trailing_space(true),
+        );
+        assert_eq!(lines, vec!["foo bar ", "baz"]);
+        if let Owned(ref s) = lines[0] {
+            assert!(false, "should not have been owned: {:?}", s);
+        }
+    }
+
+    #[test]
     fn wrap_colored_text() {
         // The words are much longer than 6 bytes, but they remain
         // intact after filling the text.
