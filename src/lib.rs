@@ -232,5 +232,4 @@ pub use termwidth::termwidth;
 pub use word_separators::WordSeparator;
 pub use word_splitters::WordSplitter;
 pub use wrap::wrap;
-pub use wrap::wrap_single_line;
 pub use wrap_algorithms::WrapAlgorithm;
