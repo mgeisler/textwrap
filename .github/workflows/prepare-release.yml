@@ -86,7 +86,7 @@ jobs:
 
       - name: Update changelog for version ${{ needs.setup.outputs.new-version }}
         id: changelog
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             var fs = require('fs')
@@ -180,7 +180,7 @@ jobs:
         run: git push origin
 
       - name: Create pull request
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const pr = await github.rest.pulls.create({
