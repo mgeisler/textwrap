@@ -423,6 +423,22 @@ class WasmOptions {
         wasm.__wbg_wasmoptions_free(ptr, 0);
     }
     /**
+     * @param {number} width
+     * @param {boolean} break_words
+     * @param {WasmWordSeparator} word_separator
+     * @param {WasmWordSplitter} word_splitter
+     * @param {WasmWrapAlgorithm} wrap_algorithm
+     * @param {WasmPenalties} penalties
+     */
+    constructor(width, break_words, word_separator, word_splitter, wrap_algorithm, penalties) {
+        _assertClass(penalties, WasmPenalties);
+        var ptr0 = penalties.__destroy_into_raw();
+        const ret = wasm.wasmoptions_new(width, break_words, (__wbindgen_enum_WasmWordSeparator.indexOf(word_separator) + 1 || 3) - 1, (__wbindgen_enum_WasmWordSplitter.indexOf(word_splitter) + 1 || 3) - 1, (__wbindgen_enum_WasmWrapAlgorithm.indexOf(wrap_algorithm) + 1 || 3) - 1, ptr0);
+        this.__wbg_ptr = ret >>> 0;
+        WasmOptionsFinalization.register(this, this.__wbg_ptr, this);
+        return this;
+    }
+    /**
      * @returns {number}
      */
     get width() {
@@ -502,22 +518,6 @@ class WasmOptions {
         var ptr0 = arg0.__destroy_into_raw();
         wasm.__wbg_set_wasmoptions_penalties(this.__wbg_ptr, ptr0);
     }
-    /**
-     * @param {number} width
-     * @param {boolean} break_words
-     * @param {WasmWordSeparator} word_separator
-     * @param {WasmWordSplitter} word_splitter
-     * @param {WasmWrapAlgorithm} wrap_algorithm
-     * @param {WasmPenalties} penalties
-     */
-    constructor(width, break_words, word_separator, word_splitter, wrap_algorithm, penalties) {
-        _assertClass(penalties, WasmPenalties);
-        var ptr0 = penalties.__destroy_into_raw();
-        const ret = wasm.wasmoptions_new(width, break_words, (__wbindgen_enum_WasmWordSeparator.indexOf(word_separator) + 1 || 3) - 1, (__wbindgen_enum_WasmWordSplitter.indexOf(word_splitter) + 1 || 3) - 1, (__wbindgen_enum_WasmWrapAlgorithm.indexOf(wrap_algorithm) + 1 || 3) - 1, ptr0);
-        this.__wbg_ptr = ret >>> 0;
-        WasmOptionsFinalization.register(this, this.__wbg_ptr, this);
-        return this;
-    }
 }
 
 const WasmPenaltiesFinalization = (typeof FinalizationRegistry === 'undefined')
@@ -544,6 +544,19 @@ class WasmPenalties {
     free() {
         const ptr = this.__destroy_into_raw();
         wasm.__wbg_wasmpenalties_free(ptr, 0);
+    }
+    /**
+     * @param {number} nline_penalty
+     * @param {number} overflow_penalty
+     * @param {number} short_last_line_fraction
+     * @param {number} short_last_line_penalty
+     * @param {number} hyphen_penalty
+     */
+    constructor(nline_penalty, overflow_penalty, short_last_line_fraction, short_last_line_penalty, hyphen_penalty) {
+        const ret = wasm.wasmpenalties_new(nline_penalty, overflow_penalty, short_last_line_fraction, short_last_line_penalty, hyphen_penalty);
+        this.__wbg_ptr = ret >>> 0;
+        WasmPenaltiesFinalization.register(this, this.__wbg_ptr, this);
+        return this;
     }
     /**
      * @returns {number}
@@ -609,19 +622,6 @@ class WasmPenalties {
      */
     set hyphen_penalty(arg0) {
         wasm.__wbg_set_wasmpenalties_hyphen_penalty(this.__wbg_ptr, arg0);
-    }
-    /**
-     * @param {number} nline_penalty
-     * @param {number} overflow_penalty
-     * @param {number} short_last_line_fraction
-     * @param {number} short_last_line_penalty
-     * @param {number} hyphen_penalty
-     */
-    constructor(nline_penalty, overflow_penalty, short_last_line_fraction, short_last_line_penalty, hyphen_penalty) {
-        const ret = wasm.wasmpenalties_new(nline_penalty, overflow_penalty, short_last_line_fraction, short_last_line_penalty, hyphen_penalty);
-        this.__wbg_ptr = ret >>> 0;
-        WasmPenaltiesFinalization.register(this, this.__wbg_ptr, this);
-        return this;
     }
 }
 
