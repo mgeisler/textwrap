@@ -270,6 +270,16 @@ impl<'a> Word<'a> {
         }
     }
 
+    pub(crate) fn from_unicode(word: &str) -> Word<'_> {
+        let trimmed = word.trim_end();
+        Word {
+            word: trimmed,
+            width: display_width(trimmed),
+            whitespace: &word[trimmed.len()..],
+            penalty: "",
+        }
+    }
+
     /// Break this word into smaller words with a width of at most
     /// `line_width`. The whitespace and penalty from this `Word` is
     /// added to the last piece.
