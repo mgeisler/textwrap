@@ -1,4 +1,7 @@
-use std::cell::RefCell;
+extern crate alloc;
+
+use core::cell::RefCell;
+use alloc::{vec::Vec, vec};
 
 use crate::core::Fragment;
 
@@ -185,13 +188,13 @@ impl LineNumbers {
 #[derive(Debug, PartialEq, Eq)]
 pub struct OverflowError;
 
-impl std::fmt::Display for OverflowError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl core::fmt::Display for OverflowError {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(f, "wrap_optimal_fit cost computation overflowed")
     }
 }
 
-impl std::error::Error for OverflowError {}
+impl core::error::Error for OverflowError {}
 
 /// Wrap abstract fragments into lines with an optimal-fit algorithm.
 ///
