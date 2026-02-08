@@ -34,12 +34,16 @@
 //! the functionality here is not sufficient or if you have ideas for
 //! improving it. We would love to hear from you!
 
+extern crate alloc;
+
+use alloc::{vec::Vec, format};
+
 /// The CSI or “Control Sequence Introducer” introduces an ANSI escape
 /// sequence. This is typically used for colored text and will be
 /// ignored when computing the text width.
 const CSI: (char, char) = ('\x1b', '[');
 /// The final bytes of an ANSI escape sequence must be in this range.
-const ANSI_FINAL_BYTE: std::ops::RangeInclusive<char> = '\x40'..='\x7e';
+const ANSI_FINAL_BYTE: core::ops::RangeInclusive<char> = '\x40'..='\x7e';
 
 /// Skip ANSI escape sequences.
 ///
@@ -218,7 +222,7 @@ pub fn display_width(text: &str) -> usize {
 /// For wrapping purposes, the precise content of the word, the
 /// whitespace, and the penalty is irrelevant. All we need to know is
 /// the displayed width of each part, which this trait provides.
-pub trait Fragment: std::fmt::Debug {
+pub trait Fragment: core::fmt::Debug {
     /// Displayed width of word represented by this fragment.
     fn width(&self) -> f64;
 
@@ -247,7 +251,7 @@ pub struct Word<'a> {
     pub width: usize,
 }
 
-impl std::ops::Deref for Word<'_> {
+impl core::ops::Deref for Word<'_> {
     type Target = str;
 
     fn deref(&self) -> &Self::Target {
@@ -288,7 +292,7 @@ impl<'a> Word<'a> {
         let mut offset = 0;
         let mut width = 0;
 
-        std::iter::from_fn(move || {
+        core::iter::from_fn(move || {
             while let Some((idx, ch)) = char_indices.next() {
                 if skip_ansi_escape_sequence(ch, &mut char_indices.by_ref().map(|(_, ch)| ch)) {
                     continue;

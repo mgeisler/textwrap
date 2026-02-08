@@ -198,6 +198,7 @@
 #![deny(missing_docs)]
 #![deny(missing_debug_implementations)]
 #![allow(clippy::redundant_field_names)]
+#![no_std]
 
 // Make `cargo test` execute the README doctests.
 #[cfg(doctest)]

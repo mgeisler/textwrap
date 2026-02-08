@@ -4,7 +4,10 @@
 //! across lines. The [`WordSplitter`] enum defines this
 //! functionality.
 
+extern crate alloc;
+
 use crate::core::{display_width, Word};
+use alloc::{vec::Vec, vec};
 
 /// The `WordSplitter` enum describes where words can be split.
 ///
@@ -176,7 +179,7 @@ where
     words.into_iter().flat_map(move |word| {
         let mut prev = 0;
         let mut split_points = word_splitter.split_points(&word).into_iter();
-        std::iter::from_fn(move || {
+        core::iter::from_fn(move || {
             if let Some(idx) = split_points.next() {
                 let need_hyphen = !word[..idx].ends_with('-');
                 let w = Word {

@@ -1,7 +1,7 @@
 //! Fuzzing helpers.
 
 use super::Options;
-use std::borrow::Cow;
+use core::borrow::Cow;
 
 /// Exposed for fuzzing so we can check the slow path is correct.
 pub fn fill_slow_path<'a>(text: &str, options: Options<'_>) -> String {
