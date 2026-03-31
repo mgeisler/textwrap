@@ -27,7 +27,8 @@ required-features = ["terminal_size"]
 all-features = true
 
 [features]
-default = ["unicode-linebreak", "unicode-width", "smawk"]
+default = ["std", "unicode-linebreak", "unicode-width", "smawk"]
+std = []
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ["cfg(fuzzing)"] }
