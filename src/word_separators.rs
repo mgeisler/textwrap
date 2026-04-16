@@ -18,6 +18,11 @@
 use crate::core::skip_ansi_escape_sequence;
 use crate::core::Word;
 
+#[cfg(feature = "unicode-linebreak")]
+thread_local! {
+    static LINE_SEGMENTER: icu_segmenter::LineSegmenter = icu_segmenter::LineSegmenter::new_auto();
+}
+
 /// Describes where words occur in a line of text.
 ///
 /// The simplest approach is say that words are separated by one or
@@ -261,23 +266,26 @@ fn find_words_unicode_break_properties<'a>(
     });
 
     let stripped = strip_ansi_escape_sequences(line);
-    let mut opportunities = unicode_linebreak::linebreaks(&stripped)
-        .filter(|(idx, _)| {
-            #[allow(clippy::match_like_matches_macro)]
-            match &stripped[..*idx].chars().next_back() {
-                // We suppress breaks at ‘-’ since we want to control
-                // this via the WordSplitter.
-                Some('-') => false,
-                // Soft hyphens are currently not supported since we
-                // require all `Word` fragments to be continuous in
-                // the input string.
-                Some(SHY) => false,
-                // Other breaks should be fine!
-                _ => true,
-            }
-        })
-        .collect::<Vec<_>>()
-        .into_iter();
+    let opportunities_vec = LINE_SEGMENTER.with(|segmenter| {
+        segmenter.segment_str(&stripped)
+            .filter(|&idx| idx > 0)
+            .filter(|&idx| {
+                #[allow(clippy::match_like_matches_macro)]
+                match &stripped[..idx].chars().next_back() {
+                    // We suppress breaks at ‘-’ since we want to control
+                    // this via the WordSplitter.
+                    Some('-') => false,
+                    // Soft hyphens are currently not supported since we
+                    // require all `Word` fragments to be continuous in
+                    // the input string.
+                    Some(SHY) => false,
+                    // Other breaks should be fine!
+                    _ => true,
+                }
+            })
+            .collect::<Vec<_>>()
+    });
+    let mut opportunities = opportunities_vec.into_iter();
 
     // Remove final break opportunity, we will add it below using
     // &line[start..]; This ensures that we correctly include a
@@ -286,7 +294,7 @@ fn find_words_unicode_break_properties<'a>(
 
     let mut start = 0;
     Box::new(std::iter::from_fn(move || {
-        for (idx, _) in opportunities.by_ref() {
+        for idx in opportunities.by_ref() {
             if let Some((orig_idx, _)) = idx_map.find(|&(_, stripped_idx)| stripped_idx == idx) {
                 let word = Word::from(&line[start..orig_idx]);
                 start = orig_idx;

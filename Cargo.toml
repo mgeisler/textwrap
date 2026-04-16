@@ -28,6 +28,7 @@ all-features = true
 
 [features]
 default = ["unicode-linebreak", "unicode-width", "smawk"]
+unicode-linebreak = ["icu_segmenter"]
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ["cfg(fuzzing)"] }
@@ -36,7 +37,7 @@ unexpected_cfgs = { level = "warn", check-cfg = ["cfg(fuzzing)"] }
 hyphenation = { version = "0.8.4", optional = true, features = ["embed_en-us"] }
 smawk = { version = "0.3.2", optional = true }
 terminal_size = { version = "0.4.0", optional = true }
-unicode-linebreak = { version = "0.1.5", optional = true }
+icu_segmenter = { version = "1.5", optional = true }
 unicode-width = { version = "0.2.0", optional = true }
 
 [dev-dependencies]
