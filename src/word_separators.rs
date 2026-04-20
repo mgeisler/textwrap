@@ -267,7 +267,8 @@ fn find_words_unicode_break_properties<'a>(
 
     let stripped = strip_ansi_escape_sequences(line);
     let opportunities_vec = LINE_SEGMENTER.with(|segmenter| {
-        segmenter.segment_str(&stripped)
+        segmenter
+            .segment_str(&stripped)
             .filter(|&idx| idx > 0)
             .filter(|&idx| {
                 #[allow(clippy::match_like_matches_macro)]
