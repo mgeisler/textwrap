@@ -232,7 +232,7 @@ jobs:
         run: rm *
 
       - name: Download bundled textwrap-wasm-demo-app
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v7
         with:
           name: textwrap-wasm-demo-app
 
