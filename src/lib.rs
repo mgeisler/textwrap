@@ -120,7 +120,7 @@
 //! These features are enabled by default:
 //!
 //! * `unicode-linebreak`: enables finding words using the
-//!   [unicode-linebreak] crate, which implements the line breaking
+//!   [icu_segmenter] crate, which implements the line breaking
 //!   algorithm described in [Unicode Standard Annex
 //!   #14](https://www.unicode.org/reports/tr14/).
 //!
@@ -185,7 +185,7 @@
 //!   [hyphenation] crate. See the [`word_splitters::WordSplitter`]
 //!   trait for details.
 //!
-//! [unicode-linebreak]: https://docs.rs/unicode-linebreak/
+//! [icu_segmenter]: https://docs.rs/icu_segmenter/
 //! [unicode-width]: https://docs.rs/unicode-width/
 //! [smawk]: https://docs.rs/smawk/
 //! [binary-sizes demo]: https://github.com/mgeisler/textwrap/tree/master/examples/binary-sizes
@@ -198,7 +198,7 @@
 #![deny(missing_docs)]
 #![deny(missing_debug_implementations)]
 #![allow(clippy::redundant_field_names)]
-#![no_std]
+#![cfg_attr(not(feature = "std"), no_std)]
 
 // Make `cargo test` execute the README doctests.
 #[cfg(doctest)]

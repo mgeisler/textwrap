@@ -34,9 +34,11 @@
 //! the functionality here is not sufficient or if you have ideas for
 //! improving it. We would love to hear from you!
 
+#[cfg(not(feature = "std"))]
 extern crate alloc;
 
-use alloc::{vec::Vec, format};
+#[cfg(not(feature = "std"))]
+use alloc::vec::Vec;
 
 /// The CSI or “Control Sequence Introducer” introduces an ANSI escape
 /// sequence. This is typically used for colored text and will be
@@ -373,6 +375,8 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[cfg(not(feature = "std"))]
+    use alloc::format;
 
     #[cfg(feature = "unicode-width")]
     use unicode_width::UnicodeWidthChar;

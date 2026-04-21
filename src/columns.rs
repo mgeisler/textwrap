@@ -1,11 +1,13 @@
 //! Functionality for wrapping text into columns.
 
+#[cfg(not(feature = "std"))]
 extern crate alloc;
 
 use crate::core::display_width;
 use crate::{wrap, Options};
 
-use alloc::{string::String, vec::Vec, vec};
+#[cfg(not(feature = "std"))]
+use alloc::{string::String, vec::Vec};
 
 /// Wrap text into columns with a given total width.
 ///
@@ -120,6 +122,8 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[cfg(not(feature = "std"))]
+    use alloc::vec;
 
     #[test]
     fn wrap_columns_empty_text() {

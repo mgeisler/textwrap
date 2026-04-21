@@ -1,7 +1,4 @@
-extern crate alloc;
-
 use core::cell::RefCell;
-use alloc::{vec::Vec, vec};
 
 use crate::core::Fragment;
 

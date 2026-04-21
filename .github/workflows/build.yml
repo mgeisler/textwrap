@@ -157,7 +157,7 @@ jobs:
         run: cargo install cargo-fuzz
 
       - name: Cache fuzz corpus
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: fuzz/corpus/${{ matrix.fuzz-target }}
           key: fuzz-corpus-${{ matrix.fuzz-target }}-${{ github.run_id }}
@@ -212,7 +212,7 @@ jobs:
         working-directory: examples/wasm/www
 
       - name: Upload bundled textwrap-wasm-demo-app
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: textwrap-wasm-demo-app
           path: examples/wasm/www/dist
@@ -232,7 +232,7 @@ jobs:
         run: rm *
 
       - name: Download bundled textwrap-wasm-demo-app
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v7
         with:
           name: textwrap-wasm-demo-app
 
