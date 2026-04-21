@@ -218,6 +218,7 @@ mod options;
 mod refill;
 #[cfg(feature = "terminal_size")]
 mod termwidth;
+mod try_wrap;
 mod word_separators;
 mod wrap;
 
@@ -229,6 +230,7 @@ pub use options::Options;
 pub use refill::{refill, unfill};
 #[cfg(feature = "terminal_size")]
 pub use termwidth::termwidth;
+pub use try_wrap::try_wrap;
 pub use word_separators::WordSeparator;
 pub use word_splitters::WordSplitter;
 pub use wrap::wrap;
