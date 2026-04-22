@@ -211,7 +211,7 @@
 #![no_std]
 
 // Make `cargo test` execute the README doctests.
-#[cfg(doctest)]
+#[cfg(all(doctest, feature = "std"))]
 #[doc = include_str!("../README.md")]
 mod readme_doctest {}
 
