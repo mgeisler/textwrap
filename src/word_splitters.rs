@@ -4,7 +4,12 @@
 //! across lines. The [`WordSplitter`] enum defines this
 //! functionality.
 
+#[cfg(not(feature = "std"))]
+extern crate alloc;
+
 use crate::core::{display_width, Word};
+#[cfg(not(feature = "std"))]
+use alloc::vec::Vec;
 
 /// The `WordSplitter` enum describes where words can be split.
 ///
@@ -176,7 +181,7 @@ where
     words.into_iter().flat_map(move |word| {
         let mut prev = 0;
         let mut split_points = word_splitter.split_points(&word).into_iter();
-        std::iter::from_fn(move || {
+        core::iter::from_fn(move || {
             if let Some(idx) = split_points.next() {
                 let need_hyphen = !word[..idx].ends_with('-');
                 let w = Word {
@@ -208,6 +213,8 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[cfg(not(feature = "std"))]
+    use alloc::vec;
 
     // Like assert_eq!, but the left expression is an iterator.
     macro_rules! assert_iter_eq {

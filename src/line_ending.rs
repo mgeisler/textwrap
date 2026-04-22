@@ -1,6 +1,9 @@
 //! Line ending detection and conversion.
 
-use std::fmt::Debug;
+#[cfg(not(feature = "std"))]
+extern crate alloc;
+
+use core::fmt::Debug;
 
 /// Supported line endings. Like in the Rust standard library, two line
 /// endings are supported: `\r\n` and `\n`
@@ -53,7 +56,7 @@ impl<'a> Iterator for NonEmptyLines<'a> {
         if self.0.is_empty() {
             None
         } else {
-            let line = std::mem::take(&mut self.0);
+            let line = core::mem::take(&mut self.0);
             Some((line, None))
         }
     }
@@ -62,6 +65,8 @@ impl<'a> Iterator for NonEmptyLines<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[cfg(not(feature = "std"))]
+    use alloc::{vec, vec::Vec};
 
     #[test]
     fn non_empty_lines_full_case() {
