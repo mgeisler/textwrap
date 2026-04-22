@@ -1,11 +1,11 @@
 "use strict";
 (self["webpackChunktextwrap_wasm_demo_app"] = self["webpackChunktextwrap_wasm_demo_app"] || []).push([["index_js"],{
 
-/***/ "./index.js":
+/***/ "./index.js"
 /*!******************!*\
   !*** ./index.js ***!
   \******************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var textwrap_wasm_demo__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! textwrap-wasm-demo */ "../pkg/textwrap_wasm_demo.js");
@@ -117,59 +117,59 @@ lineWidthText.value = lineWidth.valueAsNumber;
 window.dispatchEvent(new Event("resize"));
 
 
-/***/ }),
+/***/ },
 
-/***/ "../pkg/textwrap_wasm_demo.js":
+/***/ "../pkg/textwrap_wasm_demo.js"
 /*!************************************!*\
   !*** ../pkg/textwrap_wasm_demo.js ***!
   \************************************/
-/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   WasmOptions: () => (/* reexport safe */ _textwrap_wasm_demo_bg_js__WEBPACK_IMPORTED_MODULE_0__.WasmOptions),
-/* harmony export */   WasmPenalties: () => (/* reexport safe */ _textwrap_wasm_demo_bg_js__WEBPACK_IMPORTED_MODULE_0__.WasmPenalties),
-/* harmony export */   __wbg_actualBoundingBoxAscent_a8000a712133a37a: () => (/* reexport safe */ _textwrap_wasm_demo_bg_js__WEBPACK_IMPORTED_MODULE_0__.__wbg_actualBoundingBoxAscent_a8000a712133a37a),
-/* harmony export */   __wbg_actualBoundingBoxDescent_bf4c7c53b08b9c84: () => (/* reexport safe */ _textwrap_wasm_demo_bg_js__WEBPACK_IMPORTED_MODULE_0__.__wbg_actualBoundingBoxDescent_bf4c7c53b08b9c84),
-/* harmony export */   __wbg_beginPath_18ab569e70788cc1: () => (/* reexport safe */ _textwrap_wasm_demo_bg_js__WEBPACK_IMPORTED_MODULE_0__.__wbg_beginPath_18ab569e70788cc1),
-/* harmony export */   __wbg_error_7534b8e9a36f1ab4: () => (/* reexport safe */ _textwrap_wasm_demo_bg_js__WEBPACK_IMPORTED_MODULE_0__.__wbg_error_7534b8e9a36f1ab4),
-/* harmony export */   __wbg_fillText_f7c6f84859022688: () => (/* reexport safe */ _textwrap_wasm_demo_bg_js__WEBPACK_IMPORTED_MODULE_0__.__wbg_fillText_f7c6f84859022688),
-/* harmony export */   __wbg_lineTo_1321b7a30d82f376: () => (/* reexport safe */ _textwrap_wasm_demo_bg_js__WEBPACK_IMPORTED_MODULE_0__.__wbg_lineTo_1321b7a30d82f376),
-/* harmony export */   __wbg_measureText_87dbc58e2de1644f: () => (/* reexport safe */ _textwrap_wasm_demo_bg_js__WEBPACK_IMPORTED_MODULE_0__.__wbg_measureText_87dbc58e2de1644f),
-/* harmony export */   __wbg_moveTo_3069b186b2004933: () => (/* reexport safe */ _textwrap_wasm_demo_bg_js__WEBPACK_IMPORTED_MODULE_0__.__wbg_moveTo_3069b186b2004933),
-/* harmony export */   __wbg_new_8a6f238a6ece86ea: () => (/* reexport safe */ _textwrap_wasm_demo_bg_js__WEBPACK_IMPORTED_MODULE_0__.__wbg_new_8a6f238a6ece86ea),
-/* harmony export */   __wbg_restore_9ac3ed45c09936ff: () => (/* reexport safe */ _textwrap_wasm_demo_bg_js__WEBPACK_IMPORTED_MODULE_0__.__wbg_restore_9ac3ed45c09936ff),
-/* harmony export */   __wbg_save_2f42b396c1a97535: () => (/* reexport safe */ _textwrap_wasm_demo_bg_js__WEBPACK_IMPORTED_MODULE_0__.__wbg_save_2f42b396c1a97535),
-/* harmony export */   __wbg_set_wasm: () => (/* reexport safe */ _textwrap_wasm_demo_bg_js__WEBPACK_IMPORTED_MODULE_0__.__wbg_set_wasm),
-/* harmony export */   __wbg_setfont_b3126b9131bc56b4: () => (/* reexport safe */ _textwrap_wasm_demo_bg_js__WEBPACK_IMPORTED_MODULE_0__.__wbg_setfont_b3126b9131bc56b4),
-/* harmony export */   __wbg_setstrokeStyle_7f8dbdddec47d488: () => (/* reexport safe */ _textwrap_wasm_demo_bg_js__WEBPACK_IMPORTED_MODULE_0__.__wbg_setstrokeStyle_7f8dbdddec47d488),
-/* harmony export */   __wbg_settextAlign_13ad1c3f136337a6: () => (/* reexport safe */ _textwrap_wasm_demo_bg_js__WEBPACK_IMPORTED_MODULE_0__.__wbg_settextAlign_13ad1c3f136337a6),
-/* harmony export */   __wbg_settextBaseline_33dcd187fb0bc648: () => (/* reexport safe */ _textwrap_wasm_demo_bg_js__WEBPACK_IMPORTED_MODULE_0__.__wbg_settextBaseline_33dcd187fb0bc648),
-/* harmony export */   __wbg_stack_0ed75d68575b0f3c: () => (/* reexport safe */ _textwrap_wasm_demo_bg_js__WEBPACK_IMPORTED_MODULE_0__.__wbg_stack_0ed75d68575b0f3c),
-/* harmony export */   __wbg_stroke_0feb24d5e9f9c915: () => (/* reexport safe */ _textwrap_wasm_demo_bg_js__WEBPACK_IMPORTED_MODULE_0__.__wbg_stroke_0feb24d5e9f9c915),
-/* harmony export */   __wbg_width_261453b21b342663: () => (/* reexport safe */ _textwrap_wasm_demo_bg_js__WEBPACK_IMPORTED_MODULE_0__.__wbg_width_261453b21b342663),
-/* harmony export */   __wbindgen_debug_string: () => (/* reexport safe */ _textwrap_wasm_demo_bg_js__WEBPACK_IMPORTED_MODULE_0__.__wbindgen_debug_string),
-/* harmony export */   __wbindgen_init_externref_table: () => (/* reexport safe */ _textwrap_wasm_demo_bg_js__WEBPACK_IMPORTED_MODULE_0__.__wbindgen_init_externref_table),
-/* harmony export */   __wbindgen_string_new: () => (/* reexport safe */ _textwrap_wasm_demo_bg_js__WEBPACK_IMPORTED_MODULE_0__.__wbindgen_string_new),
-/* harmony export */   __wbindgen_throw: () => (/* reexport safe */ _textwrap_wasm_demo_bg_js__WEBPACK_IMPORTED_MODULE_0__.__wbindgen_throw),
-/* harmony export */   draw_wrapped_text: () => (/* reexport safe */ _textwrap_wasm_demo_bg_js__WEBPACK_IMPORTED_MODULE_0__.draw_wrapped_text)
+/* harmony export */   WasmOptions: () => (/* reexport safe */ _textwrap_wasm_demo_bg_js__WEBPACK_IMPORTED_MODULE_1__.WasmOptions),
+/* harmony export */   WasmPenalties: () => (/* reexport safe */ _textwrap_wasm_demo_bg_js__WEBPACK_IMPORTED_MODULE_1__.WasmPenalties),
+/* harmony export */   __wbg_actualBoundingBoxAscent_a8000a712133a37a: () => (/* reexport safe */ _textwrap_wasm_demo_bg_js__WEBPACK_IMPORTED_MODULE_1__.__wbg_actualBoundingBoxAscent_a8000a712133a37a),
+/* harmony export */   __wbg_actualBoundingBoxDescent_bf4c7c53b08b9c84: () => (/* reexport safe */ _textwrap_wasm_demo_bg_js__WEBPACK_IMPORTED_MODULE_1__.__wbg_actualBoundingBoxDescent_bf4c7c53b08b9c84),
+/* harmony export */   __wbg_beginPath_18ab569e70788cc1: () => (/* reexport safe */ _textwrap_wasm_demo_bg_js__WEBPACK_IMPORTED_MODULE_1__.__wbg_beginPath_18ab569e70788cc1),
+/* harmony export */   __wbg_error_7534b8e9a36f1ab4: () => (/* reexport safe */ _textwrap_wasm_demo_bg_js__WEBPACK_IMPORTED_MODULE_1__.__wbg_error_7534b8e9a36f1ab4),
+/* harmony export */   __wbg_fillText_f7c6f84859022688: () => (/* reexport safe */ _textwrap_wasm_demo_bg_js__WEBPACK_IMPORTED_MODULE_1__.__wbg_fillText_f7c6f84859022688),
+/* harmony export */   __wbg_lineTo_1321b7a30d82f376: () => (/* reexport safe */ _textwrap_wasm_demo_bg_js__WEBPACK_IMPORTED_MODULE_1__.__wbg_lineTo_1321b7a30d82f376),
+/* harmony export */   __wbg_measureText_87dbc58e2de1644f: () => (/* reexport safe */ _textwrap_wasm_demo_bg_js__WEBPACK_IMPORTED_MODULE_1__.__wbg_measureText_87dbc58e2de1644f),
+/* harmony export */   __wbg_moveTo_3069b186b2004933: () => (/* reexport safe */ _textwrap_wasm_demo_bg_js__WEBPACK_IMPORTED_MODULE_1__.__wbg_moveTo_3069b186b2004933),
+/* harmony export */   __wbg_new_8a6f238a6ece86ea: () => (/* reexport safe */ _textwrap_wasm_demo_bg_js__WEBPACK_IMPORTED_MODULE_1__.__wbg_new_8a6f238a6ece86ea),
+/* harmony export */   __wbg_restore_9ac3ed45c09936ff: () => (/* reexport safe */ _textwrap_wasm_demo_bg_js__WEBPACK_IMPORTED_MODULE_1__.__wbg_restore_9ac3ed45c09936ff),
+/* harmony export */   __wbg_save_2f42b396c1a97535: () => (/* reexport safe */ _textwrap_wasm_demo_bg_js__WEBPACK_IMPORTED_MODULE_1__.__wbg_save_2f42b396c1a97535),
+/* harmony export */   __wbg_set_wasm: () => (/* reexport safe */ _textwrap_wasm_demo_bg_js__WEBPACK_IMPORTED_MODULE_1__.__wbg_set_wasm),
+/* harmony export */   __wbg_setfont_b3126b9131bc56b4: () => (/* reexport safe */ _textwrap_wasm_demo_bg_js__WEBPACK_IMPORTED_MODULE_1__.__wbg_setfont_b3126b9131bc56b4),
+/* harmony export */   __wbg_setstrokeStyle_7f8dbdddec47d488: () => (/* reexport safe */ _textwrap_wasm_demo_bg_js__WEBPACK_IMPORTED_MODULE_1__.__wbg_setstrokeStyle_7f8dbdddec47d488),
+/* harmony export */   __wbg_settextAlign_13ad1c3f136337a6: () => (/* reexport safe */ _textwrap_wasm_demo_bg_js__WEBPACK_IMPORTED_MODULE_1__.__wbg_settextAlign_13ad1c3f136337a6),
+/* harmony export */   __wbg_settextBaseline_33dcd187fb0bc648: () => (/* reexport safe */ _textwrap_wasm_demo_bg_js__WEBPACK_IMPORTED_MODULE_1__.__wbg_settextBaseline_33dcd187fb0bc648),
+/* harmony export */   __wbg_stack_0ed75d68575b0f3c: () => (/* reexport safe */ _textwrap_wasm_demo_bg_js__WEBPACK_IMPORTED_MODULE_1__.__wbg_stack_0ed75d68575b0f3c),
+/* harmony export */   __wbg_stroke_0feb24d5e9f9c915: () => (/* reexport safe */ _textwrap_wasm_demo_bg_js__WEBPACK_IMPORTED_MODULE_1__.__wbg_stroke_0feb24d5e9f9c915),
+/* harmony export */   __wbg_width_261453b21b342663: () => (/* reexport safe */ _textwrap_wasm_demo_bg_js__WEBPACK_IMPORTED_MODULE_1__.__wbg_width_261453b21b342663),
+/* harmony export */   __wbindgen_debug_string: () => (/* reexport safe */ _textwrap_wasm_demo_bg_js__WEBPACK_IMPORTED_MODULE_1__.__wbindgen_debug_string),
+/* harmony export */   __wbindgen_init_externref_table: () => (/* reexport safe */ _textwrap_wasm_demo_bg_js__WEBPACK_IMPORTED_MODULE_1__.__wbindgen_init_externref_table),
+/* harmony export */   __wbindgen_string_new: () => (/* reexport safe */ _textwrap_wasm_demo_bg_js__WEBPACK_IMPORTED_MODULE_1__.__wbindgen_string_new),
+/* harmony export */   __wbindgen_throw: () => (/* reexport safe */ _textwrap_wasm_demo_bg_js__WEBPACK_IMPORTED_MODULE_1__.__wbindgen_throw),
+/* harmony export */   draw_wrapped_text: () => (/* reexport safe */ _textwrap_wasm_demo_bg_js__WEBPACK_IMPORTED_MODULE_1__.draw_wrapped_text)
 /* harmony export */ });
-/* harmony import */ var _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./textwrap_wasm_demo_bg.wasm */ "../pkg/textwrap_wasm_demo_bg.wasm");
-/* harmony import */ var _textwrap_wasm_demo_bg_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./textwrap_wasm_demo_bg.js */ "../pkg/textwrap_wasm_demo_bg.js");
+/* harmony import */ var _textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./textwrap_wasm_demo_bg.wasm */ "../pkg/textwrap_wasm_demo_bg.wasm");
+/* harmony import */ var _textwrap_wasm_demo_bg_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./textwrap_wasm_demo_bg.js */ "../pkg/textwrap_wasm_demo_bg.js");
 
 
 
-(0,_textwrap_wasm_demo_bg_js__WEBPACK_IMPORTED_MODULE_0__.__wbg_set_wasm)(_textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_1__);
-_textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_1__.__wbindgen_start();
+(0,_textwrap_wasm_demo_bg_js__WEBPACK_IMPORTED_MODULE_1__.__wbg_set_wasm)(_textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__);
+_textwrap_wasm_demo_bg_wasm__WEBPACK_IMPORTED_MODULE_0__.__wbindgen_start();
 
 
-/***/ }),
+/***/ },
 
-/***/ "../pkg/textwrap_wasm_demo_bg.js":
+/***/ "../pkg/textwrap_wasm_demo_bg.js"
 /*!***************************************!*\
   !*** ../pkg/textwrap_wasm_demo_bg.js ***!
   \***************************************/
-/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
@@ -744,13 +744,13 @@ function __wbindgen_throw(arg0, arg1) {
 
 
 
-/***/ }),
+/***/ },
 
-/***/ "../pkg/textwrap_wasm_demo_bg.wasm":
+/***/ "../pkg/textwrap_wasm_demo_bg.wasm"
 /*!*****************************************!*\
   !*** ../pkg/textwrap_wasm_demo_bg.wasm ***!
   \*****************************************/
-/***/ ((module, exports, __webpack_require__) => {
+(module, exports, __webpack_require__) {
 
 "use strict";
 // Instantiate WebAssembly module
@@ -765,7 +765,7 @@ for(var name in wasmExports) if(name) exports[name] = wasmExports[name];
 // exec wasm module
 wasmExports[""]()
 
-/***/ })
+/***/ }
 
 }]);
 //# sourceMappingURL=index_js.bootstrap.js.map
