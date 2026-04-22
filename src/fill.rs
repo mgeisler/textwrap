@@ -4,7 +4,8 @@ use crate::{Options, WordSeparator, wrap, wrap_algorithms};
 
 extern crate alloc;
 
-use alloc::{string::String, vec::Vec};
+use alloc::string::String;
+use alloc::vec::Vec;
 
 /// Fill a line of text at a given width.
 ///
