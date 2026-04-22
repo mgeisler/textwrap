@@ -444,7 +444,7 @@ mod tests {
     );
 
     #[test]
-    #[cfg(unix)]
+    #[cfg(all(unix, feature = "std"))]
     fn find_words_colored_text() {
         use termion::color::{Blue, Fg, Green, Reset};
 
