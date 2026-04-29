@@ -20,7 +20,20 @@ use crate::core::skip_ansi_escape_sequence;
 
 #[cfg(feature = "unicode-linebreak")]
 thread_local! {
-    static LINE_SEGMENTER: icu_segmenter::LineSegmenter = icu_segmenter::LineSegmenter::new_auto();
+    static LINE_SEGMENTER: icu_segmenter::LineSegmenterBorrowed<'static> = {
+        use icu_segmenter::options::LineBreakOptions;
+        use icu_segmenter::LineSegmenter;
+
+        let options = LineBreakOptions::default();
+        #[cfg(feature = "unicode-linebreak-complex")]
+        {
+            LineSegmenter::new_auto(options)
+        }
+        #[cfg(not(feature = "unicode-linebreak-complex"))]
+        {
+            LineSegmenter::new_for_non_complex_scripts(options)
+        }
+    };
 }
 
 /// Describes where words occur in a line of text.
@@ -462,6 +475,24 @@ mod tests {
         assert_iter_eq!(AsciiSpace.find_words(text), vec![Word::from(text)]);
 
         #[cfg(feature = "unicode-linebreak")]
+        assert_iter_eq!(
+            UnicodeBreakProperties.find_words(text),
+            vec![Word::from(text)]
+        );
+    }
+
+    #[test]
+    #[cfg(feature = "unicode-linebreak")]
+    fn find_words_complex_scripts() {
+        let text = "ภาษาไทย"; // English: "Thai language"
+
+        #[cfg(feature = "unicode-linebreak-complex")]
+        assert_iter_eq!(
+            UnicodeBreakProperties.find_words(text),
+            vec![Word::from("ภาษา"), Word::from("ไทย")]
+        );
+
+        #[cfg(not(feature = "unicode-linebreak-complex"))]
         assert_iter_eq!(
             UnicodeBreakProperties.find_words(text),
             vec![Word::from(text)]

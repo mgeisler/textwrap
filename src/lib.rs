@@ -124,10 +124,15 @@
 //!   algorithm described in [Unicode Standard Annex
 //!   #14](https://www.unicode.org/reports/tr14/).
 //!
+//!   This feature provides line breaking without support for complex
+//!   scripts (Khmer, Lao, Myanmar, and Thai). See the
+//!   `unicode-linebreak-complex` feature below for complex script
+//!   support.
+//!
 //!   This feature can be disabled if you are happy to find words
 //!   separated by ASCII space characters only. People wrapping text
-//!   with emojis or East-Asian characters will want most likely want
-//!   to enable this feature. See [`WordSeparator`] for details.
+//!   with emojis or East-Asian characters will most likely want to
+//!   enable this feature. See [`WordSeparator`] for details.
 //!
 //! * `unicode-width`: enables correct width computation of non-ASCII
 //!   characters via the [unicode-width] crate. Without this feature,
@@ -176,6 +181,11 @@
 //! ## Optional Features
 //!
 //! These Cargo features enable new functionality:
+//!
+//! * `unicode-linebreak-complex`: enables finding words with support
+//!   for complex scripts (Khmer, Lao, Myanmar, and Thai). It uses the
+//!   [icu_segmenter] crate with full dictionary and neural network
+//!   models.
 //!
 //! * `terminal_size`: enables automatic detection of the terminal
 //!   width via the [terminal_size] crate. See
