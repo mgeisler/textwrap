@@ -20,7 +20,20 @@ use crate::core::Word;
 
 #[cfg(feature = "unicode-linebreak")]
 thread_local! {
-    static LINE_SEGMENTER: icu_segmenter::LineSegmenter = icu_segmenter::LineSegmenter::new_auto();
+    static LINE_SEGMENTER: icu_segmenter::LineSegmenterBorrowed<'static> = {
+        use icu_segmenter::options::LineBreakOptions;
+        use icu_segmenter::LineSegmenter;
+
+        let options = LineBreakOptions::default();
+        #[cfg(feature = "unicode-linebreak-complex")]
+         {
+            LineSegmenter::new_auto(options)
+        }
+        #[cfg(not(feature = "unicode-linebreak-complex"))]
+        {
+            LineSegmenter::new_for_non_complex_scripts(options)
+        }
+    };
 }
 
 /// Describes where words occur in a line of text.

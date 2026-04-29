@@ -28,9 +28,16 @@ jobs:
           - stable
           - nightly
         features:
-          - no default features
-          - all features
-          - default features
+          - name: no default features
+            flags: --no-default-features
+          - name: all features
+            flags: --all-features
+          - name: default features
+            flags: ""
+          - name: unicode-linebreak
+            flags: --no-default-features --features unicode-linebreak
+          - name: unicode-linebreak-complex
+            flags: --no-default-features --features unicode-linebreak-complex
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
@@ -40,15 +47,8 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
 
-      - name: Test with ${{ matrix.features }}
-        run: |
-          FLAG="${{ matrix.features }}"
-          if [[ "$FLAG" = "default features" ]]; then
-            FLAG=''  # Needs no flag
-          else
-            FLAG="--${FLAG// /-}"  # Turn 'foo bar' into '--foo-bar'
-          fi
-          cargo test $FLAG
+      - name: Test with ${{ matrix.features.name }}
+        run: cargo test ${{ matrix.features.flags }}
 
   windows:
     name: Windows (stable, default features)
@@ -69,9 +69,16 @@ jobs:
       fail-fast: false
       matrix:
         features:
-          - no default features
-          - all features
-          - default features
+          - name: no default features
+            flags: --no-default-features
+          - name: all features
+            flags: --all-features
+          - name: default features
+            flags: ""
+          - name: unicode-linebreak
+            flags: --no-default-features --features unicode-linebreak
+          - name: unicode-linebreak-complex
+            flags: --no-default-features --features unicode-linebreak-complex
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
@@ -85,15 +92,8 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
 
-      - name: Build with ${{ matrix.features }}
-        run: |
-          FLAG="${{ matrix.features }}"
-          if [[ "$FLAG" = "default features" ]]; then
-            FLAG=''  # Needs no flag
-          else
-            FLAG="--${FLAG// /-}"  # Turn 'foo bar' into '--foo-bar'
-          fi
-          cargo build $FLAG
+      - name: Build with ${{ matrix.features.name }}
+        run: cargo build ${{ matrix.features.flags }}
 
   # This builds benchmarks, which are not covered above.
   build-benchmarks:

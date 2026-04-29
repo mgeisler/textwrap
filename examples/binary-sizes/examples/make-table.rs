@@ -75,6 +75,10 @@ fn make_table() -> Result<String, PrettyError> {
         ("smawk", "textwrap with smawk"),
         ("unicode-width", "textwrap with unicode-width"),
         ("unicode-linebreak", "textwrap with unicode-linebreak"),
+        (
+            "unicode-linebreak-complex",
+            "textwrap with unicode-linebreak-complex",
+        ),
     ];
     let base_size = compile(&[])?;
     printcols!("quick-and-dirty implementation", kb(base_size), "— KB");
