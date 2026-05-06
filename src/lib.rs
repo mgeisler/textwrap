@@ -18,7 +18,7 @@
 //! ```
 //!
 //! The [`wrap()`] function returns the individual lines, use
-//! [`fill()`] is you want the lines joined with `'\n'` to form a
+//! [`fill()`] if you want the lines joined with `'\n'` to form a
 //! `String`.
 //!
 //! If you enable the `hyphenation` Cargo feature, you can get
