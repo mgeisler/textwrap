@@ -119,15 +119,25 @@
 //!
 //! These features are enabled by default:
 //!
-//! * `unicode-linebreak`: enables finding words using the
+//! * `unicode-linebreak-complex`: enables finding words with support
+//!   for complex scripts (Khmer, Lao, Myanmar, and Thai). It uses the
 //!   [icu_segmenter] crate, which implements the line breaking
 //!   algorithm described in [Unicode Standard Annex
 //!   #14](https://www.unicode.org/reports/tr14/).
 //!
-//!   This feature can be disabled if you are happy to find words
-//!   separated by ASCII space characters only. People wrapping text
-//!   with emojis or East-Asian characters will want most likely want
-//!   to enable this feature. See [`WordSeparator`] for details.
+//!   This is enabled by default. Disable it if you don't need support
+//!   for complex scripts. See [`unicode-linebreak`] below and
+//!   [`WordSeparator`] for details.
+//!
+//! * `unicode-linebreak`: enables finding words without support for
+//!   complex scripts (Khmer, Lao, Myanmar, and Thai). It uses the
+//!   [icu_segmenter] crate, which implements the line breaking
+//!   algorithm described in [Unicode Standard Annex
+//!   #14](https://www.unicode.org/reports/tr14/).
+//!
+//!   This is enabled by default and will give you support for
+//!   wrapping text with emojis and some East-Asian characters. See
+//!   [`WordSeparator`] for details.
 //!
 //! * `unicode-width`: enables correct width computation of non-ASCII
 //!   characters via the [unicode-width] crate. Without this feature,
