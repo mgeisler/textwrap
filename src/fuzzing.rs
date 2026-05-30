@@ -1,7 +1,11 @@
 //! Fuzzing helpers.
 
+extern crate alloc;
+
 use super::Options;
-use std::borrow::Cow;
+use alloc::borrow::Cow;
+use alloc::string::String;
+use alloc::vec::Vec;
 
 /// Exposed for fuzzing so we can check the slow path is correct.
 pub fn fill_slow_path<'a>(text: &str, options: Options<'_>) -> String {

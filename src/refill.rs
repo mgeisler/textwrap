@@ -1,8 +1,11 @@
 //! Functionality for unfilling and refilling text.
 
+extern crate alloc;
+
 use crate::core::display_width;
 use crate::line_ending::NonEmptyLines;
 use crate::{fill, LineEnding, Options};
+use alloc::string::String;
 
 /// Unpack a paragraph of already-wrapped text.
 ///
@@ -64,7 +67,7 @@ pub fn unfill(text: &str) -> (String, Options<'_>) {
 
     let mut options = Options::new(0);
     for (idx, line) in text.lines().enumerate() {
-        options.width = std::cmp::max(options.width, display_width(line));
+        options.width = core::cmp::max(options.width, display_width(line));
         let without_prefix = line.trim_start_matches(prefix_chars);
         let prefix = &line[..line.len() - without_prefix.len()];
 

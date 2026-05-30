@@ -198,9 +198,10 @@
 #![deny(missing_docs)]
 #![deny(missing_debug_implementations)]
 #![allow(clippy::redundant_field_names)]
+#![cfg_attr(not(feature = "std"), no_std)]
 
 // Make `cargo test` execute the README doctests.
-#[cfg(doctest)]
+#[cfg(all(doctest, feature = "std"))]
 #[doc = include_str!("../README.md")]
 mod readme_doctest {}
 

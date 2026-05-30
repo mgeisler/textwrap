@@ -1,7 +1,13 @@
 //! Functionality for wrapping text into columns.
 
+#[cfg(not(feature = "std"))]
+extern crate alloc;
+
 use crate::core::display_width;
 use crate::{wrap, Options};
+
+#[cfg(not(feature = "std"))]
+use alloc::{string::String, vec::Vec};
 
 /// Wrap text into columns with a given total width.
 ///
@@ -81,7 +87,7 @@ where
         .saturating_sub(display_width(right_gap))
         .saturating_sub(display_width(middle_gap) * (columns - 1));
 
-    let column_width = std::cmp::max(inner_width / columns, 1);
+    let column_width = core::cmp::max(inner_width / columns, 1);
     options.width = column_width;
     let last_column_padding = " ".repeat(inner_width % column_width);
     let wrapped_lines = wrap(text, options);
@@ -116,6 +122,8 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[cfg(not(feature = "std"))]
+    use alloc::vec;
 
     #[test]
     fn wrap_columns_empty_text() {
