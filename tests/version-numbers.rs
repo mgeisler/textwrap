@@ -18,5 +18,5 @@ fn test_html_root_url() {
 
 #[test]
 fn test_dependency_graph() {
-    version_sync::assert_contains_regex!("src/lib.rs", "master/images/textwrap-{version}.svg");
+    version_sync::assert_contains_regex!("src/lib.rs", "main/images/textwrap-{version}.svg");
 }

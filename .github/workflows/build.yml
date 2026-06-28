@@ -4,7 +4,7 @@ on:
   pull_request:
   push:
     branches:
-      - master
+      - main
   schedule:
     - cron: "30 17 * * 5" # Every Friday at 17:30 UTC
 
@@ -220,7 +220,7 @@ jobs:
   wasm-deploy:
     name: Deploy Wasm demo
     needs: wasm-build
-    if: github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository

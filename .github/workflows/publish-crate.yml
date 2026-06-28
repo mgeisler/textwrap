@@ -3,7 +3,7 @@ name: Publish Crate
 on:
   push:
     branches:
-      - master
+      - main
     paths:
       - Cargo.toml
   repository_dispatch:

@@ -1,7 +1,7 @@
 # Textwrap
 
 [![](https://github.com/mgeisler/textwrap/workflows/build/badge.svg)][build-status]
-[![](https://codecov.io/gh/mgeisler/textwrap/branch/master/graph/badge.svg)][codecov]
+[![](https://codecov.io/gh/mgeisler/textwrap/branch/main/graph/badge.svg)][codecov]
 [![](https://img.shields.io/crates/v/textwrap.svg)][crates-io]
 [![](https://docs.rs/textwrap/badge.svg)][api-docs]
 
@@ -124,8 +124,8 @@ macros from the [`textwrap-macros` crate].
 ## Examples
 
 The library comes with
-[a collection](https://github.com/mgeisler/textwrap/tree/master/examples) of
-small example programs that shows various features.
+[a collection](https://github.com/mgeisler/textwrap/tree/main/examples) of small
+example programs that shows various features.
 
 If you want to see Textwrap in action right away, then take a look at
 [`examples/wasm/`], which shows how to wrap sans-serif, serif, and monospace
@@ -157,18 +157,18 @@ Textwrap can be distributed according to the [MIT license][mit]. Contributions
 will be accepted under the same license.
 
 [crates-io]: https://crates.io/crates/textwrap
-[build-status]: https://github.com/mgeisler/textwrap/actions?query=workflow%3Abuild+branch%3Amaster
+[build-status]: https://github.com/mgeisler/textwrap/actions?query=workflow%3Abuild+branch%3Amain
 [codecov]: https://codecov.io/gh/mgeisler/textwrap
 [wasm-demo]: https://mgeisler.github.io/textwrap/
 [`textwrap-macros` crate]: https://crates.io/crates/textwrap-macros
-[`hyphenation` example]: https://github.com/mgeisler/textwrap/blob/master/examples/hyphenation.rs
-[`termwidth` example]: https://github.com/mgeisler/textwrap/blob/master/examples/termwidth.rs
+[`hyphenation` example]: https://github.com/mgeisler/textwrap/blob/main/examples/hyphenation.rs
+[`termwidth` example]: https://github.com/mgeisler/textwrap/blob/main/examples/termwidth.rs
 [patterns]: https://github.com/tapeinosyne/hyphenation/tree/master/patterns
 [en-us license]: https://github.com/hyphenation/tex-hyphen/blob/master/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-en-us.tex
 [bincode]: https://github.com/tapeinosyne/hyphenation/tree/master/dictionaries
 [`hyphenation` documentation]: http://docs.rs/hyphenation
-[`examples/wasm/`]: https://github.com/mgeisler/textwrap/tree/master/examples/wasm
-[`examples/interactive.rs`]: https://github.com/mgeisler/textwrap/tree/master/examples/interactive.rs
+[`examples/wasm/`]: https://github.com/mgeisler/textwrap/tree/main/examples/wasm
+[`examples/interactive.rs`]: https://github.com/mgeisler/textwrap/tree/main/examples/interactive.rs
 [api-docs]: https://docs.rs/textwrap/
-[CHANGELOG file]: https://github.com/mgeisler/textwrap/blob/master/CHANGELOG.md
+[CHANGELOG file]: https://github.com/mgeisler/textwrap/blob/main/CHANGELOG.md
 [mit]: LICENSE

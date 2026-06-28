@@ -187,7 +187,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               head: 'release-${{ needs.setup.outputs.new-version }}',
-              base: 'master',
+              base: 'main',
               title: 'Release ${{ needs.setup.outputs.new-version }}',
               body: process.env.CHANGELOG,
             })
