@@ -19,7 +19,7 @@ mod unix_only {
     use termion::raw::{IntoRawMode, RawTerminal};
     use termion::screen::IntoAlternateScreen;
     use termion::{color, cursor, style};
-    use textwrap::{wrap, Options, WordSeparator, WordSplitter, WrapAlgorithm};
+    use textwrap::{Options, WordSeparator, WordSplitter, WrapAlgorithm, wrap};
 
     #[cfg(feature = "hyphenation")]
     use hyphenation::{Language, Load, Standard};

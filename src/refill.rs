@@ -2,7 +2,7 @@
 
 use crate::core::display_width;
 use crate::line_ending::NonEmptyLines;
-use crate::{fill, LineEnding, Options};
+use crate::{LineEnding, Options, fill};
 
 /// Unpack a paragraph of already-wrapped text.
 ///

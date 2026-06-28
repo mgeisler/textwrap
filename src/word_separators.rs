@@ -14,9 +14,9 @@
 //! there words are in a line of text. Please refer to the enum and
 //! its variants for more information.
 
+use crate::core::Word;
 #[cfg(feature = "unicode-linebreak")]
 use crate::core::skip_ansi_escape_sequence;
-use crate::core::Word;
 
 #[cfg(feature = "unicode-linebreak")]
 thread_local! {

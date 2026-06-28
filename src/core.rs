@@ -96,11 +96,7 @@ const DOUBLE_WIDTH_CUTOFF: char = '\u{1100}';
 #[cfg(not(feature = "unicode-width"))]
 #[inline]
 fn ch_width(ch: char) -> usize {
-    if ch < DOUBLE_WIDTH_CUTOFF {
-        1
-    } else {
-        2
-    }
+    if ch < DOUBLE_WIDTH_CUTOFF { 1 } else { 2 }
 }
 
 /// Compute the display width of `text` while skipping over ANSI

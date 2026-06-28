@@ -1,9 +1,9 @@
 use unicode_segmentation::UnicodeSegmentation;
-use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
+use wasm_bindgen::prelude::*;
 
 use textwrap::word_splitters::split_words;
-use textwrap::wrap_algorithms::{wrap_first_fit, wrap_optimal_fit, Penalties};
+use textwrap::wrap_algorithms::{Penalties, wrap_first_fit, wrap_optimal_fit};
 use textwrap::{WordSeparator, WordSplitter};
 
 #[wasm_bindgen]
