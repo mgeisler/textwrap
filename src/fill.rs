@@ -115,7 +115,7 @@ pub(crate) fn fill_slow_path(text: &str, options: Options<'_>) -> String {
 ///
 /// In benchmarks, `fill_inplace` is about twice as fast as
 /// [`fill()`]. Please see the [`linear`
-/// benchmark](https://github.com/mgeisler/textwrap/blob/master/benchmarks/linear.rs)
+/// benchmark](https://github.com/mgeisler/textwrap/blob/main/benchmarks/linear.rs)
 /// for details.
 pub fn fill_inplace(text: &mut String, width: usize) {
     let mut indices = Vec::new();

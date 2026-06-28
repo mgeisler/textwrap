@@ -113,7 +113,7 @@
 //! The full dependency graph, where dashed lines indicate optional
 //! dependencies, is shown below:
 //!
-//! <img src="https://raw.githubusercontent.com/mgeisler/textwrap/master/images/textwrap-0.16.2.svg">
+//! <img src="https://raw.githubusercontent.com/mgeisler/textwrap/main/images/textwrap-0.16.2.svg">
 //!
 //! ## Default Features
 //!
@@ -188,7 +188,7 @@
 //! [icu_segmenter]: https://docs.rs/icu_segmenter/
 //! [unicode-width]: https://docs.rs/unicode-width/
 //! [smawk]: https://docs.rs/smawk/
-//! [binary-sizes demo]: https://github.com/mgeisler/textwrap/tree/master/examples/binary-sizes
+//! [binary-sizes demo]: https://github.com/mgeisler/textwrap/tree/main/examples/binary-sizes
 //! [textwrap-macros]: https://docs.rs/textwrap-macros/
 //! [terminal_size]: https://docs.rs/terminal_size/
 //! [hyphenation]: https://docs.rs/hyphenation/
