@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
+use criterion::{BenchmarkId, Criterion, criterion_group, criterion_main};
 
 // The benchmarks here verify that the complexity grows as O(*n*)
 // where *n* is the number of characters in the text to be wrapped.

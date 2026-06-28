@@ -1,4 +1,4 @@
-use textwrap::{fill, Options, WordSplitter};
+use textwrap::{Options, WordSplitter, fill};
 
 fn main() {
     let example = "Memory safety without garbage collection. \

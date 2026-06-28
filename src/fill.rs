@@ -1,6 +1,6 @@
 //! Functions for filling text.
 
-use crate::{wrap, wrap_algorithms, Options, WordSeparator};
+use crate::{Options, WordSeparator, wrap, wrap_algorithms};
 
 /// Fill a line of text at a given width.
 ///

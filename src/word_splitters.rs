@@ -4,7 +4,7 @@
 //! across lines. The [`WordSplitter`] enum defines this
 //! functionality.
 
-use crate::core::{display_width, Word};
+use crate::core::{Word, display_width};
 
 /// The `WordSplitter` enum describes where words can be split.
 ///

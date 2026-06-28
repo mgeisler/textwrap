@@ -1,7 +1,7 @@
 //! Functionality for wrapping text into columns.
 
 use crate::core::display_width;
-use crate::{wrap, Options};
+use crate::{Options, wrap};
 
 /// Wrap text into columns with a given total width.
 ///
