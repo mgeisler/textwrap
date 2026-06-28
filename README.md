@@ -9,15 +9,15 @@ the pixel width of each word as it is rendered to the canvas.
 - **Live demo:
   [mgeisler.github.io/textwrap/](https://mgeisler.github.io/textwrap/).** Here
   you can try the demo. It is automatically deployed on every merge to the
-  `master` branch.
+  `main` branch.
 
 - **Source code:
-  [`examples/wasm/`](https://github.com/mgeisler/textwrap/tree/master/examples/wasm).**
+  [`examples/wasm/`](https://github.com/mgeisler/textwrap/tree/main/examples/wasm).**
   This is the Rust code which make up the demo. You will also find some
   JavaScript and HTML glue code.
 
 - **GitHub Action:
-  [`build.yml`](https://github.com/mgeisler/textwrap/blob/master/.github/workflows/build.yml).**
+  [`build.yml`](https://github.com/mgeisler/textwrap/blob/main/.github/workflows/build.yml).**
   This is the script which compiles and deploys the code. We use
   [`wasm-pack`](https://github.com/rustwasm/wasm-pack) to easily compile
   Textwrap and its dependencies to Wasm.
