@@ -2,8 +2,6 @@
 
 use crate::{Options, WordSeparator, wrap, wrap_algorithms};
 
-extern crate alloc;
-
 use alloc::string::String;
 use alloc::vec::Vec;
 

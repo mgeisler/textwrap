@@ -17,8 +17,6 @@
 //! While both algorithms run in linear time, the first-fit algorithm
 //! is about 4 times faster than the optimal-fit algorithm.
 
-extern crate alloc;
-
 #[cfg(feature = "smawk")]
 mod optimal_fit;
 #[cfg(feature = "smawk")]
@@ -362,6 +360,7 @@ pub fn wrap_first_fit<'a, T: Fragment>(fragments: &'a [T], line_widths: &[f64]) 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use alloc::vec;
 
     #[derive(Debug, PartialEq)]
     struct Word(f64);
@@ -375,7 +374,7 @@ mod tests {
 
     #[test]
     fn wrap_string_longer_than_f64() {
-        let words = alloc::vec![
+        let words = vec![
             Word(1e307),
             Word(2e307),
             Word(3e307),
@@ -388,14 +387,14 @@ mod tests {
         assert_eq!(
             wrap_first_fit(&words, &[15e307]),
             &[
-                alloc::vec![
+                vec![
                     Word(1e307),
                     Word(2e307),
                     Word(3e307),
                     Word(4e307),
                     Word(5e307)
                 ],
-                alloc::vec![Word(6e307)]
+                vec![Word(6e307)]
             ]
         );
     }

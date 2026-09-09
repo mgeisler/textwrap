@@ -1,17 +1,11 @@
 //! Functions for wrapping text.
 
-#[cfg(not(feature = "std"))]
-extern crate alloc;
-#[cfg(not(feature = "std"))]
 use alloc::borrow::{Cow, ToOwned};
-#[cfg(not(feature = "std"))]
 use alloc::vec::Vec;
-#[cfg(feature = "std")]
-use std::borrow::{Cow, ToOwned};
 
-use crate::core::{break_words, display_width, Word};
-use crate::word_splitters::split_words;
 use crate::Options;
+use crate::core::{Word, break_words, display_width};
+use crate::word_splitters::split_words;
 
 /// Wrap a line of text at a given width.
 ///
@@ -636,10 +630,7 @@ mod tests {
     fn borrowed_lines() {
         // Lines that end with an extra hyphen are owned, the final
         // line is borrowed.
-        #[cfg(not(feature = "std"))]
         use alloc::borrow::Cow::{Borrowed, Owned};
-        #[cfg(feature = "std")]
-        use std::borrow::Cow::{Borrowed, Owned};
         let dictionary = Standard::from_embedded(Language::EnglishUS).unwrap();
         let options = Options::new(10).word_splitter(WordSplitter::Hyphenation(dictionary));
         let lines = wrap("Internationalization", &options);
@@ -712,10 +703,7 @@ mod tests {
 
     #[test]
     fn preserve_trailing_space_borrows_spaces() {
-        #[cfg(not(feature = "std"))]
         use alloc::borrow::Cow::Owned;
-        #[cfg(feature = "std")]
-        use std::borrow::Cow::Owned;
         let lines = wrap(
             "foo bar baz",
             Options::new(10).preserve_trailing_space(true),

@@ -207,8 +207,9 @@
 #![forbid(unsafe_code)] // See https://github.com/mgeisler/textwrap/issues/210
 #![deny(missing_docs)]
 #![deny(missing_debug_implementations)]
-#![allow(clippy::redundant_field_names)]
-#![no_std]
+#![cfg_attr(not(feature = "std"), no_std)]
+
+extern crate alloc;
 
 // Make `cargo test` execute the README doctests.
 #[cfg(all(doctest, feature = "std"))]

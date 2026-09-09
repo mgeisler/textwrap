@@ -1,7 +1,5 @@
-extern crate alloc;
-
+use alloc::vec::Vec;
 use core::cell::RefCell;
-use alloc::{vec::Vec, vec};
 
 use crate::core::Fragment;
 
@@ -394,6 +392,7 @@ pub fn wrap_optimal_fit<'a, 'b, T: Fragment>(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use alloc::vec;
 
     #[derive(Debug, PartialEq)]
     struct Word(f64);

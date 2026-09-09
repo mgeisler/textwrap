@@ -1,7 +1,5 @@
 //! Fuzzing helpers.
 
-extern crate alloc;
-
 use super::Options;
 use alloc::borrow::Cow;
 use alloc::string::String;

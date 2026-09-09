@@ -34,9 +34,7 @@
 //! the functionality here is not sufficient or if you have ideas for
 //! improving it. We would love to hear from you!
 
-extern crate alloc;
-
-use alloc::{vec::Vec, format};
+use alloc::vec::Vec;
 
 /// The CSI or “Control Sequence Introducer” introduces an ANSI escape
 /// sequence. This is typically used for colored text and will be
@@ -297,7 +295,7 @@ impl<'a> Word<'a> {
                 if width > 0 && width + ch_width(ch) > line_width {
                     let word = Word {
                         word: &self.word[offset..idx],
-                        width: width,
+                        width,
                         whitespace: "",
                         penalty: "",
                     };
@@ -312,7 +310,7 @@ impl<'a> Word<'a> {
             if offset < self.word.len() {
                 let word = Word {
                     word: &self.word[offset..],
-                    width: width,
+                    width,
                     whitespace: self.whitespace,
                     penalty: self.penalty,
                 };
@@ -369,6 +367,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
+    use alloc::format;
 
     #[cfg(feature = "unicode-width")]
     use unicode_width::UnicodeWidthChar;
