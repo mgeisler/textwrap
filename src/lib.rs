@@ -119,6 +119,9 @@
 //!
 //! These features are enabled by default:
 //!
+//! * `std`: enables standard library support. When disabled, textwrap
+//!   runs in `#![no_std]` mode, requiring only the `alloc` crate.
+//!
 //! * `unicode-linebreak`: enables finding words using the
 //!   [icu_segmenter] crate, which implements the line breaking
 //!   algorithm described in [Unicode Standard Annex
