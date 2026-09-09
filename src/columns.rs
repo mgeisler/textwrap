@@ -173,7 +173,7 @@ mod tests {
     }
 
     #[test]
-    #[cfg(feature = "unicode-width")]
+    #[cfg(all(feature = "unicode-width", feature = "smawk"))]
     fn wrap_columns_with_emojis() {
         assert_eq!(
             wrap_columns(
@@ -187,6 +187,26 @@ mod tests {
             vec![
                 "✨ Words      ⚽ wrapped in 👀",
                 "✨ and a few  ⚽ ⓶ columns  👀",
+                "✨ emojis 😍  ⚽            👀"
+            ]
+        );
+    }
+
+    #[test]
+    #[cfg(all(feature = "unicode-width", not(feature = "smawk")))]
+    fn wrap_columns_with_emojis_without_smawk() {
+        assert_eq!(
+            wrap_columns(
+                "Words and a few emojis 😍 wrapped in ⓶ columns",
+                2,
+                30,
+                "✨ ",
+                " ⚽ ",
+                " 👀"
+            ),
+            vec![
+                "✨ Words and  ⚽ wrapped in 👀",
+                "✨ a few      ⚽ ⓶ columns  👀",
                 "✨ emojis 😍  ⚽            👀"
             ]
         );

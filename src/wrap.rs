@@ -429,6 +429,15 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "unicode-width")]
+    fn wrap_wide_characters_unicode_width() {
+        // Wide characters occupy 2 columns each. This works in both std
+        // and no_std environments with the unicode-width feature.
+        let options = Options::new(8);
+        assert_eq!(wrap("안녕하세요", &options), vec!["안녕하세", "요"]);
+    }
+
+    #[test]
     fn indent_empty_line() {
         // Previously, indentation was not applied to empty lines.
         // However, this is somewhat inconsistent and undesirable if
