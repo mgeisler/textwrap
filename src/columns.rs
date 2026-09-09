@@ -75,11 +75,7 @@ where
 
     let mut options: Options = total_width_or_options.into();
 
-    let inner_width = options
-        .width
-        .saturating_sub(display_width(left_gap))
-        .saturating_sub(display_width(right_gap))
-        .saturating_sub(display_width(middle_gap) * (columns - 1));
+    let inner_width = inner_width(options.width, columns, left_gap, middle_gap, right_gap);
 
     let column_width = std::cmp::max(inner_width / columns, 1);
     options.width = column_width;
@@ -111,6 +107,26 @@ where
     }
 
     lines
+}
+
+/// Compute the width left for the columns themselves, i.e., the total
+/// width minus the width of the gaps.
+///
+/// The multiplication is saturating because `columns` is unbounded and
+/// the combined width of the middle gaps can thus exceed `usize::MAX`.
+/// Nothing is lost by saturating: such a product is larger than
+/// `width`, so the subtraction saturates to zero either way.
+fn inner_width(
+    width: usize,
+    columns: usize,
+    left_gap: &str,
+    middle_gap: &str,
+    right_gap: &str,
+) -> usize {
+    width
+        .saturating_sub(display_width(left_gap))
+        .saturating_sub(display_width(right_gap))
+        .saturating_sub(display_width(middle_gap).saturating_mul(columns - 1))
 }
 
 #[cfg(test)]
@@ -189,5 +205,20 @@ mod tests {
     #[should_panic]
     fn wrap_columns_panic_with_zero_columns() {
         wrap_columns("", 0, 10, "", "", "");
+    }
+
+    #[test]
+    fn inner_width_with_normal_gaps() {
+        // The gaps take up a total of 5 columns.
+        assert_eq!(inner_width(21, 4, "|", "|", "|"), 16);
+    }
+
+    #[test]
+    fn inner_width_with_huge_number_of_columns() {
+        // The combined width of the middle gaps overflows a `usize`,
+        // which leaves no room at all for the columns. The number of
+        // columns is chosen so that a wrapping multiplication would
+        // wrap all the way around to zero.
+        assert_eq!(inner_width(80, usize::MAX / 2 + 2, "", "xx", ""), 0);
     }
 }
