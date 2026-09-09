@@ -14,6 +14,10 @@
 //! there words are in a line of text. Please refer to the enum and
 //! its variants for more information.
 
+use alloc::boxed::Box;
+#[cfg(any(feature = "unicode-linebreak", test))]
+use alloc::vec::Vec;
+
 use crate::core::Word;
 #[cfg(feature = "unicode-linebreak")]
 use crate::core::skip_ansi_escape_sequence;
@@ -211,7 +215,7 @@ fn find_words_ascii_space<'a>(line: &'a str) -> Box<dyn Iterator<Item = Word<'a>
     let mut in_whitespace = false;
     let mut char_indices = line.char_indices();
 
-    Box::new(std::iter::from_fn(move || {
+    Box::new(core::iter::from_fn(move || {
         for (idx, ch) in char_indices.by_ref() {
             if in_whitespace && ch != ' ' {
                 let word = Word::from(&line[start..idx]);
@@ -267,7 +271,7 @@ fn find_words_unicode_break_properties<'a>(
     // the original string.
     let mut last_stripped_idx = 0;
     let mut char_indices = line.char_indices();
-    let mut idx_map = std::iter::from_fn(move || match char_indices.next() {
+    let mut idx_map = core::iter::from_fn(move || match char_indices.next() {
         Some((orig_idx, ch)) => {
             let stripped_idx = last_stripped_idx;
             if !skip_ansi_escape_sequence(ch, &mut char_indices.by_ref().map(|(_, ch)| ch)) {
@@ -307,7 +311,7 @@ fn find_words_unicode_break_properties<'a>(
     opportunities.next_back();
 
     let mut start = 0;
-    Box::new(std::iter::from_fn(move || {
+    Box::new(core::iter::from_fn(move || {
         for idx in opportunities.by_ref() {
             if let Some((orig_idx, _)) = idx_map.find(|&(_, stripped_idx)| stripped_idx == idx) {
                 let word = Word::from(&line[start..orig_idx]);
@@ -330,6 +334,7 @@ fn find_words_unicode_break_properties<'a>(
 mod tests {
     use super::WordSeparator::*;
     use super::*;
+    use alloc::vec;
 
     // Like assert_eq!, but the left expression is an iterator.
     macro_rules! assert_iter_eq {
@@ -451,7 +456,7 @@ mod tests {
     );
 
     #[test]
-    #[cfg(unix)]
+    #[cfg(all(unix, feature = "std"))]
     fn find_words_colored_text() {
         use termion::color::{Blue, Fg, Green, Reset};
 

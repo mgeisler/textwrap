@@ -4,6 +4,8 @@
 //! The functions here can be used to uniformly indent or dedent
 //! (unindent) word wrapped lines of text.
 
+use alloc::string::String;
+
 /// Indent each line by the given prefix.
 ///
 /// # Examples

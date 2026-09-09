@@ -1,5 +1,8 @@
 //! Functionality for wrapping text into columns.
 
+use alloc::string::String;
+use alloc::vec::Vec;
+
 use crate::core::display_width;
 use crate::{Options, wrap};
 
@@ -77,7 +80,7 @@ where
 
     let inner_width = inner_width(options.width, columns, left_gap, middle_gap, right_gap);
 
-    let column_width = std::cmp::max(inner_width / columns, 1);
+    let column_width = core::cmp::max(inner_width / columns, 1);
     options.width = column_width;
     let last_column_padding = " ".repeat(inner_width % column_width);
     let wrapped_lines = wrap(text, options);
@@ -132,6 +135,7 @@ fn inner_width(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use alloc::vec;
 
     #[test]
     fn wrap_columns_empty_text() {
@@ -169,7 +173,7 @@ mod tests {
     }
 
     #[test]
-    #[cfg(feature = "unicode-width")]
+    #[cfg(all(feature = "unicode-width", feature = "smawk"))]
     fn wrap_columns_with_emojis() {
         assert_eq!(
             wrap_columns(
@@ -183,6 +187,26 @@ mod tests {
             vec![
                 "✨ Words      ⚽ wrapped in 👀",
                 "✨ and a few  ⚽ ⓶ columns  👀",
+                "✨ emojis 😍  ⚽            👀"
+            ]
+        );
+    }
+
+    #[test]
+    #[cfg(all(feature = "unicode-width", not(feature = "smawk")))]
+    fn wrap_columns_with_emojis_without_smawk() {
+        assert_eq!(
+            wrap_columns(
+                "Words and a few emojis 😍 wrapped in ⓶ columns",
+                2,
+                30,
+                "✨ ",
+                " ⚽ ",
+                " 👀"
+            ),
+            vec![
+                "✨ Words and  ⚽ wrapped in 👀",
+                "✨ a few      ⚽ ⓶ columns  👀",
                 "✨ emojis 😍  ⚽            👀"
             ]
         );

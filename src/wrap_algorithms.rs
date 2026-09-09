@@ -23,6 +23,7 @@ mod optimal_fit;
 pub use optimal_fit::{OverflowError, Penalties, wrap_optimal_fit};
 
 use crate::core::{Fragment, Word};
+use alloc::vec::Vec;
 
 /// Describes how to wrap words into lines.
 ///
@@ -359,6 +360,7 @@ pub fn wrap_first_fit<'a, T: Fragment>(fragments: &'a [T], line_widths: &[f64]) 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use alloc::vec;
 
     #[derive(Debug, PartialEq)]
     struct Word(f64);

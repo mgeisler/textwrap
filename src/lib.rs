@@ -119,6 +119,9 @@
 //!
 //! These features are enabled by default:
 //!
+//! * `std`: enables standard library support. When disabled, textwrap
+//!   runs in `#![no_std]` mode, requiring only the `alloc` crate.
+//!
 //! * `unicode-linebreak`: enables finding words using the
 //!   [icu_segmenter] crate, which implements the line breaking
 //!   algorithm described in [Unicode Standard Annex
@@ -207,10 +210,12 @@
 #![forbid(unsafe_code)] // See https://github.com/mgeisler/textwrap/issues/210
 #![deny(missing_docs)]
 #![deny(missing_debug_implementations)]
-#![allow(clippy::redundant_field_names)]
+#![cfg_attr(not(feature = "std"), no_std)]
+
+extern crate alloc;
 
 // Make `cargo test` execute the README doctests.
-#[cfg(doctest)]
+#[cfg(all(doctest, feature = "std"))]
 #[doc = include_str!("../README.md")]
 mod readme_doctest {}
 

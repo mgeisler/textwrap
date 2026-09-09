@@ -38,6 +38,8 @@ jobs:
             flags: --no-default-features --features unicode-linebreak
           - name: unicode-linebreak-complex
             flags: --no-default-features --features unicode-linebreak-complex
+          - name: unicode-width
+            flags: --no-default-features --features unicode-width
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -79,6 +81,8 @@ jobs:
             flags: --no-default-features --features unicode-linebreak
           - name: unicode-linebreak-complex
             flags: --no-default-features --features unicode-linebreak-complex
+          - name: unicode-width
+            flags: --no-default-features --features unicode-width
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -94,6 +98,24 @@ jobs:
 
       - name: Build with ${{ matrix.features.name }}
         run: cargo build ${{ matrix.features.flags }}
+
+  no-std:
+    name: no_std support
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Install thumbv7m-none-eabi target
+        run: rustup target add thumbv7m-none-eabi
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Build with no default features
+        run: cargo build --no-default-features --target thumbv7m-none-eabi
+
+      - name: Build with unicode-width
+        run: cargo build --no-default-features --features unicode-width --target thumbv7m-none-eabi
 
   # This builds benchmarks, which are not covered above.
   build-benchmarks:

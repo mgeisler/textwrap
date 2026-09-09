@@ -1,6 +1,7 @@
 //! Functions for wrapping text.
 
-use std::borrow::Cow;
+use alloc::borrow::{Cow, ToOwned};
+use alloc::vec::Vec;
 
 use crate::Options;
 use crate::core::{Word, break_words, display_width};
@@ -302,6 +303,8 @@ pub(crate) fn wrap_single_line_slow_path<'a>(
 mod tests {
     use super::*;
     use crate::{WordSeparator, WordSplitter, WrapAlgorithm};
+    #[cfg(not(feature = "std"))]
+    use alloc::{format, vec};
 
     #[cfg(feature = "hyphenation")]
     use hyphenation::{Language, Load, Standard};
@@ -423,6 +426,15 @@ mod tests {
             ),
             vec!["Ｈｅｌｌｏ, Ｗ", "ｏｒｌｄ!"]
         );
+    }
+
+    #[test]
+    #[cfg(feature = "unicode-width")]
+    fn wrap_wide_characters_unicode_width() {
+        // Wide characters occupy 2 columns each. This works in both std
+        // and no_std environments with the unicode-width feature.
+        let options = Options::new(8);
+        assert_eq!(wrap("안녕하세요", &options), vec!["안녕하세", "요"]);
     }
 
     #[test]
@@ -627,7 +639,7 @@ mod tests {
     fn borrowed_lines() {
         // Lines that end with an extra hyphen are owned, the final
         // line is borrowed.
-        use std::borrow::Cow::{Borrowed, Owned};
+        use alloc::borrow::Cow::{Borrowed, Owned};
         let dictionary = Standard::from_embedded(Language::EnglishUS).unwrap();
         let options = Options::new(10).word_splitter(WordSplitter::Hyphenation(dictionary));
         let lines = wrap("Internationalization", &options);
@@ -700,7 +712,7 @@ mod tests {
 
     #[test]
     fn preserve_trailing_space_borrows_spaces() {
-        use std::borrow::Cow::Owned;
+        use alloc::borrow::Cow::Owned;
         let lines = wrap(
             "foo bar baz",
             Options::new(10).preserve_trailing_space(true),

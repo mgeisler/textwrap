@@ -2,6 +2,9 @@
 
 use crate::{Options, WordSeparator, wrap, wrap_algorithms};
 
+use alloc::string::String;
+use alloc::vec::Vec;
+
 /// Fill a line of text at a given width.
 ///
 /// The result is a [`String`], complete with newlines between each
@@ -145,7 +148,7 @@ pub fn fill_inplace(text: &mut String, width: usize) {
         offset += line.len() + 1;
     }
 
-    let mut bytes = std::mem::take(text).into_bytes();
+    let mut bytes = core::mem::take(text).into_bytes();
     for idx in indices {
         bytes[idx] = b'\n';
     }
