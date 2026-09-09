@@ -1,0 +1,21 @@
+<svg height="116pt" viewBox="0 0 471 116" width="471pt" xmlns="http://www.w3.org/2000/svg">
+<g transform="translate(4 112)">
+<path d="m-4 4v-116h470.91v116z" fill="#fff"/>
+<path d="m272.46-108h-82v36h82z" fill="none" stroke="#000"/>
+<text font-family="monospace" font-size="14" text-anchor="middle" x="231.46" y="-85.33">textwrap</text>
+<ellipse cx="86.46" cy="-18" fill="none" rx="86.46" ry="18" stroke="#000" stroke-dasharray="5 2"/>
+<text font-family="monospace" font-size="14" text-anchor="middle" x="86.46" y="-13.32">icu_segmenter</text>
+<g stroke="#000">
+<path d="m195.24-71.52c-19.8 9.56-44.48 21.48-65.32 31.54" fill="none" stroke-dasharray="1 5"/>
+<path d="m131.62-36.92-10.53 1.2 7.49-7.5z"/>
+<ellipse cx="231.46" cy="-18" fill="none" rx="40.16" ry="18" stroke-dasharray="5 2"/>
+</g>
+<text font-family="monospace" font-size="14" text-anchor="middle" x="231.46" y="-13.32">smawk</text>
+<path d="m231.46-71.7v24.16" fill="none" stroke="#000" stroke-dasharray="1 5"/>
+<path d="m234.96-47.62-3.5 10-3.5-10z" stroke="#000"/>
+<ellipse cx="376.46" cy="-18" fill="none" rx="86.46" ry="18" stroke="#000" stroke-dasharray="5 2"/>
+<text font-family="monospace" font-size="14" text-anchor="middle" x="376.46" y="-13.32">unicode-width</text>
+<path d="m267.67-71.52c19.81 9.56 44.48 21.48 65.32 31.54" fill="none" stroke="#000" stroke-dasharray="1 5"/>
+<path d="m334.34-43.22 7.48 7.5-10.53-1.2z" stroke="#000"/>
+</g>
+</svg>

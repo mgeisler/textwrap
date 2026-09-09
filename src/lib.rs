@@ -113,7 +113,7 @@
 //! The full dependency graph, where dashed lines indicate optional
 //! dependencies, is shown below:
 //!
-//! <img src="https://raw.githubusercontent.com/mgeisler/textwrap/main/images/textwrap-0.16.2.svg">
+//! <img src="https://raw.githubusercontent.com/mgeisler/textwrap/main/images/textwrap-0.16.3.svg">
 //!
 //! ## Default Features
 //!
