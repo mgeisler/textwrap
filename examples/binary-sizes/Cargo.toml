@@ -15,6 +15,7 @@ codegen-units = 1
 [features]
 smawk = ["textwrap/smawk"]
 unicode-linebreak = ["textwrap/unicode-linebreak"]
+unicode-linebreak-complex = ["textwrap/unicode-linebreak-complex"]
 unicode-width = ["textwrap/unicode-width"]
 hyphenation = ["textwrap/hyphenation"]
 
