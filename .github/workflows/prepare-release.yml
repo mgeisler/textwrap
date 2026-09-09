@@ -60,7 +60,7 @@ jobs:
 
       - name: Generate dependency graph
         run: |
-          cargo depgraph                                \
+          cargo depgraph --depth 1                      \
           | dot -Tsvg -Nfontname=monospace              \
           | sed 's/stroke="transparent"/stroke="none"/' \
           | svgcleaner --indent 0 --stdout -            \
