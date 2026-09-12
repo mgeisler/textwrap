@@ -1,7 +1,6 @@
 [package]
 name = "textwrap-benchmarks"
 version = "0.1.0"
-authors = ["Martin Geisler <martin@geisler.net>"]
 edition = "2021"
 license-file = "../LICENSE"
 publish = false # This should not be uploaded to crates.io
