@@ -17,7 +17,7 @@
 //! # }
 //! ```
 //!
-//! The [`wrap()`] function returns the individual lines, use
+//! The [`wrap()`] function returns the individual lines. Use
 //! [`fill()`] if you want the lines joined with `'\n'` to form a
 //! `String`.
 //!
@@ -49,10 +49,10 @@
 //!
 //! ## Displayed Width vs Byte Size
 //!
-//! To word wrap text, one must know the width of each word so one can
-//! know when to break lines. This library will by default measure the
-//! width of text using the _displayed width_, not the size in bytes.
-//! The `unicode-width` Cargo feature controls this.
+//! To wrap text, the width of each word must be known in order to
+//! determine line breaks. By default, this library measures the width
+//! of text using the _displayed width_, not the size in bytes. The
+//! `unicode-width` Cargo feature controls this.
 //!
 //! This is important for non-ASCII text. ASCII characters such as `a`
 //! and `!` are simple and take up one column each. This means that
@@ -70,7 +70,7 @@
 //! # Indentation and Dedentation
 //!
 //! The textwrap library also offers functions for adding a prefix to
-//! every line of a string and to remove leading whitespace. As an
+//! every line of a string and removing leading whitespace. As an
 //! example, [`indent()`] allows you to turn lines of text into a
 //! bullet list:
 //!
@@ -134,7 +134,7 @@
 //!
 //!   This feature can be disabled if you are happy to find words
 //!   separated by ASCII space characters only. People wrapping text
-//!   with emojis or East-Asian characters will most likely want to
+//!   with emojis or East Asian characters will most likely want to
 //!   enable this feature. See [`WordSeparator`] for details.
 //!
 //! * `unicode-width`: enables correct width computation of non-ASCII

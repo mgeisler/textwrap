@@ -2,7 +2,7 @@
 //! text.
 //!
 //! The functions here can be used to uniformly indent or dedent
-//! (unindent) word wrapped lines of text.
+//! (unindent) word-wrapped lines of text.
 
 use alloc::string::String;
 
@@ -43,8 +43,8 @@ use alloc::string::String;
 /// Notice how `"\n\n"` became `"\n#\n"` instead of `"\n# \n"` which
 /// would have trailing whitespace.
 ///
-/// Leading and trailing whitespace coming from the text itself is
-/// kept unchanged:
+/// Leading and trailing whitespace from the text itself is kept
+/// unchanged:
 ///
 /// ```
 /// use textwrap::indent;

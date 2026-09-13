@@ -5,13 +5,13 @@
 //! we need to define what a "word" is.
 //!
 //! A simple approach is to simply split the text on whitespace, but
-//! this does not work for East-Asian languages such as Chinese or
+//! this does not work for East Asian languages such as Chinese or
 //! Japanese where there are no spaces between words. Breaking a long
 //! sequence of emojis is another example where line breaks might be
-//! wanted even if there are no whitespace to be found.
+//! wanted even if there is no whitespace to be found.
 //!
 //! The [`WordSeparator`] enum is responsible for determining where
-//! there words are in a line of text. Please refer to the enum and
+//! the words are in a line of text. Please refer to the enum and
 //! its variants for more information.
 
 use alloc::boxed::Box;
@@ -42,7 +42,7 @@ thread_local! {
 
 /// Describes where words occur in a line of text.
 ///
-/// The simplest approach is say that words are separated by one or
+/// The simplest approach is to say that words are separated by one or
 /// more ASCII spaces (`' '`). This works for Western languages
 /// without emojis. A more complex approach is to use the Unicode line
 /// breaking algorithm, which finds break points in non-ASCII text.
@@ -125,7 +125,7 @@ pub enum WordSeparator {
     /// ```
     ///
     /// The Unicode line breaking algorithm will also automatically
-    /// suppress break breaks around certain punctuation characters::
+    /// suppress line breaks around certain punctuation characters:
     ///
     /// ```
     /// #[cfg(feature = "unicode-linebreak")] {
@@ -140,7 +140,7 @@ pub enum WordSeparator {
     #[cfg(feature = "unicode-linebreak")]
     UnicodeBreakProperties,
 
-    /// Find words using a custom word separator
+    /// Find words using a custom word separator.
     Custom(fn(line: &str) -> Box<dyn Iterator<Item = Word<'_>> + '_>),
 }
 

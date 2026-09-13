@@ -1,7 +1,7 @@
 //! Building blocks for advanced wrapping functionality.
 //!
 //! The functions and structs in this module can be used to implement
-//! advanced wrapping functionality when [`wrap()`](crate::wrap())
+//! advanced wrapping functionality when [`wrap()`](crate::wrap()) or
 //! [`fill()`](crate::fill()) don't do what you want.
 //!
 //! In general, you want to follow these steps when wrapping
@@ -14,7 +14,7 @@
 //!
 //! 2. Potentially split your fragments into smaller pieces. This
 //!    allows you to implement things like hyphenation. If you use the
-//!    `Word` type, you can use [`WordSplitter`](crate::WordSplitter)
+//!    `Word` type, you can use the [`WordSplitter`](crate::WordSplitter)
 //!    enum for this.
 //!
 //! 3. Potentially break apart fragments that are still too large to
@@ -117,8 +117,8 @@ fn ch_width(ch: char) -> usize {
 /// **Note:** When the `unicode-width` Cargo feature is disabled, the
 /// width of a `char` is determined by a crude approximation which
 /// simply counts chars below U+1100 as 1 column wide, and all other
-/// characters as 2 columns wide. With the feature enabled, function
-/// will correctly deal with [combining characters] in their
+/// characters as 2 columns wide. With the feature enabled, the
+/// function will correctly deal with [combining characters] in their
 /// decomposed form (see [Unicode equivalence]).
 ///
 /// An example of a decomposed character is “é”, which can be
@@ -181,13 +181,13 @@ fn ch_width(ch: char) -> usize {
 /// “👨” (U+1F468: Man), Zero Width Joiner (U+200D), and “🦰”
 /// (U+1F9B0: Red Hair). You can see them above in the test. With
 /// `unicode-width` enabled, the ZWJ is correctly seen as having zero
-/// width, without it is counted as a double-width character.
+/// width. Without it, it is counted as a double-width character.
 ///
 /// ## Terminal Support
 ///
 /// Modern browsers typically do a great job at combining characters
 /// as shown above, but terminals often struggle more. As an example,
-/// Gnome Terminal version 3.38.1, shows “❤️” as a big red heart, but
+/// Gnome Terminal version 3.38.1 shows “❤️” as a big red heart, but
 /// shows "👨‍🦰" as “👨🦰”.
 ///
 /// [combining characters]: https://en.wikipedia.org/wiki/Combining_character
@@ -217,7 +217,7 @@ pub fn display_width(text: &str) -> usize {
 /// whitespace, and the penalty is irrelevant. All we need to know is
 /// the displayed width of each part, which this trait provides.
 pub trait Fragment: core::fmt::Debug {
-    /// Displayed width of word represented by this fragment.
+    /// Displayed width of the word represented by this fragment.
     fn width(&self) -> f64;
 
     /// Displayed width of the whitespace that must follow the word
@@ -269,7 +269,7 @@ impl<'a> Word<'a> {
     }
 
     /// Break this word into smaller words with a width of at most
-    /// `line_width`. The whitespace and penalty from this `Word` is
+    /// `line_width`. The whitespace and penalty from this `Word` are
     /// added to the last piece.
     ///
     /// # Examples

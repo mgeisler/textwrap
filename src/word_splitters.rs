@@ -11,7 +11,7 @@ use alloc::vec::Vec;
 ///
 /// If the textwrap crate has been compiled with the `hyphenation`
 /// Cargo feature enabled, you will find a
-/// [`WordSplitter::Hyphenation`] variant. Use this struct for
+/// [`WordSplitter::Hyphenation`] variant. Use this variant for
 /// language-aware hyphenation:
 ///
 /// ```
@@ -36,7 +36,7 @@ use alloc::vec::Vec;
 /// [hyphenation]: https://docs.rs/hyphenation/
 #[derive(Debug, Clone)]
 pub enum WordSplitter {
-    /// Use this as a [`Options.word_splitter`] to avoid any kind of
+    /// Use this as an [`Options.word_splitter`] to avoid any kind of
     /// hyphenation:
     ///
     /// ```
