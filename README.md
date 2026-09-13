@@ -29,9 +29,9 @@ Textwrap supports `no_std` environments with an allocator. You can enable
 `unicode-width` for accurate character widths on embedded targets.
 
 Please see the
-[_Cargo Features_ in the crate
-documentation](https://docs.rs/textwrap/#cargo-features) for a full list of the
-available features as well as their impact on the size of your binary.
+[_Cargo Features_ in the crate documentation](https://docs.rs/textwrap/#cargo-features)
+for a full list of the available features as well as their impact on the size of
+your binary.
 
 ## Documentation
 
