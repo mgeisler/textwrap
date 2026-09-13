@@ -13,14 +13,14 @@ struct Penalties {
     hyphen_penalty: usize,
 }
 
-impl Into<wrap_algorithms::Penalties> for Penalties {
-    fn into(self) -> wrap_algorithms::Penalties {
+impl From<Penalties> for wrap_algorithms::Penalties {
+    fn from(penalties: Penalties) -> Self {
         wrap_algorithms::Penalties {
-            nline_penalty: self.nline_penalty,
-            overflow_penalty: self.overflow_penalty,
-            short_last_line_fraction: std::cmp::max(1, self.short_last_line_fraction),
-            short_last_line_penalty: self.short_last_line_penalty,
-            hyphen_penalty: self.hyphen_penalty,
+            nline_penalty: penalties.nline_penalty,
+            overflow_penalty: penalties.overflow_penalty,
+            short_last_line_fraction: std::cmp::max(1, penalties.short_last_line_fraction),
+            short_last_line_penalty: penalties.short_last_line_penalty,
+            hyphen_penalty: penalties.hyphen_penalty,
         }
     }
 }
