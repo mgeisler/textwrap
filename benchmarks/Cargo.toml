@@ -26,6 +26,8 @@ path = "unfill.rs"
 textwrap = { path = "../", features = ["hyphenation"] }
 
 [dev-dependencies]
-criterion = "0.4.0"
+criterion = "0.8.2"
 hyphenation = { version = "0.8.4", features = ["embed_en-us"] }
-lipsum = "0.8.0"
+lipsum = "0.9.1"
+rand = "0.8"
+rand_chacha = "0.3"

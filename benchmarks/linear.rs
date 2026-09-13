@@ -5,7 +5,9 @@ use criterion::{BenchmarkId, Criterion, criterion_group, criterion_main};
 // The benchmarks here verify that the complexity grows as O(*n*)
 // where *n* is the number of characters in the text to be wrapped.
 
-use lipsum::lipsum_words_from_seed;
+use lipsum::lipsum_words_with_rng;
+use rand::SeedableRng;
+use rand_chacha::ChaCha20Rng;
 
 const LINE_LENGTH: usize = 60;
 
@@ -14,7 +16,8 @@ fn lorem_ipsum(length: usize) -> String {
     // The average word length in the lorem ipsum text is somewhere
     // between 6 and 7. So we conservatively divide by 5 to have a
     // long enough text that we can truncate below.
-    let mut text = lipsum_words_from_seed(length / 5, 42);
+    let rng = ChaCha20Rng::seed_from_u64(42);
+    let mut text = lipsum_words_with_rng(rng, length / 5);
     text.truncate(length);
     text
 }
