@@ -13,7 +13,7 @@ use crate::{Options, wrap};
 /// total width of all columns and all gaps is specified using the
 /// `total_width_or_options` argument. This argument can simply be an
 /// integer if you want to use default settings when wrapping, or it
-/// can be a [`Options`] value if you want to customize the wrapping.
+/// can be an [`Options`] value if you want to customize the wrapping.
 ///
 /// If the columns are narrow, it is recommended to set
 /// [`Options::break_words`] to `true` to prevent words from
@@ -33,7 +33,7 @@ use crate::{Options, wrap};
 /// ```
 ///
 /// The `text` is wrapped using [`wrap()`] and the given `options`
-/// argument, but the width is overwritten to the computed
+/// argument, but the width is overwritten with the computed
 /// `column_width`.
 ///
 /// # Panics

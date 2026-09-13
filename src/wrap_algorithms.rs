@@ -28,9 +28,9 @@ use alloc::vec::Vec;
 /// Describes how to wrap words into lines.
 ///
 /// The simplest approach is to wrap words one word at a time and
-/// accept the first way of wrapping which fit
+/// accept the first way of wrapping that fits
 /// ([`WrapAlgorithm::FirstFit`]). If the `smawk` Cargo feature is
-/// enabled, a more complex algorithm is available which will look at
+/// enabled, a more complex algorithm is available that will look at
 /// an entire paragraph at a time in order to find optimal line breaks
 /// ([`WrapAlgorithm::OptimalFit`]).
 #[derive(Clone, Copy, Debug)]
@@ -193,15 +193,15 @@ impl Default for WrapAlgorithm {
 /// used to implement hanging indentation.
 ///
 /// The fragments must already have been split into the desired
-/// widths, this function will not (and cannot) attempt to split them
+/// widths. This function will not (and cannot) attempt to split them
 /// further when arranging them into lines.
 ///
 /// # First-Fit Algorithm
 ///
 /// This implements a simple “greedy” algorithm: accumulate fragments
 /// one by one and when a fragment no longer fits, start a new line.
-/// There is no look-ahead, we simply take first fit of the fragments
-/// we find.
+/// There is no look-ahead, we simply take the first fit of the
+/// fragments we find.
 ///
 /// While fast and predictable, this algorithm can produce poor line
 /// breaks when a long fragment is moved to a new line, leaving behind
@@ -248,8 +248,8 @@ impl Default for WrapAlgorithm {
 /// # Examples
 ///
 /// Imagine you're building a house site and you have a number of
-/// tasks you need to execute. Things like pour foundation, complete
-/// framing, install plumbing, electric cabling, install insulation.
+/// tasks you need to execute. Things like pouring the foundation,
+/// framing, plumbing, electrical cabling, and installing insulation.
 ///
 /// The construction workers can only work during daytime, so they
 /// need to pack up everything at night. Because they need to secure

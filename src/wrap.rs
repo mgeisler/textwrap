@@ -9,7 +9,7 @@ use crate::word_splitters::split_words;
 
 /// Wrap a line of text at a given width.
 ///
-/// The result is a vector of lines, each line is of type [`Cow<'_,
+/// The result is a vector of lines. Each line is of type [`Cow<'_,
 /// str>`](Cow), which means that the line will borrow from the input
 /// `&str` if possible. The lines do not have trailing whitespace,
 /// including a final `'\n'`. Please use [`fill()`](crate::fill()) if
@@ -50,7 +50,7 @@ use crate::word_splitters::split_words;
 /// # Optimal-Fit Wrapping
 ///
 /// By default, `wrap` will try to ensure an even right margin by
-/// finding breaks which avoid short lines. We call this an
+/// finding breaks that avoid short lines. We call this an
 /// “optimal-fit algorithm” since the line breaks are computed by
 /// considering all possible line breaks. The alternative is a
 /// “first-fit algorithm” which simply accumulates words until they no
@@ -80,8 +80,8 @@ use crate::word_splitters::split_words;
 /// “question” onto its own line.
 ///
 /// With the optimal-fit wrapping algorithm, the previous lines are
-/// shortened slightly in order to make the word “is” go into the
-/// second last line:
+/// shortened slightly in order to make the word “is” move onto the
+/// second to last line:
 ///
 /// ```
 /// # #[cfg(feature = "smawk")] {
@@ -106,8 +106,8 @@ use crate::word_splitters::split_words;
 /// # Examples
 ///
 /// The returned iterator yields lines of type `Cow<'_, str>`. If
-/// possible, the wrapped lines will borrow from the input string. As
-/// an example, a hanging indentation, the first line can borrow from
+/// possible, the wrapped lines will borrow from the input string. For
+/// example, with hanging indentation, the first line can borrow from
 /// the input, but the subsequent lines become owned strings:
 ///
 /// ```
@@ -138,7 +138,7 @@ use crate::word_splitters::split_words;
 /// As a rule, leading whitespace (indentation) is preserved and
 /// trailing whitespace is discarded.
 ///
-/// In more details, when wrapping words into lines, words are found
+/// In more detail, when wrapping words into lines, words are found
 /// by splitting the input text on space characters. One or more
 /// spaces (shown here as “␣”) are attached to the end of each word:
 ///
@@ -157,7 +157,7 @@ use crate::word_splitters::split_words;
 /// assert_eq!(wrap("Foo   bar baz", 8), vec!["Foo", "bar baz"]);
 /// ```
 ///
-/// Notice how the trailing whitespace is removed in both case: in the
+/// Notice how the trailing whitespace is removed in both cases: in the
 /// first example, `"bar␣"` becomes `"bar"` and in the second case
 /// `"Foo␣␣␣"` becomes `"Foo"`.
 ///

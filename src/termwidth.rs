@@ -11,7 +11,7 @@ use crate::Options;
 /// # Examples
 ///
 /// Create an [`Options`] for wrapping at the current terminal width
-/// with a two column margin to the left and the right:
+/// with a two-column margin to the left and the right:
 ///
 /// ```no_run
 /// use textwrap::{termwidth, Options};
@@ -31,7 +31,7 @@ pub fn termwidth() -> usize {
 impl<'a> Options<'a> {
     /// Creates a new [`Options`] with `width` set to the current
     /// terminal width. If the terminal width cannot be determined
-    /// (typically because the standard input and output is not
+    /// (typically because the standard input and output are not
     /// connected to a terminal), a width of 80 characters will be
     /// used. Other settings use the same defaults as
     /// [`Options::new`].
