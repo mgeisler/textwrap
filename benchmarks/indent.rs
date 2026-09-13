@@ -1,4 +1,7 @@
 use criterion::{Criterion, criterion_group, criterion_main};
+use lipsum::lipsum_words_with_rng;
+use rand::SeedableRng;
+use rand_chacha::ChaCha20Rng;
 
 pub fn benchmark(c: &mut Criterion) {
     // Generate a piece of text with some empty lines.
@@ -11,7 +14,8 @@ pub fn benchmark(c: &mut Criterion) {
     ];
     let mut text = String::new();
     for (line_no, word_count) in words_per_line.iter().enumerate() {
-        text.push_str(&lipsum::lipsum_words_from_seed(*word_count, line_no as u64));
+        let rng = ChaCha20Rng::seed_from_u64(line_no as u64);
+        text.push_str(&lipsum_words_with_rng(rng, *word_count));
         text.push('\n');
     }
     assert_eq!(text.len(), 2304); // The size for reference.
