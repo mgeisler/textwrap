@@ -7,6 +7,8 @@ target/
 examples/wasm/pkg/
 examples/wasm/www/dist/
 examples/wasm/www/node_modules/
+examples/wasm/www/test-results/
+examples/wasm/www/playwright-report/
 
 fuzz/artifacts/
 fuzz/corpus/
