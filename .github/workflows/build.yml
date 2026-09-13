@@ -225,12 +225,26 @@ jobs:
         run: wasm-pack build
         working-directory: examples/wasm
 
+      - uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+          cache: npm
+          cache-dependency-path: examples/wasm/www/package-lock.json
+
       - name: Install textwrap-wasm-demo-app dependencies
-        run: npm install
+        run: npm ci
         working-directory: examples/wasm/www
 
       - name: Bundle textwrap-wasm-demo-app
         run: npm run build
+        working-directory: examples/wasm/www
+
+      - name: Install Playwright Browsers
+        run: npx playwright install chromium --with-deps
+        working-directory: examples/wasm/www
+
+      - name: Run Wasm smoke tests
+        run: npm test
         working-directory: examples/wasm/www
 
       - name: Upload bundled textwrap-wasm-demo-app
