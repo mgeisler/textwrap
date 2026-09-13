@@ -28,9 +28,8 @@ for the features you actually use.
 Textwrap supports `no_std` environments with an allocator. You can enable
 `unicode-width` for accurate character widths on embedded targets.
 
-Please see the
-[_Cargo Features_ in the crate documentation](https://docs.rs/textwrap/#cargo-features)
-for a full list of the available features as well as their impact on the size of
+Please see the [_Cargo Features_ in the crate documentation][cargo-features] for
+a full list of the available features as well as their impact on the size of
 your binary.
 
 ## Documentation
@@ -126,9 +125,8 @@ macros from the [`textwrap-macros` crate].
 
 ## Examples
 
-The library comes with
-[a collection](https://github.com/mgeisler/textwrap/tree/main/examples) of small
-example programs that show various features.
+The library comes with [a collection][examples] of small example programs that
+show various features.
 
 If you want to see Textwrap in action right away, then take a look at
 [`examples/wasm/`], which shows how to wrap sans-serif, serif, and monospace
@@ -163,15 +161,15 @@ will be accepted under the same license.
 [build-status]: https://github.com/mgeisler/textwrap/actions?query=workflow%3Abuild+branch%3Amain
 [codecov]: https://codecov.io/gh/mgeisler/textwrap
 [wasm-demo]: https://mgeisler.github.io/textwrap/
+[cargo-features]: https://docs.rs/textwrap/#cargo-features
 [`textwrap-macros` crate]: https://crates.io/crates/textwrap-macros
-[`hyphenation` example]: https://github.com/mgeisler/textwrap/blob/main/examples/hyphenation.rs
-[`termwidth` example]: https://github.com/mgeisler/textwrap/blob/main/examples/termwidth.rs
 [patterns]: https://github.com/tapeinosyne/hyphenation/tree/master/patterns
 [en-us license]: https://github.com/hyphenation/tex-hyphen/blob/master/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-en-us.tex
 [bincode]: https://github.com/tapeinosyne/hyphenation/tree/master/dictionaries
-[`hyphenation` documentation]: http://docs.rs/hyphenation
+[`hyphenation` documentation]: https://docs.rs/hyphenation
+[examples]: https://github.com/mgeisler/textwrap/tree/main/examples
 [`examples/wasm/`]: https://github.com/mgeisler/textwrap/tree/main/examples/wasm
-[`examples/interactive.rs`]: https://github.com/mgeisler/textwrap/tree/main/examples/interactive.rs
+[`examples/interactive.rs`]: https://github.com/mgeisler/textwrap/blob/main/examples/interactive.rs
 [api-docs]: https://docs.rs/textwrap/
 [CHANGELOG file]: https://github.com/mgeisler/textwrap/blob/main/CHANGELOG.md
 [mit]: LICENSE
