@@ -72,4 +72,11 @@ The project follows standard Rust conventions.
   date. The configuration is in the `.github/dependabot.yml` file.
 - **Documentation:** The project has extensive documentation, which can be
   generated with `cargo doc`. The documentation is also available on
-  [docs.rs](https://docs.rs/textwrap/).
+  [docs.rs](https://docs.rs/textwrap/). Do not use semicolons (`;`) in prose or
+  docstrings. Split into separate sentences instead.
+- **Branch Naming:** Name git branches using kebab-case (`foo-bar-baz`), never
+  snake_case or camelCase.
+- **Commit and PR Hygiene:** Every PR must focus on a single concern. When
+  addressing review feedback or bugs on an unmerged branch, amend the original
+  commit instead of adding new commits. Write descriptive commit messages and
+  use `gh pr create --fill` so the PR title and description match the commit.
