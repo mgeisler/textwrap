@@ -59,12 +59,24 @@ To run the tests with all features, run:
 cargo test --all-features
 ```
 
+### Running Wasm Demo Tests
+
+To run the end-to-end smoke tests for the WebAssembly demo, run:
+
+```sh
+npm test --prefix examples/wasm/www
+```
+
 ## Development Conventions
 
 The project follows standard Rust conventions.
 
-- **Formatting:** The code is formatted with `dprint fmt`. This will format all
-  project files.
+- **Formatting:** Format all files with `dprint fmt`, never `dprint check`. Note
+  that `dprint` respects `.gitignore` by default. Avoid redundant exclusions in
+  `dprint.json`.
+- **Infrastructure and Tooling:** Prefer ready-made, off-the-shelf actions and
+  standard tools over custom scripts or caching logic. Keep infrastructure
+  minimal.
 - **Linting:** The project uses `clippy` for linting.
 - **Continuous Integration:** The project uses GitHub Actions for continuous
   integration. The configuration is in the `.github/workflows` directory.
