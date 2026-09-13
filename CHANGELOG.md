@@ -2,6 +2,10 @@
 
 This file lists the most important changes made in each release of `textwrap`.
 
+## Version 0.16.4 (2026-09-13)
+
+- [#628](https://github.com/mgeisler/textwrap/pull/628): Reduce MSRV to 1.88.
+
 ## Version 0.16.3 (2026-09-10)
 
 This release adds `no_std` support as well as optional support for wrapping
