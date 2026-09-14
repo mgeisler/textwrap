@@ -47,7 +47,7 @@ function redraw(event) {
     wrapAlgorithm,
     penalties,
   );
-  draw_wrapped_text(ctx, options, text, penalties);
+  draw_wrapped_text(ctx, options, text);
 }
 
 document.getElementById("wrap-algorithm").addEventListener("input", (event) => {
