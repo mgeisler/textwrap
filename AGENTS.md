@@ -88,7 +88,11 @@ The project follows standard Rust conventions.
   docstrings. Split into separate sentences instead.
 - **Branch Naming:** Name git branches using kebab-case (`foo-bar-baz`), never
   snake_case or camelCase.
-- **Commit and PR Hygiene:** Every PR must focus on a single concern. When
-  addressing review feedback or bugs on an unmerged branch, amend the original
-  commit instead of adding new commits. Write descriptive commit messages and
-  use `gh pr create --fill` so the PR title and description match the commit.
+- **Commit and PR Hygiene:** Every pull request and commit must focus strictly
+  on a single concern. Never mix distinct classes of changes, such as bug fixes,
+  cleanups, build infrastructure, refactoring, documentation, or performance
+  improvements, in the same pull request. Each belongs in its own dedicated pull
+  request. When addressing review feedback or bugs on an unmerged branch, amend
+  the original commit instead of adding new commits. Write descriptive commit
+  messages and use `gh pr create --fill` so the PR title and description match
+  the commit.
