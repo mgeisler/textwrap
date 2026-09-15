@@ -247,10 +247,18 @@ jobs:
         run: npm test
         working-directory: examples/wasm/www
 
-      - name: Upload bundled textwrap-wasm-demo-app
-        uses: actions/upload-artifact@v7
+      - name: Record build info
+        if: github.ref == 'refs/heads/main'
+        run: |
+          cat > dist/build-info.json <<EOM
+          {"date": "$(date --utc --iso-8601)", "commit": "$GITHUB_SHA"}
+          EOM
+        working-directory: examples/wasm/www
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        if: github.ref == 'refs/heads/main'
         with:
-          name: textwrap-wasm-demo-app
           path: examples/wasm/www/dist
 
   wasm-deploy:
@@ -258,53 +266,16 @@ jobs:
     needs: wasm-build
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v7
-        with:
-          ref: gh-pages
-
-      - name: Cleanup previous deployment
-        run: rm -rf *
-
-      - name: Download bundled textwrap-wasm-demo-app
-        uses: actions/download-artifact@v8
-        with:
-          name: textwrap-wasm-demo-app
-
-      - name: Add and remove changed files
-        id: git-add
-        run: |
-          git restore build-info.json
-          git add --verbose --all
-          if git diff --staged --quiet --exit-code; then
-            echo "No changes found in textwrap-wasm-demo-app"
-            echo 'has-changes=false' >> $GITHUB_OUTPUT
-          else
-            echo 'has-changes=true' >> $GITHUB_OUTPUT
-          fi
-
-      - name: Record build info
-        if: steps.git-add.outputs.has-changes == 'true'
-        run: |
-          cat > build-info.json <<EOM
-          {"date": "$(date --utc --iso-8601)", "commit": "$GITHUB_SHA"}
-          EOM
-          git add --verbose --all
-
-      - name: Configure Git user
-        if: steps.git-add.outputs.has-changes == 'true'
-        run: |
-          git config user.name "Martin Geisler"
-          git config user.email "martin@geisler.net"
-
-      - name: Commit textwrap-wasm-demo-app changes
-        if: steps.git-add.outputs.has-changes == 'true'
-        run: git commit -m "Update Wasm demo to ${GITHUB_SHA::7}"
-
-      - name: Deploy textwrap-wasm-demo-app
-        if: steps.git-add.outputs.has-changes == 'true'
-        run: git push origin
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
 
   format:
     name: Format
