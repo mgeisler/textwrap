@@ -1,8 +1,10 @@
-import {
+import init, {
   draw_wrapped_text,
   WasmOptions,
   WasmPenalties,
 } from "textwrap-wasm-demo";
+
+await init();
 
 fetch("build-info.json")
   .then((response) => response.json())

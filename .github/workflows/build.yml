@@ -222,7 +222,7 @@ jobs:
           workspaces: examples/wasm -> target
 
       - name: Build textwrap-wasm-demo
-        run: wasm-pack build
+        run: wasm-pack build --target web
         working-directory: examples/wasm
 
       - uses: actions/setup-node@v6
@@ -265,7 +265,7 @@ jobs:
           ref: gh-pages
 
       - name: Cleanup previous deployment
-        run: rm *
+        run: rm -rf *
 
       - name: Download bundled textwrap-wasm-demo-app
         uses: actions/download-artifact@v8
