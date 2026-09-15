@@ -1,4 +1,4 @@
-const { test, expect } = require("@playwright/test");
+import { expect, test } from "@playwright/test";
 
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
@@ -126,4 +126,26 @@ test("re-wraps when editing text in textarea", async ({ page }) => {
   expect(lines).toEqual(["Single short line"]);
 
   expect(errors).toEqual([]);
+});
+
+test("renders build metadata in footer", async ({ page }) => {
+  await page.route("**/build-info.json", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        date: "2026-09-15",
+        commit: "0123456789abcdef",
+      }),
+    });
+  });
+
+  await page.goto("/");
+  await expect(page.locator("#build-date")).toHaveText("2026-09-15");
+  const commitLink = page.locator("#footer a");
+  await expect(commitLink).toHaveText("0123456");
+  await expect(commitLink).toHaveAttribute(
+    "href",
+    "https://github.com/mgeisler/textwrap/commit/0123456789abcdef",
+  );
 });
