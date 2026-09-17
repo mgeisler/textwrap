@@ -93,7 +93,9 @@ where
             match wrapped_lines.get(line_no + column_no * lines_per_column) {
                 Some(column_line) => {
                     line.push_str(column_line);
-                    line.push_str(&" ".repeat(column_width - display_width(column_line)));
+                    line.push_str(
+                        &" ".repeat(column_width.saturating_sub(display_width(column_line))),
+                    );
                 }
                 None => {
                     line.push_str(&" ".repeat(column_width));
@@ -229,6 +231,29 @@ mod tests {
     #[should_panic]
     fn wrap_columns_panic_with_zero_columns() {
         wrap_columns("", 0, 10, "", "", "");
+    }
+
+    #[test]
+    fn wrap_columns_word_wider_than_column() {
+        // With `break_words` disabled, a word that is wider than the
+        // column protrudes into the margin. The padding for such a
+        // line is zero, not a negative number.
+        let options = Options::new(16).break_words(false);
+        assert_eq!(
+            wrap_columns("Hello supercalifragilistic", 2, options, "|", "|", "|"),
+            vec!["|Hello |supercalifragilistic |"]
+        );
+    }
+
+    #[test]
+    #[cfg(feature = "unicode-width")]
+    fn wrap_columns_grapheme_wider_than_column() {
+        // A double-width grapheme cannot be broken down to fit a
+        // column of width 1, so it protrudes just like a long word.
+        assert_eq!(
+            wrap_columns("\u{4f60}\u{597d}", 2, 2, "", "", ""),
+            vec!["\u{4f60}\u{597d}"]
+        );
     }
 
     #[test]
