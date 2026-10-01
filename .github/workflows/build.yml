@@ -256,7 +256,7 @@ jobs:
         working-directory: examples/wasm/www
 
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         if: github.ref == 'refs/heads/main'
         with:
           path: examples/wasm/www/dist
