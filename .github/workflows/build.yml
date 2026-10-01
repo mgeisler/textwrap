@@ -225,7 +225,7 @@ jobs:
         run: wasm-pack build --target web
         working-directory: examples/wasm
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: lts/*
           cache: npm
