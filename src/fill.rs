@@ -43,7 +43,11 @@ where
     let options = width_or_options.into();
 
     if text.len() < options.width && !text.contains('\n') && options.initial_indent.is_empty() {
-        String::from(text.trim_end_matches(' '))
+        if options.preserve_trailing_space {
+            String::from(text)
+        } else {
+            String::from(text.trim_end_matches(' '))
+        }
     } else {
         fill_slow_path(text, options)
     }
@@ -163,6 +167,21 @@ mod tests {
     #[test]
     fn fill_simple() {
         assert_eq!(fill("foo bar baz", 10), "foo bar\nbaz");
+    }
+
+    #[test]
+    fn fill_preserves_trailing_spaces() {
+        for text in ["foo  ", "  ", ""] {
+            let options = Options::new(80).preserve_trailing_space(true);
+            assert_eq!(fill(text, &options), text);
+        }
+
+        for width in [0, 3, 5, 6, 80] {
+            for text in ["foo  ", "  ", "foo bar  "] {
+                let options = Options::new(width).preserve_trailing_space(true);
+                assert_eq!(fill(text, &options), wrap(text, &options).join("\n"));
+            }
+        }
     }
 
     #[test]
