@@ -148,6 +148,14 @@ $ cargo run --example interactive
 
 The demo needs a Linux terminal to function.
 
+To wrap piped input one line at a time, use the `stdin` example. Pass an
+optional positive column width, which defaults to 80. Existing line breaks and
+blank lines are preserved.
+
+```sh
+cargo run --example stdin -- 40 < input.txt
+```
+
 ## Release History
 
 Please see the [CHANGELOG file] for details on the changes made in each release.
