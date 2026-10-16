@@ -118,6 +118,9 @@ pub fn dedent(s: &str) -> String {
     // We then continue looking through the remaining lines to
     // possibly shorten the prefix.
     for line in &mut lines {
+        if line.trim().is_empty() {
+            continue;
+        }
         let mut whitespace_idx = line.len();
         for ((idx, a), b) in line.char_indices().zip(prefix.chars()) {
             if a != b {
@@ -275,6 +278,14 @@ mod tests {
             "    baz",
         ].join("\n");
         assert_eq!(dedent(&x), y);
+    }
+
+    #[test]
+    fn dedent_ignores_differently_indented_blank_lines() {
+        for blank in ["\t", " \t ", "\u{2003}", "\u{00a0}"] {
+            let text = alloc::format!("  foo\n{blank}\n    bar");
+            assert_eq!(dedent(&text), "foo\n\n  bar", "blank line: {blank:?}");
+        }
     }
 
     #[test]
