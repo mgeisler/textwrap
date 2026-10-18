@@ -195,8 +195,11 @@ impl<'a> Options<'a> {
     /// than `self.width` can be broken, or if they will be left
     /// protruding into the right margin.
     ///
-    /// See [`Options::word_splitter`] instead if you want to control
-    /// hyphenation.
+    /// This does not prevent line breaks introduced by the
+    /// [`Options::word_separator`] or [`Options::word_splitter`]. For
+    /// example, the default Unicode word separator can break URLs at
+    /// slashes even when `break_words` is `false`. See
+    /// [`Options::word_splitter`] if you want to control hyphenation.
     ///
     /// # Examples
     ///
@@ -211,6 +214,23 @@ impl<'a> Options<'a> {
     ///                 "le",
     ///                 "exam",
     ///                 "ple."]);
+    /// ```
+    ///
+    /// To keep a URL together, split only at spaces and disable
+    /// hyphenation as well as forced word breaking. The URL can then
+    /// extend beyond the configured width:
+    ///
+    /// ```
+    /// use textwrap::{fill, Options, WordSeparator, WordSplitter};
+    ///
+    /// let options = Options::new(24)
+    ///     .break_words(false)
+    ///     .word_separator(WordSeparator::AsciiSpace)
+    ///     .word_splitter(WordSplitter::NoHyphenation);
+    /// assert_eq!(
+    ///     fill("Read https://example.com/a-long/path/to/a/page", options),
+    ///     "Read\nhttps://example.com/a-long/path/to/a/page"
+    /// );
     /// ```
     ///
     /// [`self.break_words`]: #structfield.break_words
