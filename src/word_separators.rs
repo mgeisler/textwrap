@@ -87,6 +87,10 @@ pub enum WordSeparator {
     /// [`WordSplitter::HyphenSplitter`](crate::WordSplitter::HyphenSplitter).
     /// Soft hyphens are not currently supported.
     ///
+    /// The algorithm can also find line breaks at slashes in URLs.
+    /// See [`Options::break_words`](crate::Options::break_words) for an
+    /// example of keeping URLs together with [`WordSeparator::AsciiSpace`].
+    ///
     /// # Examples
     ///
     /// Unlike [`WordSeparator::AsciiSpace`], the Unicode line
