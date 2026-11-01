@@ -34,7 +34,9 @@ use crate::{Options, wrap};
 ///
 /// The `text` is wrapped using [`wrap()`] and the given `options`
 /// argument, but the width is overwritten with the computed
-/// `column_width`.
+/// `column_width`. Since integer division can leave a remainder, the
+/// excess width, `inner_width - columns * column_width`, is added as
+/// padding after the last column.
 ///
 /// # Panics
 ///
@@ -82,7 +84,7 @@ where
 
     let column_width = core::cmp::max(inner_width / columns, 1);
     options.width = column_width;
-    let last_column_padding = " ".repeat(inner_width % column_width);
+    let last_column_padding = " ".repeat(inner_width.saturating_sub(column_width * columns));
     let wrapped_lines = wrap(text, options);
     let lines_per_column =
         wrapped_lines.len() / columns + usize::from(wrapped_lines.len() % columns > 0);
@@ -253,6 +255,24 @@ mod tests {
         assert_eq!(
             wrap_columns("\u{4f60}\u{597d}", 2, 2, "", "", ""),
             vec!["\u{4f60}\u{597d}"]
+        );
+    }
+
+    #[test]
+    fn wrap_columns_last_column_absorbs_excess_width() {
+        // The columns are (11 - 0)/4 = 2 columns wide and the last
+        // column is padded with the excess width, 11 - 4 * 2 = 3:
+        assert_eq!(wrap_columns("x y", 4, 11, "", "", ""), vec!["x y        "]);
+    }
+
+    #[test]
+    fn wrap_columns_excess_width_with_gaps() {
+        // The gaps take up 6 columns and the columns take up the
+        // remaining 14, so each of the 5 columns is 2 wide and the
+        // last column is padded with 14 - 5 * 2 = 4 extra columns:
+        assert_eq!(
+            wrap_columns("x", 5, 20, "|", "|", "|"),
+            vec!["|x |  |  |  |      |"]
         );
     }
 
