@@ -133,19 +133,21 @@ pub fn dedent(s: &str) -> String {
         }
     }
 
-    // We now go over the lines a second time to build the result.
+    // We now go over the lines a second time to build the result,
+    // keeping the original line ending of each line.
     let mut result = String::new();
-    for line in s.lines() {
+    for full_line in s.split_inclusive('\n') {
+        let line = match full_line.strip_suffix("\r\n") {
+            Some(line) => line,
+            None => full_line.strip_suffix('\n').unwrap_or(full_line),
+        };
+        let line_ending = &full_line[line.len()..];
+
         if line.starts_with(prefix) && line.chars().any(|c| !c.is_whitespace()) {
             let (_, tail) = line.split_at(prefix.len());
             result.push_str(tail);
         }
-        result.push('\n');
-    }
-
-    if result.ends_with('\n') && !s.ends_with('\n') {
-        let new_len = result.len() - 1;
-        result.truncate(new_len);
+        result.push_str(line_ending);
     }
 
     result
@@ -345,5 +347,12 @@ mod tests {
             "  bar",
         ].join("\n");
         assert_eq!(dedent(&x), y);
+    }
+
+    #[test]
+    fn dedent_preserve_crlf() {
+        assert_eq!(dedent("  foo\r\n    bar\r\n"), "foo\r\n  bar\r\n");
+        assert_eq!(dedent("  foo\r\n\r\n  bar"), "foo\r\n\r\nbar");
+        assert_eq!(dedent("  foo\r\n  bar\n  baz\r\n"), "foo\r\nbar\nbaz\r\n");
     }
 }
